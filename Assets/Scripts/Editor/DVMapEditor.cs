@@ -123,7 +123,7 @@ public class DVMapEditor : EditorWindow
     }
 
     private void SetPlaneDefaultSetting(GameObject plane) {
-        SetDefaultTransform(plane);
+        DVUtil.ResetTransform(plane);
         DeleteChilds(plane);
         SetPlaneSize(plane, Vector2.one);
 
@@ -148,17 +148,6 @@ public class DVMapEditor : EditorWindow
         plane.transform.localScale = new Vector3(size.x * (float)_planeSize * ratio.x,
             size.y, size.z * (float)_planeSize * ratio.y);
 
-    }
-
-    private void SetDefaultTransform(GameObject go) {
-        SetDefaultTransform(go.transform);
-    }
-
-    private void SetDefaultTransform(Transform tf)
-    {
-        tf.position = Vector3.zero;
-        tf.rotation = Quaternion.identity;
-        tf.localScale = Vector3.one;
     }
 
     private Vector3 GetOneCubePlaneSize(GameObject plane) {
