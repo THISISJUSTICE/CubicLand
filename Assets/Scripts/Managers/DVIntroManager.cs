@@ -12,6 +12,8 @@ public class DVIntroManager : MonoBehaviour
 
     private void Start()
     {
+        LimitFrameRate();
+
         DVSceneConfigs.LoadScene(DVSceneConfigs.SceneList.MAP);
     }
     #endregion
@@ -19,6 +21,11 @@ public class DVIntroManager : MonoBehaviour
     #region Utils
     private void CreateSingletones() {
         _ = DVKeyboardManager.Instance;
+        _ = DVHelper.Instance;
+    }
+
+    private void LimitFrameRate() { 
+
     }
     #endregion
 }
