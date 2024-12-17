@@ -76,7 +76,6 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
             }
             else if (Input.GetKeyUp(key))
             {
-                Debug.Log($"Keying: {_keyingDic[key]}");
                 _keyingDic[key] = 0f;
 
                 if (_keyTriggerDic[key].Item2 != null)
