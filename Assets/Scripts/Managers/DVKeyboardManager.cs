@@ -7,6 +7,31 @@ using System;
 
 public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
 {
+    #region Types
+    private class KeyLock
+    {
+        private KeyCode _lockKey;
+        private bool _locked;
+
+        public KeyLock() {
+            _locked = false;
+        }
+
+        public bool Locked { get => _locked; }
+
+        public void Lock(KeyCode key) {
+            _lockKey = key;
+            _locked = true;
+        }
+
+        public void Unlock(KeyCode key) {
+            if (key == _lockKey) {
+                _locked = false;
+            }
+        }
+    }
+    #endregion
+
     #region Variables
     private const float MAX_KEYING_TIME = 20f;
 
@@ -17,18 +42,18 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
         KeyCode.F9, KeyCode.F10, KeyCode.F11, KeyCode.F12,
     };
 
-    private readonly HashSet<KeyCode> _userKeyCodes = new HashSet<KeyCode> { 
+    private readonly HashSet<KeyCode> _userKeyCodes = new HashSet<KeyCode> {
         KeyCode.A, KeyCode.B, KeyCode.C, KeyCode.D, KeyCode.E,
         KeyCode.F, KeyCode.G, KeyCode.H, KeyCode.I, KeyCode.J,
         KeyCode.K, KeyCode.L, KeyCode.M, KeyCode.N, KeyCode.O,
         KeyCode.P, KeyCode.Q, KeyCode.R, KeyCode.S, KeyCode.T,
         KeyCode.U, KeyCode.V, KeyCode.W, KeyCode.X, KeyCode.Y,
-        KeyCode.Z, 
+        KeyCode.Z,
         KeyCode.Alpha1, KeyCode.Alpha2, KeyCode.Alpha3,
         KeyCode.Alpha4, KeyCode.Alpha5, KeyCode.Alpha6,
         KeyCode.Alpha7, KeyCode.Alpha8, KeyCode.Alpha9,
-        KeyCode.Alpha0, 
-        KeyCode.Space, 
+        KeyCode.Alpha0,
+        KeyCode.Space,
         KeyCode.Comma, KeyCode.Period, KeyCode.Slash,
         KeyCode.Semicolon, KeyCode.Quote,
         KeyCode.LeftBracket, KeyCode.RightBracket,
@@ -40,6 +65,8 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
     private Dictionary<KeyCode, (Action, Action)> _keyTriggerDic = new Dictionary<KeyCode, (Action, Action)>();
     private HashSet<KeyCode> _usingKey = new HashSet<KeyCode>();
     private List<KeyCode> _circitKey = new List<KeyCode>();
+
+    private Dictionary<KeyCode, KeyLock> _keyLocks = new Dictionary<KeyCode, KeyLock>();
 
     private bool _keyChanged = false;
 
@@ -61,12 +88,18 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
             if (keyBlocked)
                 return;
 
-            if (_keyChanged) { 
+            if (_keyChanged) {
                 _keyChanged = false;
                 return;
             }
 
             if (Input.GetKeyDown(key)) {
+                if (_keyLocks.TryGetValue(key, out var keyLock)) {
+                    if (keyLock.Locked)
+                        continue;
+                    keyLock.Lock(key);
+                }
+
                 if (_keyTriggerDic[key].Item1 != null)
                     _keyTriggerDic[key].Item1();
             }
@@ -80,6 +113,11 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
 
                 if (_keyTriggerDic[key].Item2 != null)
                     _keyTriggerDic[key].Item2();
+
+                if (_keyLocks.TryGetValue(key, out var keyLock))
+                {
+                    keyLock.Unlock(key);
+                }
             }
         }
     }
@@ -116,7 +154,7 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
         return 0f;
     }
 
-    public bool IsKeying(KeyCode keyCode) { 
+    public bool IsKeying(KeyCode keyCode) {
         float time = GetKeyingTime(keyCode);
         return !Mathf.Approximately(time, 0f);
     }
@@ -131,19 +169,29 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
             val.Item2 = null;
             _keyTriggerDic.Remove(keyCode);
         }
-        else if (_keyingDic.ContainsKey(keyCode))
+        if (_keyingDic.ContainsKey(keyCode))
         {
             _keyingDic.Remove(keyCode);
+        }
+        if (_keyLocks.TryGetValue(keyCode, out var keyLock)) {
+            keyLock = null;
+            _keyLocks.Remove(keyCode);
         }
 
         _usingKey.Remove(keyCode);
         _keyChanged = true;
     }
 
-    public void ResetKeySetting() { 
+    public void DeleteKeys(KeyCode[] keyCodes) {
+        for (int i = 0; i < keyCodes.Length; i++)
+            DeleteKey(keyCodes[i]);
+    }
+
+    public void ResetKeySetting() {
         _usingKey.Clear();
         _keyingDic.Clear();
         _keyTriggerDic.Clear();
+        _keyLocks.Clear();
         _keyChanged = true;
 
         GC.Collect();
@@ -158,6 +206,25 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
 
         Debug.Log($"{keyCode} is not User KeyCode");
         return false;
+    }
+
+    public void SetKeyLocks(KeyCode[] keyCodes) {
+        for (int i = 0; i < keyCodes.Length; i++) {
+            if (!_usingKey.Contains(keyCodes[i])) {
+                Debug.Log($"{keyCodes[i]} is not using");
+                return;
+            }
+            if (_keyLocks.ContainsKey(keyCodes[i])) {
+                Debug.Log($"{keyCodes[i]} is already used KeyLock");
+                return;
+            }
+        }
+
+        KeyLock keyLock = new KeyLock();
+
+        for (int i = 0; i < keyCodes.Length; i++) {
+            _keyLocks[keyCodes[i]] = keyLock;
+        }
     }
     #endregion
 
