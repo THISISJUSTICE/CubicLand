@@ -7,6 +7,8 @@ public class DVHelper : SingletonMonoBehaviour<DVHelper>
     #endregion
 
     #region Properties
+    public static DVHelper In { get => Instance as DVHelper; }
+
     public DVYieldCache YieldCache { get { return _yieldCache; } }
     #endregion
 

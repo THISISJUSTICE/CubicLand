@@ -45,4 +45,8 @@ public static class DVUtil
         }
         return Mathf.Abs(a);
     }
+
+    public static float GetHypotenuse(float baseLine, float heightLine) => Mathf.Sqrt(Mathf.Pow(baseLine, 2) + Mathf.Pow(heightLine, 2));
+
+    public static float GetHeightLine(float hypotenuse, float angle) => hypotenuse * Mathf.Sin(angle * Mathf.Deg2Rad);
 }
