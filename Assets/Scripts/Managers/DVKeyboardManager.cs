@@ -62,7 +62,7 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
     };
 
     private Dictionary<KeyCode, float> _keyingDic = new Dictionary<KeyCode, float>();
-    private Dictionary<KeyCode, (Action, Action)> _keyTriggerDic = new Dictionary<KeyCode, (Action, Action)>();
+    private Dictionary<KeyCode, (Action, Action<float>)> _keyTriggerDic = new Dictionary<KeyCode, (Action, Action<float>)>();
     private HashSet<KeyCode> _usingKey = new HashSet<KeyCode>();
     private List<KeyCode> _circitKey = new List<KeyCode>();
 
@@ -109,22 +109,22 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
             }
             else if (Input.GetKeyUp(key))
             {
-                _keyingDic[key] = 0f;
-
                 if (_keyTriggerDic[key].Item2 != null)
-                    _keyTriggerDic[key].Item2();
+                    _keyTriggerDic[key].Item2(_keyingDic[key]);
 
                 if (_keyLocks.TryGetValue(key, out var keyLock))
                 {
                     keyLock.Unlock(key);
                 }
+
+                _keyingDic[key] = 0f;
             }
         }
     }
     #endregion
 
     #region Public Functions
-    public void SetKeyDownUp(KeyCode keyCode, Action actionDown, Action actionUp)
+    public void SetKeyDownUp(KeyCode keyCode, Action actionDown, Action<float> actionUp)
     {
         if (!CheckSetKey(keyCode))
             return;
@@ -140,7 +140,7 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
         SetKeyDownUp(keyCode, action, null);
     }
 
-    public void SetKeyUp(KeyCode keyCode, Action action)
+    public void SetKeyUp(KeyCode keyCode, Action<float> action)
     {
         SetKeyDownUp(keyCode, null, action);
     }
