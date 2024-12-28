@@ -4,7 +4,8 @@ using System.Collections.Generic;
 
 public class DVYieldCache
 {
-    private LimitedDictionary<float, WaitForSeconds> _waitforSeconds = new LimitedDictionary<float, WaitForSeconds>();
+    private LimitedDictionary<float, WaitForSeconds> _waitforSeconds
+        = new LimitedDictionary<float, WaitForSeconds>(200);
 
     public DVYieldCache() {
 

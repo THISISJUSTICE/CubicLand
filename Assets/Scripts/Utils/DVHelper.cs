@@ -1,4 +1,7 @@
 using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using System;
 
 public class DVHelper : SingletonMonoBehaviour<DVHelper>
 {
@@ -16,6 +19,14 @@ public class DVHelper : SingletonMonoBehaviour<DVHelper>
     private void Awake()
     {
         _yieldCache = new DVYieldCache();
+    }
+    #endregion
+
+    #region Coroutines
+    public IEnumerator WaitActCor(float waitTime, Action callback) {
+        yield return _yieldCache.GetWaitForSeconds(waitTime);
+        if(callback != null )
+            callback();
     }
     #endregion
 }

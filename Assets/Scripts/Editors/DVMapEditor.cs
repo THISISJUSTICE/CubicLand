@@ -123,7 +123,7 @@ public class DVMapEditor : EditorWindow
     }
 
     private void SetPlaneDefaultSetting(GameObject plane) {
-        DVUtil.ResetTransform(plane);
+        plane.transform.Reset();
         DeleteChilds(plane);
         SetPlaneSize(plane, Vector2.one);
 
