@@ -177,7 +177,6 @@ public class DVPlayerController : MonoBehaviour
         _move.ActFlag = true;
 
         StartCoroutine(RightAngleRollCor(GetDirection(direction), time));
-        MoveGolem(direction, time, depend:true);
     }    
 
     protected void MoveGolemWithJump(DVEnums.Direction direction, float time, int jumpHeight)
@@ -251,9 +250,9 @@ public class DVPlayerController : MonoBehaviour
     #region Coroutines
     protected IEnumerator OneCubeMoveCor(Vector3 dir, float time)
     {
+        // 넉백으로도 사용 가능해 보임
         _move.Acting = true;
 
-        // TODO
         Vector3 moveDir = dir.normalized * DVConfigs.CUBE_BASE_LENGHT;
         Vector3 addMove = moveDir / (float)AnimationFrame;
         float addTime = time / (float)AnimationFrame;
@@ -315,6 +314,7 @@ public class DVPlayerController : MonoBehaviour
     {
         _move.Acting = true;
 
+        Vector3 moveDir = -dir.normalized;
         Quaternion startRot, targetRot;
         int curCube, nextCube;
         float curHeight, nextHeight, angle, prevAngle;
@@ -343,11 +343,19 @@ public class DVPlayerController : MonoBehaviour
 
             for (int i = 0; i < AnimationFrame; i++)
             {
+                // Rotate
                 transform.rotation = Quaternion.Slerp(startRot, targetRot, (float)(i + 1) / (float)AnimationFrame);
                 angle = Quaternion.Angle(startRot, transform.rotation);
+
+                // Height
                 transform.position += Vector3.up *
                     (DVUtil.GetHeightLine(rollHypot, angle + rollAxisAngle)
                     - DVUtil.GetHeightLine(rollHypot, prevAngle + rollAxisAngle));
+
+                // Move
+                transform.position += moveDir *
+                    (DVUtil.GetBaseLine(rollHypot, angle + rollAxisAngle)
+                    - DVUtil.GetBaseLine(rollHypot, prevAngle + rollAxisAngle));
 
                 prevAngle = angle;
                 yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
