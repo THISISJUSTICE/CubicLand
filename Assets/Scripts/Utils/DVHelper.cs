@@ -6,12 +6,14 @@ using System;
 public class DVHelper : SingletonMonoBehaviour<DVHelper>
 {
     #region Variables
+    private string _dataPath;
     private DVYieldCache _yieldCache;
     #endregion
 
     #region Properties
     public static DVHelper In { get => Instance as DVHelper; }
 
+    public string DataPath { get { return _dataPath; } }
     public DVYieldCache YieldCache { get { return _yieldCache; } }
     #endregion
 
@@ -19,6 +21,7 @@ public class DVHelper : SingletonMonoBehaviour<DVHelper>
     private void Awake()
     {
         _yieldCache = new DVYieldCache();
+        _dataPath = Application.persistentDataPath;
     }
     #endregion
 
