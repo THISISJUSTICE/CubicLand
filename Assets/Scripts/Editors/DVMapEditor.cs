@@ -127,6 +127,7 @@ public class DVMapEditor : EditorWindow
         DeleteChilds(plane);
         SetPlaneSize(plane, Vector2.one);
 
+        plane.name = "Map";
         plane.tag = "Map";
         plane.layer = LayerMask.NameToLayer("Map");
 
