@@ -67,6 +67,7 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
     private List<KeyCode> _circitKey = new List<KeyCode>();
 
     private Dictionary<KeyCode, KeyLock> _keyLocks = new Dictionary<KeyCode, KeyLock>();
+    private Dictionary<KeyLock, HashSet<KeyCode>> _keyLockFinder = new Dictionary<KeyLock, HashSet<KeyCode>>();
 
     private bool _keyChanged = false;
 
@@ -174,8 +175,8 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
             _keyingDic.Remove(keyCode);
         }
         if (_keyLocks.TryGetValue(keyCode, out var keyLock)) {
-            keyLock = null;
             _keyLocks.Remove(keyCode);
+            _keyLockFinder[keyLock].Remove(keyCode);
         }
 
         _usingKey.Remove(keyCode);
@@ -192,6 +193,7 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
         _keyingDic.Clear();
         _keyTriggerDic.Clear();
         _keyLocks.Clear();
+        _keyLockFinder.Clear();
         _keyChanged = true;
 
         GC.Collect();
@@ -209,22 +211,47 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
     }
 
     public void SetKeyLocks(KeyCode[] keyCodes) {
-        for (int i = 0; i < keyCodes.Length; i++) {
-            if (!_usingKey.Contains(keyCodes[i])) {
-                Debug.Log($"{keyCodes[i]} is not using");
-                return;
-            }
-            if (_keyLocks.ContainsKey(keyCodes[i])) {
-                Debug.Log($"{keyCodes[i]} is already used KeyLock");
-                return;
-            }
-        }
-
         KeyLock keyLock = new KeyLock();
+        _keyLockFinder[keyLock] = new HashSet<KeyCode>();
 
         for (int i = 0; i < keyCodes.Length; i++) {
+            if (!CheckAddKeyLock(keyCodes[i]))
+                continue;
+
             _keyLocks[keyCodes[i]] = keyLock;
+            _keyLockFinder[keyLock].Add(keyCodes[i]);
         }
+    }
+
+    public void AddKeyLocks(KeyCode key, KeyCode[] keyCodes) {
+        if (!TryGetKeyLock(key, out var keyLock))
+            return;
+
+        if (_keyLockFinder[keyLock] == null)
+            _keyLockFinder[keyLock] = new HashSet<KeyCode>();
+
+        for (int i = 0; i < keyCodes.Length; i++)
+        {
+            if (!CheckAddKeyLock(keyCodes[i]))
+                continue;
+
+            _keyLocks[keyCodes[i]] = keyLock;
+            _keyLockFinder[keyLock].Add(keyCodes[i]);
+        }
+    }
+
+    public void DeleteKeyLocks(KeyCode keyCode) {
+        if (!TryGetKeyLock(keyCode, out var keyLock))
+            return;
+
+        foreach (var key in _keyLocks.Keys) {
+            if (_keyLocks.ContainsKey(key))
+                _keyLocks.Remove(key);
+        }
+
+        _keyLockFinder[keyLock] = null;
+        _keyLockFinder.Remove(keyLock);
+        keyLock = null;
     }
     #endregion
 
@@ -249,6 +276,37 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
 
         Debug.Log($"{keyCode} is not usable KeyCode");
         return false;
+    }
+
+    private bool CheckAddKeyLock(KeyCode keyCode) {
+        if (!_usingKey.Contains(keyCode))
+        {
+            Debug.Log($"{keyCode} is not using");
+            return false;
+        }
+        if (_keyLocks.ContainsKey(keyCode))
+        {
+            Debug.Log($"{keyCode} is already used KeyLock");
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool TryGetKeyLock(KeyCode keyCode, out KeyLock keyLock) {
+        if (!_keyLocks.TryGetValue(keyCode, out keyLock))
+        {
+            Debug.Log($"{keyCode} is not used KeyLock");
+            return false;
+        }
+
+        if (keyLock == null || !_keyLockFinder.ContainsKey(keyLock))
+        {
+            Debug.Log($"KeyLock does not exist");
+            return false;
+        }
+
+        return true;
     }
     #endregion
 }
