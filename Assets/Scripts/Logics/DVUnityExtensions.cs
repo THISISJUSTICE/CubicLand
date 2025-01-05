@@ -25,4 +25,14 @@ public static class DVUnityExtensions
             Mathf.Clamp(vector.z, min, max)
         );
     }
+
+    public static Vector3Int Abs(this Vector3Int vector)
+    {
+        return new Vector3Int(
+            (int)Mathf.Abs(vector.x),
+            (int)Mathf.Abs(vector.y),
+            (int)Mathf.Abs(vector.z)
+        );
+    }
+
 }

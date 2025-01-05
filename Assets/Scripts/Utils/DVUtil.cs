@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public static class DVUtil
@@ -22,6 +23,37 @@ public static class DVUtil
         }
 
         return Mathf.Clamp(value, 0f, 1f);
+    }
+
+    public static int GetEnumLength(Type type) {
+        if (!type.IsEnum)
+        {
+            Debug.LogError($"{type} is not Enum");
+            return 0;
+        }
+        return Enum.GetValues(type).Length;
+    }
+
+    public static int DirectionLength { get => GetEnumLength(typeof(DVEnums.Direction));}
+    public static int Direction3DLength { get => GetEnumLength(typeof(DVEnums.Direction3D));}
+
+    public static Vector3Int GetDirection3DValue(DVEnums.Direction3D direction) {
+        switch (direction) {
+            case DVEnums.Direction3D.RIGHT:
+                return Vector3Int.right;
+            case DVEnums.Direction3D.LEFT:
+                return Vector3Int.left;
+            case DVEnums.Direction3D.UP:
+                return Vector3Int.up;
+            case DVEnums.Direction3D.DOWN:
+                return Vector3Int.down;
+            case DVEnums.Direction3D.FRONT:
+                return Vector3Int.forward;
+            case DVEnums.Direction3D.BACK:
+                return Vector3Int.back;
+            default:
+                return Vector3Int.zero;
+        }
     }
 
     public static int GetGCD(int a, int b)
