@@ -35,4 +35,13 @@ public static class DVUnityExtensions
         );
     }
 
+    public static Color Clamp(this Color color, Color min, Color max) {
+        return new Color(
+            Mathf.Clamp(color.r, min.r, max.r),
+            Mathf.Clamp(color.g, min.g, max.g),
+            Mathf.Clamp(color.b, min.b, max.b),
+            Mathf.Clamp(color.a, min.a, max.a)
+        );
+    }
+
 }

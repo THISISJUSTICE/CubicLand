@@ -34,8 +34,8 @@ public static class DVUtil
         return Enum.GetValues(type).Length;
     }
 
-    public static int DirectionLength { get => GetEnumLength(typeof(DVEnums.Direction));}
-    public static int Direction3DLength { get => GetEnumLength(typeof(DVEnums.Direction3D));}
+    public static int DirectionLength { get => GetEnumLength(typeof(DVEnums.Direction)); }
+    public static int Direction3DLength { get => GetEnumLength(typeof(DVEnums.Direction3D)); }
 
     public static Vector3Int GetDirection3DValue(DVEnums.Direction3D direction) {
         switch (direction) {
@@ -53,6 +53,20 @@ public static class DVUtil
                 return Vector3Int.back;
             default:
                 return Vector3Int.zero;
+        }
+    }
+
+    public static DVEnums.Direction3D ConvertDirection2DTo3D(DVEnums.Direction direction) {
+        switch (direction) {
+            default:
+            case DVEnums.Direction.RIGHT:
+                return DVEnums.Direction3D.RIGHT;
+            case DVEnums.Direction.LEFT:
+                return DVEnums.Direction3D.LEFT;
+            case DVEnums.Direction.FRONT:
+                return DVEnums.Direction3D.FRONT;
+            case DVEnums.Direction.BACK:
+                return DVEnums.Direction3D.BACK;
         }
     }
 
