@@ -21,6 +21,7 @@ public class DVIntroManager : MonoBehaviour
     #region Utils
     private void CreateSingletones() {
         _ = DVKeyboardManager.Instance;
+        _ = DVObjectManager.Instance;
         _ = DVHelper.Instance;
     }
 

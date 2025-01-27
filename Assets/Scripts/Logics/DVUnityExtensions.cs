@@ -29,9 +29,9 @@ public static class DVUnityExtensions
     public static Vector3Int Abs(this Vector3Int vector)
     {
         return new Vector3Int(
-            (int)Mathf.Abs(vector.x),
-            (int)Mathf.Abs(vector.y),
-            (int)Mathf.Abs(vector.z)
+            Mathf.RoundToInt(Mathf.Abs(vector.x)),
+            Mathf.RoundToInt(Mathf.Abs(vector.y)),
+            Mathf.RoundToInt(Mathf.Abs(vector.z))
         );
     }
 
