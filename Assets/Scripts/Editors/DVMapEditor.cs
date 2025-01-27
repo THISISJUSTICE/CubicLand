@@ -34,11 +34,11 @@ public class DVMapEditor : EditorWindow
 
         GUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Plane Size");
-        _planeSize = (int)Mathf.Abs(EditorGUILayout.IntField(_planeSize));
+        _planeSize = Mathf.RoundToInt(Mathf.Abs(EditorGUILayout.IntField(_planeSize)));
         GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Border Height");
-        _borderHeight = (int)Mathf.Abs(EditorGUILayout.IntField(_borderHeight));
+        _borderHeight = Mathf.RoundToInt(Mathf.Abs(EditorGUILayout.IntField(_borderHeight)));
         GUILayout.EndHorizontal();
 
         GUILayout.Space(30f);
@@ -55,6 +55,7 @@ public class DVMapEditor : EditorWindow
         if (!GUILayout.Button("Create Default Plane"))
             return;
 
+        // TODO: 생성 오브젝트들은 프리팹으로 전환하기
         _plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
         SetPlaneDefaultSetting(_plane);
     }
@@ -75,6 +76,8 @@ public class DVMapEditor : EditorWindow
 
         if (!CheckPlane())
             return;
+
+        // TODO: 생성 오브젝트들은 프리팹으로 전환하기
 
         _borders = new GameObject[4];
         for (int i = 0; i < _borders.Length; i++) {

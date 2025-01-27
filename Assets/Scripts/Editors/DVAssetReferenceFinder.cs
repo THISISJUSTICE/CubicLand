@@ -12,7 +12,8 @@ using Object = UnityEngine.Object;
 public class DVAssetReferenceFinder : EditorWindow
 {
     #region Types
-    private class TaskValueList<T> {
+    private class TaskValueList<T>
+    {
         private readonly System.Object _lock;
 
         private List<T> _list;
@@ -22,7 +23,8 @@ public class DVAssetReferenceFinder : EditorWindow
         private int _flag;
         private int _endFlag;
 
-        public TaskValueList(int endflag, Action<List<T>> callback) {
+        public TaskValueList(int endflag, Action<List<T>> callback)
+        {
             _lock = new System.Object();
             _startTime = DateTime.Now;
             _list = new List<T>();
@@ -31,12 +33,15 @@ public class DVAssetReferenceFinder : EditorWindow
             _callback = callback;
         }
 
-        public void AddList(List<T> list) {
+        public void AddList(List<T> list)
+        {
             if (IsTaskDone())
                 return;
 
-            lock (_lock) {
-                foreach (T item in list) { 
+            lock (_lock)
+            {
+                foreach (T item in list)
+                {
                     _list.Add(item);
                 }
                 _flag++;
@@ -44,20 +49,21 @@ public class DVAssetReferenceFinder : EditorWindow
                 if (IsTaskDone())
                 {
                     Debug.Log($"Searching Time: {(DateTime.Now - _startTime).TotalSeconds}");
-                    if(_callback != null)
+                    if (_callback != null)
                         _callback(_list);
                 }
             }
         }
 
-        public bool IsTaskDone() { 
+        public bool IsTaskDone()
+        {
             return _flag >= _endFlag;
         }
     }
     #endregion
 
     #region Variables
-    private const string MAIN_PATH = "Assets/";
+    private const string MAIN_PATH = "Assets";
     private const float FOLD_OFFSET_X = 20f;
 
     private Vector2 _scrollPosition;
@@ -71,7 +77,7 @@ public class DVAssetReferenceFinder : EditorWindow
     private Dictionary<string, bool> _extensionCheck;
     private List<string> _extensions;
 
-    private string _folderPath;
+    private string _folderPath = MAIN_PATH;
 
     private bool _saveTxt = false;
     private string _txtPath;
@@ -92,8 +98,8 @@ public class DVAssetReferenceFinder : EditorWindow
     private void OnEnable()
     {
         string mainPath = MAIN_PATH;
-        if(_folderPath != null && _folderPath != string.Empty && _folderPath.Length > 0)
-            mainPath = Path.Combine(MAIN_PATH, _folderPath);
+        if (_folderPath != null && _folderPath != string.Empty && _folderPath.Length > 0 && _folderPath.StartsWith(mainPath))
+            mainPath = _folderPath;
         string[] allAssetPaths = AssetDatabase.GetAllAssetPaths()
                                             .Where(path => path.StartsWith(mainPath))
                                             .ToArray();
@@ -121,7 +127,7 @@ public class DVAssetReferenceFinder : EditorWindow
         }
 
         string[] initCheck = new string[] { ".prefab", ".unity" };
-        for(int i=0; i<initCheck.Length; i++)
+        for (int i = 0; i < initCheck.Length; i++)
         {
             if (_extensionCheck.ContainsKey(initCheck[i]))
                 _extensionCheck[initCheck[i]] = true;
@@ -141,20 +147,8 @@ public class DVAssetReferenceFinder : EditorWindow
 
         _targetAsset = EditorGUILayout.ObjectField("Target Asset", _targetAsset, typeof(Object), false);
         GUILayout.Space(2f);
-        GUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField($"Folder Path ({MAIN_PATH})");
-        string folderPath = EditorGUILayout.TextField(_folderPath);
-        GUILayout.EndHorizontal();
 
-        if (folderPath != _folderPath)
-        {
-            string tempPath = Path.Combine(MAIN_PATH, folderPath);
-            if (Directory.Exists(tempPath))
-            {
-                _folderPath = folderPath;
-                OnEnable();
-            }
-        }
+        DrawSetFolderPath();
 
         GUILayout.Space(5f);
         _foldout = EditorGUILayout.Foldout(_foldout, "Find Options");
@@ -171,9 +165,55 @@ public class DVAssetReferenceFinder : EditorWindow
     #endregion
 
     #region GUI Functions
-    private void CheckPathOptionField() {
+    private void DrawSetFolderPath()
+    {
+        GUILayout.BeginHorizontal();
+        bool set = false;
+        if (GUILayout.Button("Folder Path"))
+            set = true;
+        EditorGUILayout.LabelField($"({_folderPath}/)");
+        GUILayout.EndHorizontal();
+
+        if (!set)
+            return;
+
+        SetFolderPath();
+    }
+
+    private void SetFolderPath()
+    {
+        string folderPath = EditorUtility.OpenFolderPanel("", MAIN_PATH, "");
+
+        if (folderPath == null || folderPath.Length <= 0)
+            return;
+
+        string projectPath = Directory.GetCurrentDirectory().Replace("\\", "/");
+        folderPath = folderPath.Replace("\\", "/");
+
+        if (folderPath.StartsWith(projectPath, StringComparison.OrdinalIgnoreCase))
+        {
+            string relativePath = folderPath.Substring(projectPath.Length + 1);
+            if (relativePath.StartsWith(MAIN_PATH))
+                folderPath = relativePath;
+        }
+
+        if (!folderPath.StartsWith(MAIN_PATH))
+            return;
+
+        if (folderPath != _folderPath)
+        {
+            if (Directory.Exists(folderPath))
+            {
+                _folderPath = folderPath;
+                OnEnable();
+            }
+        }
+    }
+
+    private void CheckPathOptionField()
+    {
         int fileCount = 0;
-        foreach(var key in _extensions)
+        foreach (var key in _extensions)
         {
             if (!_extensionCheck[key])
                 continue;
@@ -183,7 +223,7 @@ public class DVAssetReferenceFinder : EditorWindow
 
         GUILayout.BeginHorizontal();
         GUILayout.Space(FOLD_OFFSET_X);
-        _timeLimit =  EditorGUILayout.IntField("Find Time Limit (seconds)", _timeLimit);
+        _timeLimit = EditorGUILayout.IntField("Find Time Limit (seconds)", _timeLimit);
         GUILayout.EndHorizontal();
         GUILayout.Space(5f);
 
@@ -230,7 +270,8 @@ public class DVAssetReferenceFinder : EditorWindow
         EditorGUILayout.LabelField("Save text");
         _saveTxt = EditorGUILayout.Toggle(_saveTxt);
         GUILayout.EndHorizontal();
-        if (_saveTxt) {
+        if (_saveTxt)
+        {
             GUILayout.BeginHorizontal();
             GUILayout.Space(FOLD_OFFSET_X);
             EditorGUILayout.LabelField("File Path");
@@ -241,10 +282,11 @@ public class DVAssetReferenceFinder : EditorWindow
         GUILayout.Space(20f);
     }
 
-    private void FindReferncesButton() {
+    private void FindReferncesButton()
+    {
         if (!GUILayout.Button("Find References"))
             return;
-        
+
         if (_targetAsset != null)
         {
             string assetPath = AssetDatabase.GetAssetPath(_targetAsset);
@@ -287,7 +329,8 @@ public class DVAssetReferenceFinder : EditorWindow
         }
     }
 
-    private void GUIFoldTitle(string title) {
+    private void GUIFoldTitle(string title)
+    {
         GUILayout.BeginHorizontal();
         GUILayout.Space(FOLD_OFFSET_X);
         EditorGUILayout.LabelField(title);
@@ -295,7 +338,8 @@ public class DVAssetReferenceFinder : EditorWindow
         GUILayout.Space(5f);
     }
 
-    private void GUIFoldContentScroll(ref Vector2 scrollPos, float contentSize, Action<Rect> content) {
+    private void GUIFoldContentScroll(ref Vector2 scrollPos, float contentSize, Action<Rect> content)
+    {
         Vector2 scrollSize = new Vector2(250f, 200f);
         Rect scrollRect = GUILayoutUtility.GetLastRect();
         scrollRect.x += FOLD_OFFSET_X;
@@ -385,16 +429,18 @@ public class DVAssetReferenceFinder : EditorWindow
         }
     }
 
-    private List<string> FindFiles(List<string> paths, string guid, CancellationToken? token = null) {
+    private List<string> FindFiles(List<string> paths, string guid, CancellationToken? token = null)
+    {
         List<string> findedFiles = new List<string>();
         int count = 0;
         CancellationToken ct;
-        if(token != null)
+        if (token != null)
             ct = (CancellationToken)token;
 
         foreach (string path in paths)
         {
-            if (token != null && ct.IsCancellationRequested) {
+            if (token != null && ct.IsCancellationRequested)
+            {
                 ct.ThrowIfCancellationRequested();
             }
 
@@ -409,7 +455,8 @@ public class DVAssetReferenceFinder : EditorWindow
         return findedFiles;
     }
 
-    private List<string> SortListByFileSize(List<string> paths) {
+    private List<string> SortListByFileSize(List<string> paths)
+    {
         return paths
             .Where(File.Exists)
             .OrderByDescending(path => new FileInfo(path).Length)
