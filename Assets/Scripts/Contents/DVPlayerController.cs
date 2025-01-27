@@ -67,34 +67,34 @@ public sealed class DVPlayerController : DVGolemController
         // Move
         {
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.MOVE_FRONT],
-                () => MoveGolemWithJump(DVEnums.Direction.FRONT, MoveTime, 1),
+                () => MoveGolemWithJump(DVEnums.Direction.FRONT, 1),
                 (keyTime) => CancelMoveGolem());
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.MOVE_RIGHT],
-                () => RollGolem(DVEnums.Direction.RIGHT, MoveTime * 1.2f),
+                () => RollGolem(DVEnums.Direction.RIGHT),
                 (keyTime) => CancelMoveGolem());
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.MOVE_LEFT],
-                () => RollGolem(DVEnums.Direction.LEFT, MoveTime * 1.2f),
+                () => RollGolem(DVEnums.Direction.LEFT),
                 (keyTime) => CancelMoveGolem());
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.MOVE_BACK],
-                () => RollGolem(DVEnums.Direction.BACK, MoveTime * 1.5f),
+                () => RollGolem(DVEnums.Direction.BACK),
                 (keyTime) => CancelMoveGolem());
         }
 
         // Rotate
         {
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.ROTATE_RIGHT],
-                () => RotateGolem(DVEnums.Direction.RIGHT, RotateTime),
+                () => RotateGolem(DVEnums.Direction.RIGHT),
                 (keyTime) => CancelMoveGolem());
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.ROTATE_LEFT],
-                () => RotateGolem(DVEnums.Direction.LEFT, RotateTime),
+                () => RotateGolem(DVEnums.Direction.LEFT),
                 (keyTime) => CancelMoveGolem());
         }
 
         // Jump
         {
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.JUMP],
-                () => ChargeJumpReady(KeyCode.Space, JumpChargeTime),
-                (keyTime) => ChargeJumpAction(MoveTime, keyTime, JumpChargeTime));
+                () => ChargeJumpReady(),
+                (keyTime) => ChargeJumpAction(keyTime));
         }
 
         DVKeyboardManager.Instance.SetKeyLocks(_playerActKeys);

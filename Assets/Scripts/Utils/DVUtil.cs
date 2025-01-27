@@ -3,28 +3,7 @@ using UnityEngine;
 
 public static class DVUtil
 {
-    public static float CalculateProgressValue(float value, float loadingValue)
-    {
-
-        if (value < loadingValue)
-        {
-            float diff = loadingValue - value;
-            if (diff > 0.2f)
-                value += Time.deltaTime * 0.5f;
-            else if (diff > 0.02f)
-                value += Time.deltaTime * 0.25f;
-            else
-            {
-                if (loadingValue > 0.9f)
-                    value += Time.deltaTime * 0.1f;
-                else
-                    value += Time.deltaTime * 0.01f;
-            }
-        }
-
-        return Mathf.Clamp(value, 0f, 1f);
-    }
-
+    #region Directions
     public static int GetEnumLength(Type type) {
         if (!type.IsEnum)
         {
@@ -69,6 +48,57 @@ public static class DVUtil
                 return DVEnums.Direction3D.BACK;
         }
     }
+
+    public static DVEnums.Direction ConvertDirection3DTo2D(DVEnums.Direction3D direction)
+    {
+        switch (direction)
+        {
+            default:
+            case DVEnums.Direction3D.RIGHT:
+                return DVEnums.Direction.RIGHT;
+            case DVEnums.Direction3D.LEFT:
+                return DVEnums.Direction.LEFT;
+            case DVEnums.Direction3D.FRONT:
+                return DVEnums.Direction.FRONT;
+            case DVEnums.Direction3D.BACK:
+                return DVEnums.Direction.BACK;
+        }
+    }
+
+    public static DVEnums.Direction ReverseDirection(DVEnums.Direction direction) {
+        switch (direction)
+        {
+            default:
+            case DVEnums.Direction.RIGHT:
+                return DVEnums.Direction.LEFT;
+            case DVEnums.Direction.LEFT:
+                return DVEnums.Direction.RIGHT;
+            case DVEnums.Direction.FRONT:
+                return DVEnums.Direction.BACK;
+            case DVEnums.Direction.BACK:
+                return DVEnums.Direction.FRONT;
+        }
+    }
+
+    public static DVEnums.Direction3D ReverseDirection(DVEnums.Direction3D direction) {
+        switch (direction)
+        {
+            default:
+            case DVEnums.Direction3D.RIGHT:
+                return DVEnums.Direction3D.LEFT;
+            case DVEnums.Direction3D.LEFT:
+                return DVEnums.Direction3D.RIGHT;
+            case DVEnums.Direction3D.UP:
+                return DVEnums.Direction3D.DOWN;
+            case DVEnums.Direction3D.DOWN:
+                return DVEnums.Direction3D.UP;
+            case DVEnums.Direction3D.FRONT:
+                return DVEnums.Direction3D.BACK;
+            case DVEnums.Direction3D.BACK:
+                return DVEnums.Direction3D.FRONT;
+        }
+    }
+    #endregion
 
     public static int GetGCD(int a, int b)
     {
@@ -119,5 +149,27 @@ public static class DVUtil
         }
 
         return closestVector;
+    }
+
+    public static float CalculateProgressValue(float value, float loadingValue)
+    {
+
+        if (value < loadingValue)
+        {
+            float diff = loadingValue - value;
+            if (diff > 0.2f)
+                value += Time.deltaTime * 0.5f;
+            else if (diff > 0.02f)
+                value += Time.deltaTime * 0.25f;
+            else
+            {
+                if (loadingValue > 0.9f)
+                    value += Time.deltaTime * 0.1f;
+                else
+                    value += Time.deltaTime * 0.01f;
+            }
+        }
+
+        return Mathf.Clamp(value, 0f, 1f);
     }
 }

@@ -29,7 +29,6 @@ public class DVGolemCube : MonoBehaviour
     private void Awake()
     {
         _collider = GetComponent<BoxCollider>();
-        _childs = new DVGolemCube[DVUtil.Direction3DLength];
     }
 
     private void OnEnable()
@@ -61,11 +60,21 @@ public class DVGolemCube : MonoBehaviour
     #endregion
 
     #region Public Functions
-    public void SetCubeInfo(DVCubeInfo cubeInfo) { 
+    public void SetGolemCubeInfo(DVCubeInfo cubeInfo, DVGolemCube parent) { 
         _cubeInfo = cubeInfo;
+        _parent = parent;
+        _childs = null;
+    }
+
+    public void SetGolemChild(DVGolemCube[] childs) { 
+        _childs = childs;
     }
 
     public bool TryGetChilds(DVEnums.Direction3D direction, out DVGolemCube golemCube) {
+        golemCube = null;
+        if (_childs == null)    
+            return false;
+        
         golemCube = _childs[(int)direction];
         if (golemCube == null) {
             return false;
