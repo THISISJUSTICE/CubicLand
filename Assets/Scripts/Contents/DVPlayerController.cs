@@ -34,6 +34,12 @@ public sealed class DVPlayerController : DVGolemController
         SetInitActKey();
 
     }
+
+    protected override void OnDestroy()
+    {
+        base.OnDestroy();
+        DVKeyboardManager.Instance?.DeleteKeys(_playerActKeys);
+    }
     #endregion
 
     #region Public Functions
@@ -67,27 +73,27 @@ public sealed class DVPlayerController : DVGolemController
         // Move
         {
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.MOVE_FRONT],
-                () => MoveGolemWithJump(DVEnums.Direction.FRONT, 1),
-                (keyTime) => CancelMoveGolem());
+                () => MoveJump(DVEnums.Direction.FRONT),
+                (keyTime) => CancelMove());
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.MOVE_RIGHT],
                 () => RollGolem(DVEnums.Direction.RIGHT),
-                (keyTime) => CancelMoveGolem());
+                (keyTime) => CancelMove());
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.MOVE_LEFT],
                 () => RollGolem(DVEnums.Direction.LEFT),
-                (keyTime) => CancelMoveGolem());
+                (keyTime) => CancelMove());
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.MOVE_BACK],
                 () => RollGolem(DVEnums.Direction.BACK),
-                (keyTime) => CancelMoveGolem());
+                (keyTime) => CancelMove());
         }
 
         // Rotate
         {
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.ROTATE_RIGHT],
-                () => RotateGolem(DVEnums.Direction.RIGHT),
-                (keyTime) => CancelMoveGolem());
+                () => Rotate(DVEnums.Direction.RIGHT),
+                (keyTime) => CancelMove());
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.ROTATE_LEFT],
-                () => RotateGolem(DVEnums.Direction.LEFT),
-                (keyTime) => CancelMoveGolem());
+                () => Rotate(DVEnums.Direction.LEFT),
+                (keyTime) => CancelMove());
         }
 
         // Jump

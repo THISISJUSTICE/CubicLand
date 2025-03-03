@@ -15,6 +15,8 @@ public class DVIntroManager : MonoBehaviour
         LimitFrameRate();
 
         DVSceneConfigs.LoadScene(DVSceneConfigs.SceneList.MAP);
+
+        Physics.defaultContactOffset = 0.0001f;
     }
     #endregion
 
@@ -23,6 +25,7 @@ public class DVIntroManager : MonoBehaviour
         _ = DVKeyboardManager.Instance;
         _ = DVObjectManager.Instance;
         _ = DVHelper.Instance;
+        _ = DVDataManager.Instance;
     }
 
     private void LimitFrameRate() { 

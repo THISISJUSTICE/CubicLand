@@ -3,6 +3,17 @@ using UnityEngine;
 
 public static class DVPerfomanceConfigs
 {
+    public static int MaxFrameRate
+    {
+        get {
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+            return 120;
+#else
+            return 30;
+#endif
+        }
+    }
+
     public static long MemoryLimit
     {
         get

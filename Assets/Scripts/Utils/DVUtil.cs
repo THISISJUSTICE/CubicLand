@@ -1,7 +1,8 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
-public static class DVUtil
+public static partial class DVUtil
 {
     #region Directions
     public static int GetEnumLength(Type type) {
@@ -98,6 +99,59 @@ public static class DVUtil
                 return DVEnums.Direction3D.FRONT;
         }
     }
+
+    public static DVEnums.Direction3D ConvertDirection(Vector3[] dirs, Vector3 dir) {
+        GetClosestAxisVector(dirs, dir, out int index);
+        return (DVEnums.Direction3D)index;
+    }
+    #endregion
+
+    #region Cube Transform
+    public static IEnumerator NormalizePositionCor(Transform tf, Vector3 prevPos, float time)
+    {
+        Vector3 normalPos = NormalizeCubePosition(prevPos);
+
+        Vector3 moveDir = normalPos - prevPos;
+        Vector3 addMove = moveDir / (float)DVPerfomanceConfigs.AnimationFrame;
+        float addTime = time / (float)DVPerfomanceConfigs.AnimationFrame;
+
+        for (int i = 0; i < DVPerfomanceConfigs.AnimationFrame; i++)
+        {
+            tf.position += addMove;
+            yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
+        }
+    }
+
+    public static Vector3 NormalizeCubePosition(Vector3 pos)
+    {
+        Vector3 normalPos = pos;
+        normalPos.x = Mathf.Round(pos.x / DVConfigs.CUBE_BASE_LENGHT) * DVConfigs.CUBE_BASE_LENGHT;
+        normalPos.z = Mathf.Round(pos.z / DVConfigs.CUBE_BASE_LENGHT) * DVConfigs.CUBE_BASE_LENGHT;
+
+        return normalPos;
+    }
+
+    public static IEnumerator NormalizeRotationCor(Transform tf, Quaternion prevRot, float time)
+    {
+        Quaternion normalRot = NormalizeCubeRotation(prevRot);
+        float addTime = time / (float)DVPerfomanceConfigs.AnimationFrame;
+
+        for (int i = 0; i < DVPerfomanceConfigs.AnimationFrame; i++)
+        {
+            tf.rotation = Quaternion.Slerp(prevRot, normalRot, (float)(i + 1) / (float)DVPerfomanceConfigs.AnimationFrame);
+            yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
+        }
+    }
+
+    public static Quaternion NormalizeCubeRotation(Quaternion quaternion)
+    {
+        Vector3 eulerAngles = quaternion.eulerAngles;
+        eulerAngles.x = Mathf.Round(eulerAngles.x / 90f) * 90f;
+        eulerAngles.y = Mathf.Round(eulerAngles.y / 90f) * 90f;
+        eulerAngles.z = Mathf.Round(eulerAngles.z / 90f) * 90f;
+
+        return Quaternion.Euler(eulerAngles);
+    }
     #endregion
 
     public static int GetGCD(int a, int b)
@@ -171,5 +225,13 @@ public static class DVUtil
         }
 
         return Mathf.Clamp(value, 0f, 1f);
+    }
+
+    public static Vector2 ConvertXZVector2(Vector3 vec) { 
+        return new Vector2(vec.x, vec.z);
+    }
+
+    public static float GetDistanceXZ(Vector3 vec1, Vector3 vec2) { 
+        return Vector2.Distance(ConvertXZVector2(vec1), ConvertXZVector2(vec2));
     }
 }

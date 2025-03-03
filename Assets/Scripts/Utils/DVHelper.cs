@@ -25,11 +25,27 @@ public class DVHelper : SingletonMonoBehaviour<DVHelper>
     }
     #endregion
 
+    #region Public Functions
+    public void WaitTimeAct(float waitTime, Action callback) { 
+        StartCoroutine(WaitTimeActCor(waitTime, callback));
+    }
+
+    public void WaitFrameAct(int frame, Action callback) {
+        StartCoroutine(WaitFrameActCor(frame, callback));
+    }
+    #endregion
+
     #region Coroutines
-    public IEnumerator WaitActCor(float waitTime, Action callback) {
+    public IEnumerator WaitTimeActCor(float waitTime, Action callback) {
         yield return _yieldCache.GetWaitForSeconds(waitTime);
-        if(callback != null )
-            callback();
+        callback?.Invoke();
+    }
+
+    public IEnumerator WaitFrameActCor(int frame, Action callback)
+    {
+        for(int i=0; i<frame; i++)
+            yield return null;
+        callback?.Invoke();
     }
     #endregion
 }

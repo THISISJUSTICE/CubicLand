@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
-[RequireComponent(typeof(DVGolemCore))]
 public class DVGolemController : MonoBehaviour
 {
     #region Types
@@ -29,6 +29,52 @@ public class DVGolemController : MonoBehaviour
             Up = rotation * Up;
             Front = rotation * Front;
         }
+
+        public Vector3[] GetDirections() { 
+            return new Vector3[] {
+                Right,
+                Left,
+                Up,
+                Down,
+                Front,
+                Back
+            };
+        }
+
+        public Vector3 GetDirection(DVEnums.Direction direction)
+        {
+            switch (direction)
+            {
+                case DVEnums.Direction.FRONT:
+                    return Front;
+                case DVEnums.Direction.BACK:
+                    return Back;
+                case DVEnums.Direction.LEFT:
+                    return Left;
+                case DVEnums.Direction.RIGHT:
+                    return Right;
+            }
+
+            return Vector3.zero;
+        }
+
+        public Vector3 GetDirection(DVEnums.Direction3D direction)
+        {
+            switch (direction)
+            {
+                case DVEnums.Direction3D.FRONT:
+                case DVEnums.Direction3D.BACK:
+                case DVEnums.Direction3D.LEFT:
+                case DVEnums.Direction3D.RIGHT:
+                    return GetDirection(DVUtil.ConvertDirection3DTo2D(direction));
+                case DVEnums.Direction3D.UP:
+                    return Up;
+                case DVEnums.Direction3D.DOWN:
+                    return Down;
+            }
+
+            return Vector3.zero;
+        }
     }
 
     protected struct ActingFlag
@@ -36,31 +82,19 @@ public class DVGolemController : MonoBehaviour
         public bool Acting;
         public bool ActFlag;
 
-        public ActingFlag(bool on = false)
+        public ActingFlag(bool on)
         {
             Acting = on;
             ActFlag = on;
         }
-    }
-
-    protected enum ActState
-    {
-        IDLE,
-        JUMP_MOVE,
-        ROLL_MOVE,
-        CHARGING,
-        JUMP,
-
-
     }
     #endregion
 
     #region Variables
     public const int MAX_JUMP_HEIGHT = 8;
 
-    protected DVGolemInfo _golemInfo;
+    protected DVGolemCore _golemCore;
 
-    protected Rigidbody _rb;
     protected MoveDirection _moveDirection;
 
     protected ActingFlag _move;
@@ -68,32 +102,103 @@ public class DVGolemController : MonoBehaviour
     protected Coroutine _chargeCor;
     protected float _chargeHeight;
 
+    protected Vector3 _prevPos;
+    protected Quaternion _prevRot;
+
+    protected bool _jumping;
+
+    protected DVGolemInfo GolemInfo { get => _golemCore.CurrentGolemInfo; }
     protected int AnimationFrame { get => DVPerfomanceConfigs.AnimationFrame; }
 
     // TODO: 큐브 개수 및 능력치 고려
-    protected float MoveTime { get => 0.7f; } // 큐브 수가 많을 수록 시간 증가, 곱연산으로 증가량이 점점 미미해질 수 있도록, 이속 강화를 계속해야 큐브가 많아져도 이속이 느려지지 않게
-    protected float RotateTime { get => 0.5f; } // MoveTime * 0.8f;
+    public float MoveTime { get => 0.7f; } // 큐브 수가 많을 수록 시간 증가, 곱연산으로 증가량이 점점 미미해질 수 있도록, 이속 강화를 계속해야 큐브가 많아져도 이속이 느려지지 않게
+    public float RotateTime { get => 0.3f; } // MoveTime * 0.8f;
+    protected float JumpTime { get => MoveTime * MoveTime; }
     protected float JumpChargeTime { get => 0.3f; } // MoveTime * 0.2f;
     #endregion
 
     #region Unity Functions
     protected virtual void Awake()
     {
-        _golemInfo = GetComponent<DVGolemCore>().GolemInfo;
+        _golemCore = GetComponent<DVGolemCore>();
         _moveDirection = new MoveDirection(transform.forward, transform.right, transform.up);
         _chargeHeight = 0f;
+        SetInit();
     }
 
-    protected virtual void Start() { 
+    protected virtual void Start() {
+        
+        
+    }
 
+    protected virtual void OnDestroy()
+    {
     }
     #endregion
 
-    #region Settings
+    #region Event
+    /*private void FallCube(DVGolemCube parts, DVGolemCube colCube)
+    {
+        _golemCore.RemoveCube(parts);
+        KnockbackCube(parts, colCube, 2);
+    }
+
+    private void KnockbackCube(DVGolemCube parts, DVGolemCube colCube) {
+        KnockbackCube(parts, colCube, 1);
+    }
+
+    private void KnockbackCube(DVGolemCube parts, DVGolemCube colCube, int moveCount)
+    {
+        StopAllCoroutines();
+        CancelMoveGolem();
+        _golemCore.SetAttackMode(true);
+        _move.Acting = true;
+
+        Vector3 dir = GetKnockbackDirection(parts, colCube);
+
+        StartCoroutine(GravityDownCor(KnockBackTime));
+
+        float time = KnockBackTime * 2f;
+        StartCoroutine(CubeMoveCor(dir, KnockBackTime, moveCount: moveCount, controllActing:false));
+        // TODO: Resize
+        StartCoroutine(DVUtil.NormalizeRotationCor(transform, prevRot:_prevRot, time));
+        StartCoroutine(DVHelper.In.WaitTimeActCor(time, () => {
+            CancelMoveGolem();
+            _move.Acting = false;
+        }));
+    }
+
+    private void ForceCancelMoveGolem(DVGolemCube parts, DVGolemCube colCube) {
+        StopAllCoroutines();
+        CancelMoveGolem();
+        _golemCore.SetAttackMode(true);
+        _move.Acting = true;
+
+        StartCoroutine(GravityDownCor(KnockBackTime));
+        float time = KnockBackTime * 2f;
+        // TODO: Resize
+        StartCoroutine(DVUtil.NormalizePositionCor(transform, _prevPos, time));
+        StartCoroutine(DVUtil.NormalizeRotationCor(transform, _prevRot, time));
+        StartCoroutine(DVHelper.In.WaitTimeActCor(time, () => {
+            CancelMoveGolem();
+            _move.Acting = false;
+            }));
+    }*/
     #endregion
 
     #region Controller
-    protected void CancelMoveGolem()
+    protected void SetInit() {
+        CancelMove();
+        _golemCore.SetAttackMode(false);
+        UseGravity(true);
+
+        _prevPos = transform.position;
+        _prevRot = transform.rotation;
+        _move.Acting = false;
+        _jumping = false;
+    }
+
+    protected void CancelMove()
     {
         _move.ActFlag = false;
     }
@@ -107,62 +212,48 @@ public class DVGolemController : MonoBehaviour
         }
     }
 
-    protected void MoveGolem(DVEnums.Direction direction, float time, bool depend = false)
-    {
-        if (_move.Acting && !depend)
-            return;
-        _move.ActFlag = true;
-
-        StartCoroutine(OneCubeMoveCor(GetDirection(direction), time));
-    }
-
-    protected void JumpGolem(float time, int jumpHeight)
-    {
-        if (_move.Acting)
-            return;
-        _move.ActFlag = true;
-
-        StartCoroutine(HalfCubeJumpCor(time, jumpHeight));
-    }
-
     protected void RollGolem(DVEnums.Direction direction)
     {
         if (_move.Acting)
             return;
         _move.ActFlag = true;
 
-        StartCoroutine(RightAngleRollCor(direction, MoveTime));
+        StartCoroutine(RollRightAngleCor(direction, MoveTime));
     }
 
-    protected void MoveGolemWithJump(DVEnums.Direction direction, int jumpHeight)
+    protected void MoveJump(DVEnums.Direction direction)
     {
         if (_move.Acting)
             return;
         _move.ActFlag = true;
 
-        StartCoroutine(HalfCubeJumpCor(MoveTime * MoveTime, jumpHeight, roop: true));
-        MoveGolem(direction, MoveTime * MoveTime, depend: true);
+        StartCoroutine(MoveJumpCor(_moveDirection.GetDirection(direction), JumpTime));
     }
 
-    protected void RotateGolem(DVEnums.Direction direction)
+    protected void Rotate(DVEnums.Direction direction)
     {
         if (_move.Acting)
             return;
         _move.ActFlag = true;
 
-        StartCoroutine(RightAngleRotateCor(direction, RotateTime));
+        StartCoroutine(RotateRightAngleCor(direction));
     }
 
     protected void ChargeJumpReady()
     {
+        if (_jumping || _move.Acting || _chargeCor != null)
+            return;
+
         CancelChargeCor();
 
-        _chargeCor = StartCoroutine(HalfCubeReSizeCor(JumpChargeTime));
+        _chargeCor = StartCoroutine(ResizeDownCor(JumpChargeTime));
     }
 
     protected void ChargeJumpAction(float keyingTime)
     {
-        float jumpTime = MoveTime * MoveTime;
+        if (_jumping || _chargeCor == null)
+            return;
+        float jumpTime = JumpTime;
         int jumpHeight = 1;
         if (keyingTime > JumpChargeTime)
         {
@@ -173,147 +264,161 @@ public class DVGolemController : MonoBehaviour
         }
 
         CancelChargeCor();
-        JumpGolem(jumpTime, jumpHeight);
-
-        StartCoroutine(DVHelper.In.WaitActCor(MoveTime, CancelMoveGolem));
+        StartCoroutine(ChargeJumpCor(jumpHeight));
     }
     #endregion
 
     #region Utils
-    protected Vector3 GetDirection(DVEnums.Direction direction)
-    {
-        switch (direction)
-        {
-            case DVEnums.Direction.FRONT:
-                return _moveDirection.Front;
-            case DVEnums.Direction.BACK:
-                return _moveDirection.Back;
-            case DVEnums.Direction.LEFT:
-                return _moveDirection.Left;
-            case DVEnums.Direction.RIGHT:
-                return _moveDirection.Right;
-        }
-
-        return Vector3.zero;
-    }
-
-    protected Vector3 GetDirection(DVEnums.Direction3D direction)
-    {
-        switch (direction)
-        {
-            case DVEnums.Direction3D.FRONT:
-            case DVEnums.Direction3D.BACK:
-            case DVEnums.Direction3D.LEFT:
-            case DVEnums.Direction3D.RIGHT:
-                return GetDirection(DVUtil.ConvertDirection3DTo2D(direction));
-            case DVEnums.Direction3D.UP:
-                return _moveDirection.Up;
-            case DVEnums.Direction3D.DOWN:
-                return _moveDirection.Down;
-        }
-
-        return Vector3.zero;
-    }
-
     protected DVEnums.Direction3D ConvertMoveToTransformDirection(DVEnums.Direction3D direction) {
-        Vector3[] tDirs = new Vector3[] {
-            transform.right,
-            -transform.right,
-            transform.up,
-            -transform.up,
-            transform.forward,
-            -transform.forward
+        Vector3[] tDirs = transform.GetDirections();
+        Vector3 mDir = _moveDirection.GetDirection(direction);
+
+        return DVUtil.ConvertDirection(tDirs, mDir);
+    }
+
+    protected DVEnums.Direction3D ConvertTransformToMoveDirection(DVEnums.Direction3D direction) {
+        Vector3[] mDirs = _moveDirection.GetDirections();
+        Vector3 tDir = transform.GetDirections()[(int)direction];
+
+        return DVUtil.ConvertDirection(mDirs, tDir);
+    }
+
+    protected void UseGravity(bool on)
+    {
+        _golemCore.rb.useGravity = on;
+    }
+
+    protected List<Vector3Int> FindBottomCubes() {
+        DVEnums.Direction3D direction = ConvertMoveToTransformDirection(DVEnums.Direction3D.DOWN);
+        int bottomHeight = GolemInfo.GetDirectionSize(direction) - 1;
+        return GolemInfo.FindEdgeChilds(direction, bottomHeight);
+    }
+
+    protected Vector3Int FindRotateAxis(DVEnums.Direction rotDirection)
+    {
+        var bottomCubes = FindBottomCubes();
+        if (bottomCubes == null || bottomCubes.Count <= 0) // Error
+            return Vector3Int.zero;
+
+        if (bottomCubes.Count == 1)
+            return bottomCubes[0];
+
+        List<Vector3Int> nearestCubes = new List<Vector3Int>();
+        float nearestDist = Vector3Int.Distance(Vector3Int.zero, bottomCubes[0]);
+        foreach (var cube in bottomCubes)
+        {
+            float dist = Vector3Int.Distance(Vector3Int.zero, cube);
+            if (dist < nearestDist)
+            {
+                nearestCubes.Clear();
+                nearestCubes.Add(cube);
+                nearestDist = dist;
+            }
+            else if (dist == nearestDist)
+                nearestCubes.Add(cube);
+        }
+
+        if (nearestCubes.Count == 1)
+            return nearestCubes[0];
+
+        Dictionary<DVEnums.Direction3D, Vector3Int> dic = new Dictionary<DVEnums.Direction3D, Vector3Int>();
+        foreach (var cube in nearestCubes) { 
+            Vector3 dir = cube - Vector3Int.zero;
+            dir.y = 0f;
+
+            var key = DVUtil.ConvertDirection(_moveDirection.GetDirections(), dir);
+            dic[key] = cube;
+        }
+
+        DVEnums.Direction3D[] priorities = new DVEnums.Direction3D[] {
+            DVEnums.Direction3D.FRONT,
+            DVEnums.Direction3D.RIGHT,
+            DVEnums.Direction3D.BACK,
+            DVEnums.Direction3D.LEFT
         };
+        if (rotDirection == DVEnums.Direction.LEFT) {
+            priorities = new DVEnums.Direction3D[] {
+                DVEnums.Direction3D.BACK,
+                DVEnums.Direction3D.LEFT,
+                DVEnums.Direction3D.RIGHT,
+                DVEnums.Direction3D.FRONT
+            };
+        }
+        for (int i = 0; i < priorities.Length; i++) { 
+            if(dic.ContainsKey(priorities[i]))
+                return dic[priorities[i]];
+        }
 
-        Vector3 mDir = GetDirection(direction);
-        DVUtil.GetClosestAxisVector(tDirs, mDir, out int index);
+        return Vector3Int.zero;
+    }
 
-        return (DVEnums.Direction3D)index;
+    protected float CalculateRotateTime() {
+        // TODO: 데이터 화
+        const float slow = 1.1f;
+        int bottomCount = FindBottomCubes().Count;
+        return Mathf.Max(RotateTime, RotateTime * (slow * (float)(bottomCount - 1)));
     }
     #endregion
 
     #region Coroutines
-    protected IEnumerator OneCubeMoveCor(Vector3 dir, float time)
-    {
-        // 넉백으로도 사용 가능해 보임
-        // TODO: 이동 시 벽에 충돌 시 데미지를 입거나 지나가지 못하도록 조정
+    protected IEnumerator MoveJumpCor(Vector3 dir, float time) {
         _move.Acting = true;
+        if (!_jumping)
+            UseGravity(false);
 
-        Vector3 moveDir = dir.normalized * DVConfigs.CUBE_BASE_LENGHT;
+        Vector3 prevPos = DVUtil.NormalizeCubePosition(transform.position);
+        Vector3 targetPos = DVUtil.NormalizeCubePosition(prevPos + dir.normalized * DVConfigs.CUBE_BASE_LENGHT);
+        Vector3 moveDir = targetPos - prevPos;
         Vector3 addMove = moveDir / (float)AnimationFrame;
         float addTime = time / (float)AnimationFrame;
+
+        float startHeight = prevPos.y;
+        float moveHeight = DVConfigs.CUBE_BASE_LENGHT * 0.5f + startHeight;
+        float addHeight;
+        int halfFrame = AnimationFrame / 2;
+        int halfIndex;
 
         while (_move.ActFlag)
         {
             for (int i = 0; i < AnimationFrame; i++)
             {
                 transform.position += addMove;
-                yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
-            }
-        }
 
-        _move.Acting = false;
-    }
+                if (!_jumping)
+                {
 
-    protected IEnumerator HalfCubeJumpCor(float time, int jumpHeight, bool roop = false)
-    {
-        _move.Acting = true;
+                    if (i < AnimationFrame / 2)
+                    {
+                        addHeight = Mathf.Lerp(startHeight, moveHeight, DVUtil.GetEaseOut((float)(i + 1) / (float)halfFrame)) -
+                        Mathf.Lerp(startHeight, moveHeight, DVUtil.GetEaseOut((float)i / (float)halfFrame));
+                    }
+                    else {
+                        halfIndex = i % halfFrame;
+                        addHeight = Mathf.Lerp(startHeight, moveHeight, DVUtil.GetEaseOut((float)(halfFrame - halfIndex - 1) / (float)halfFrame)) -
+                        Mathf.Lerp(startHeight, moveHeight, DVUtil.GetEaseOut((float)(halfFrame - halfIndex) / (float)halfFrame));
+                    }
 
-        float addHeight;
-
-        float startHeight = transform.position.y;
-        float moveHeight = DVConfigs.CUBE_BASE_LENGHT * (float)jumpHeight * 0.5f + startHeight;
-        int halfFrame = AnimationFrame / 2;
-        float addTime = time / (float)AnimationFrame;
-
-        int chargeFrame = halfFrame / 4 - halfFrame % 4;
-        float chargeHeight = _chargeHeight / (float)chargeFrame;
-        Vector3 chargeScale = (Vector3.one - transform.localScale) / (float)chargeFrame;
-        _chargeHeight = 0f;
-
-        while (_move.ActFlag)
-        {
-            for (int i = 0; i < halfFrame; i++)
-            {
-                addHeight = Mathf.Lerp(startHeight, moveHeight, DVUtil.GetEaseOut((float)(i + 1) / (float)halfFrame)) -
-                    Mathf.Lerp(startHeight, moveHeight, DVUtil.GetEaseOut((float)i / (float)halfFrame));
-                transform.position += Vector3.up * addHeight;
-
-                // TODO: chargeHeight가 더 빨라야 함
-                if (i < chargeFrame) {
-                    transform.position += Vector3.up * chargeHeight;
-                    transform.localScale = (transform.localScale + chargeScale).Clamp(0, 1f);
-                    Debug.Log($"scale({transform.localScale}), chargeHeight({chargeHeight}), chargeFrame({chargeFrame})");
+                    transform.position += Vector3.up * addHeight;
                 }
 
                 yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
             }
 
-            for (int i = 0; i < halfFrame; i++)
-            {
-                addHeight = Mathf.Lerp(startHeight, moveHeight, DVUtil.GetEaseOut((float)(halfFrame - i - 1) / (float)halfFrame)) -
-                    Mathf.Lerp(startHeight, moveHeight, DVUtil.GetEaseOut((float)(halfFrame - i) / (float)halfFrame));
-                transform.position += Vector3.up * addHeight;
-
-                yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
-            }
-
-            if (!roop)
-                break;
-            else {
-                chargeFrame = 0;
-                chargeHeight = 0f;
-            }
+            transform.position = DVUtil.NormalizeCubePosition(transform.position);
         }
 
-        _move.Acting = false;
+        if (!_jumping)
+            SetInit();
     }
 
-    protected IEnumerator RightAngleRollCor(DVEnums.Direction direction, float time)
+    protected IEnumerator RollRightAngleCor(DVEnums.Direction direction, float time)
     {
         _move.Acting = true;
+        _golemCore.SetAttackMode(true);
+        if (!_jumping)
+            UseGravity(false);
 
-        Vector3 dir = GetDirection(direction);
+        Vector3 dir = _moveDirection.GetDirection(direction);
         Vector3 moveDir = -dir.normalized;
         float addTime = time / (float)AnimationFrame;
         float halfLine = DVConfigs.CUBE_BASE_LENGHT / 2f;
@@ -322,12 +427,11 @@ public class DVGolemController : MonoBehaviour
         int curCube, nextCube;
         float curHeight, nextHeight, angle, prevAngle;
         float rollHypot, rollAxisAngle;
-
+        
         while (_move.ActFlag)
         {
-            // TODO: 이동 시 벽에 충돌 시 데미지를 입거나 지나가지 못하도록 조정
-            curCube = _golemInfo.GetDirectionSize(ConvertMoveToTransformDirection(DVEnums.Direction3D.DOWN));
-            nextCube = _golemInfo.GetDirectionSize(ConvertMoveToTransformDirection(DVUtil.ConvertDirection2DTo3D(direction)));
+            curCube = GolemInfo.GetDirectionSize(ConvertMoveToTransformDirection(DVEnums.Direction3D.DOWN));
+            nextCube = GolemInfo.GetDirectionSize(ConvertMoveToTransformDirection(DVUtil.ConvertDirection2DTo3D(direction)));
 
             curHeight = ((float)curCube * 2f - 1f) * halfLine;
             nextHeight = ((float)nextCube * 2f - 1f) * halfLine;
@@ -357,41 +461,55 @@ public class DVGolemController : MonoBehaviour
                 prevAngle = angle;
                 yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
             }
+
+            transform.position = DVUtil.NormalizeCubePosition(transform.position);
         }
 
-        _move.Acting = false;
+        if (!_jumping)
+            SetInit();
     }
 
-    protected IEnumerator RightAngleRotateCor(DVEnums.Direction direction, float time)
+    protected IEnumerator RotateRightAngleCor(DVEnums.Direction direction)
     {
         _move.Acting = true;
+        _golemCore.SetAttackMode(true);
 
-        Vector3 dir;
-        Quaternion startRot, targetRot, rot;
+        float time = CalculateRotateTime();
         float addTime = time / (float)AnimationFrame;
+        DVGolemCube axisCube = _golemCore.FindCube(FindRotateAxis(direction));
+
+        Vector3 dir, axisPos;
+        Quaternion startRot, targetRot, rot;
 
         while (_move.ActFlag)
         {
             startRot = transform.rotation;
-            dir = GetDirection(direction);
+            dir = _moveDirection.GetDirection(direction);
+            axisPos = axisCube.transform.position;
             rot = Quaternion.FromToRotation(_moveDirection.Front, dir);
             targetRot = rot * startRot;
 
             for (int i = 0; i < AnimationFrame; i++)
             {
                 transform.rotation = Quaternion.Slerp(startRot, targetRot, (float)(i + 1) / (float)AnimationFrame);
+                transform.position += axisPos - axisCube.transform.position;
                 yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
             }
 
             _moveDirection.Rotate(rot.eulerAngles);
         }
 
-        _move.Acting = false;
+        if (!_jumping)
+            SetInit();
     }
 
-    protected IEnumerator HalfCubeReSizeCor(float chargeTime)
+    protected IEnumerator ResizeDownCor(float chargeTime)
     {
-        float sizeLength = (float)(_golemInfo.GetDirectionSize(ConvertMoveToTransformDirection(DVEnums.Direction3D.DOWN)) - 1)
+        _move.Acting = true;
+        if(!_jumping)
+            UseGravity(false);
+
+        float sizeLength = (float)(GolemInfo.GetDirectionSize(ConvertMoveToTransformDirection(DVEnums.Direction3D.DOWN)) - 1)
             * DVConfigs.CUBE_BASE_LENGHT;
         float stdTime = chargeTime / (float)AnimationFrame * 2f;
         float addSize = 0.5f / (float)MAX_JUMP_HEIGHT / (float)AnimationFrame * 2f;
@@ -413,6 +531,49 @@ public class DVGolemController : MonoBehaviour
             _chargeHeight += addHeight;
             yield return DVHelper.In.YieldCache.GetWaitForSeconds(stdTime);
         }
+
+        while (true)
+            yield return DVHelper.In.YieldCache.GetWaitForSeconds(10f);
+    }
+
+    protected IEnumerator ResizeUpCor(float time)
+    {
+        int halfFrame = AnimationFrame / 2;
+        int chargeFrame = halfFrame / 4 - halfFrame % 4;
+        float addTime = time / (float)chargeFrame;
+
+        Vector3 chargeScale = (Vector3.one - transform.localScale).Abs() / (float)chargeFrame;
+        float chargeHeight = _chargeHeight / (float)chargeFrame;
+
+        _chargeHeight = 0f;
+
+        for (int i = 0; i < chargeFrame; i++)
+        {
+            transform.position += Vector3.up * chargeHeight;
+            transform.localScale = (transform.localScale + chargeScale).Clamp(0, 1f);
+            yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
+        }
+    }
+
+    protected IEnumerator ChargeJumpCor(int jumpHeight) {
+        UseGravity(true);
+        _move.Acting = false;
+        _golemCore.SetAttackMode(true);
+
+        _jumping = true;
+        _golemCore.rb.AddForce(Vector3.up * _golemCore.rb.GetUpForce((float)jumpHeight), ForceMode.Impulse);
+
+        yield return StartCoroutine(ResizeUpCor(0.1f));
+        _move.ActFlag = false;
+        _move.Acting = true;
+
+        while (_golemCore.rb.linearVelocity.y > 0f)
+            yield return null;
+
+        while(_golemCore.rb.GetGravitySpeed() > 0.01f)
+            yield return null;
+
+        SetInit();
     }
     #endregion
 }

@@ -126,6 +126,8 @@ public class DVMapEditor : EditorWindow
     }
 
     private void SetPlaneDefaultSetting(GameObject plane) {
+        // TODO: Collider 추가, CubeInfo 추가
+
         plane.transform.Reset();
         DeleteChilds(plane);
         SetPlaneSize(plane, Vector2.one);

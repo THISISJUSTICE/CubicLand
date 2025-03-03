@@ -38,7 +38,10 @@ public class DVObjectManager : SingletonMonoBehaviour<DVObjectManager>
     #endregion
 
     #region Public Functions
-    public GameObject Instanitate(GameObject prefab, bool instMat = false) { 
+    public GameObject InstanitateObject(GameObject prefab, bool instMat = false) {
+        if (prefab == null)
+            return null;
+
         if(!_objects.ContainsKey(prefab))
             AddKey(prefab, instMat);
 
@@ -67,20 +70,24 @@ public class DVObjectManager : SingletonMonoBehaviour<DVObjectManager>
         return res;
     }
 
-    public void Destroy(GameObject go) {
+    public void DestroyObject(GameObject go) {
         if (CurrentMemorySize < DVPerfomanceConfigs.MemoryLimit) // 메모리 여유가 있는 경우 풀링
         {
-            foreach (var component in _componentDic[go]) { 
-                Destroy(component);
+            if (_componentDic.ContainsKey(go))
+            {
+                foreach (var component in _componentDic[go])
+                {
+                    Destroy(component);
+                }
+                _componentDic[go].Clear();
             }
-            _componentDic[go].Clear();
 
             _objects[_instKeys[go]].Push(go);
             go.SetActive(false);
             go.transform.SetParent(gameObject.transform);
         }
         else {
-            DestroyObject(go);
+            RemoveObject(go);
         }
     }
 
@@ -99,8 +106,9 @@ public class DVObjectManager : SingletonMonoBehaviour<DVObjectManager>
         if (!_componentDic.ContainsKey(go))
             _componentDic[go] = new List<Component>();
 
-        var component = go.AddComponent<T>();
-        _componentDic[go].Add(component);
+        T component = go.AddComponent<T>();
+        if(component != null) 
+            _componentDic[go].Add(component);
 
         return component;
     }
@@ -112,7 +120,7 @@ public class DVObjectManager : SingletonMonoBehaviour<DVObjectManager>
         _memorySizes[prefab] = DVPerfomanceConfigs.EstimateGameObjectMemory(prefab, instMat);
     }
 
-    private void DestroyObject(GameObject go)
+    private void RemoveObject(GameObject go)
     {
         if (_instKeys.ContainsKey(go)) { 
             _instKeys.Remove(go);

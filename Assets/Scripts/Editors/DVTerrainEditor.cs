@@ -84,7 +84,7 @@ public class DVTerrainEditor : EditorWindow
 
         TerrainData tData = _terrain.terrainData;
         int resol = tData.heightmapResolution;
-        tData.size = new Vector3(DVConfigs.GetCubeScaledLength(resol), DVConfigs.CUBE_BASE_LENGHT, DVConfigs.GetCubeScaledLength(resol));
+        tData.size = new Vector3(resol * DVConfigs.CUBE_BASE_LENGHT, DVConfigs.CUBE_BASE_LENGHT, resol * DVConfigs.CUBE_BASE_LENGHT);
         float[,] heights = tData.GetHeights(0, 0, resol, resol);
 
         for (int z = 0; z < resol; z++)
@@ -129,7 +129,7 @@ public class DVTerrainEditor : EditorWindow
 
         TerrainData tData = _terrain.terrainData;
         int resol = tData.heightmapResolution;
-        tData.size = new Vector3(DVConfigs.GetCubeScaledLength(resol), DVConfigs.GetCubeScaledLength((float)_heightCount), DVConfigs.GetCubeScaledLength(resol));
+        tData.size = new Vector3(resol * DVConfigs.CUBE_BASE_LENGHT, (float)_heightCount * DVConfigs.CUBE_BASE_LENGHT, resol * DVConfigs.CUBE_BASE_LENGHT);
         float[,] heights = tData.GetHeights(0, 0, resol, resol);
 
         for (int z = 0; z < resol; z++)
