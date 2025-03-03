@@ -478,7 +478,7 @@ public class DVGolemController : MonoBehaviour
         float addTime = time / (float)AnimationFrame;
         DVGolemCube axisCube = _golemCore.FindCube(FindRotateAxis(direction));
 
-        Vector3 dir, axisPos;
+        Vector3 dir, axisPos, addPos;
         Quaternion startRot, targetRot, rot;
 
         while (_move.ActFlag)
@@ -486,13 +486,16 @@ public class DVGolemController : MonoBehaviour
             startRot = transform.rotation;
             dir = _moveDirection.GetDirection(direction);
             axisPos = axisCube.transform.position;
+            axisPos.y = 0f;
             rot = Quaternion.FromToRotation(_moveDirection.Front, dir);
             targetRot = rot * startRot;
 
             for (int i = 0; i < AnimationFrame; i++)
             {
                 transform.rotation = Quaternion.Slerp(startRot, targetRot, (float)(i + 1) / (float)AnimationFrame);
-                transform.position += axisPos - axisCube.transform.position;
+                addPos = axisCube.transform.position;
+                addPos.y = 0f;
+                transform.position += axisPos - addPos;
                 yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
             }
 
