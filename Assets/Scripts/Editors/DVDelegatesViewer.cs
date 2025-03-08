@@ -5,6 +5,7 @@ using System;
 using System.Reflection;
 using UnityEngine.SceneManagement;
 using UnityEngine.Events;
+using System.Linq;
 
 public class DVDelegatesViewer : EditorWindow
 {
@@ -13,7 +14,7 @@ public class DVDelegatesViewer : EditorWindow
     private bool[] _delFolds;
     private bool[] _ueFolds;
     private Dictionary<Delegate, bool> _delTargetFolds;
-    private Dictionary<UnityEvent, bool> _ueTargetFolds;
+    private Dictionary<UnityEventBase, bool> _ueTargetFolds;
     #endregion
 
     #region Variables
@@ -23,8 +24,9 @@ public class DVDelegatesViewer : EditorWindow
     private Dictionary<UnityEngine.Object, GameObject> _monoObjects;
     private Dictionary<UnityEngine.Object, List<Delegate>> _delegates;
     private Dictionary<Delegate, List<MonoBehaviour>> _delegateTracks;
-    private Dictionary<UnityEngine.Object, List<UnityEvent>> _unityEvents;
-    private Dictionary<UnityEvent, List<MonoBehaviour>> _eventTracks;
+    private Dictionary<UnityEngine.Object, List<UnityEventBase>> _unityEvents;
+    private Dictionary<UnityEventBase, List<MonoBehaviour>> _eventTracks;
+    private Dictionary<UnityEventBase, string> _eventKeyTitles;
 
     #endregion
 
@@ -91,7 +93,10 @@ public class DVDelegatesViewer : EditorWindow
         ref bool[] folds, ref Dictionary<V, bool> tFolds) {
         int index = 0;
         float offsetX = 20f;
-        foreach (var evt in events)
+        List<KeyValuePair<UnityEngine.Object, List<V>>> eventList = events.ToList();
+        eventList.Sort((a, b) => a.Key.name.CompareTo(b.Key.name));
+
+        foreach (var evt in eventList)
         {
             GUILayout.BeginHorizontal();
             GUILayout.Space(offsetX + 5f);
@@ -106,17 +111,26 @@ public class DVDelegatesViewer : EditorWindow
 
             if (folds[index])
             {
+                List<string> restKeys = new List<string>();
                 foreach (var key in evt.Value)
                 {
                     GUILayout.BeginHorizontal();
                     GUILayout.Space(offsetX + 15f);
                     bool isFold = tFolds.ContainsKey(key);
+
+                    string keyTitle = key.ToString();
+                    if (key is UnityEventBase ue && _eventKeyTitles.ContainsKey(ue))
+                    {
+                        keyTitle = _eventKeyTitles[ue];
+                    }
+
                     if (isFold)
-                        tFolds[key] = EditorGUILayout.Foldout(tFolds[key], $"{key}");
+                        tFolds[key] = EditorGUILayout.Foldout(tFolds[key], $"{keyTitle}");
                     else
                     {
                         GUILayout.Space(13f);
-                        EditorGUILayout.LabelField($"{key}");
+                        restKeys.Add($"{key}");
+                        //EditorGUILayout.LabelField($"{key}");
                     }
                     GUILayout.EndHorizontal();
                     if (isFold && tFolds[key])
@@ -135,8 +149,17 @@ public class DVDelegatesViewer : EditorWindow
                             GUILayout.EndHorizontal();
                         }
                     }
-                    GUILayout.Space(3f);
                 }
+
+                foreach (var restKey in restKeys)
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Space(offsetX + 28f);
+                    EditorGUILayout.LabelField($"{restKey}");
+                    GUILayout.EndHorizontal();
+                }
+
+                GUILayout.Space(3f);
             }
             rect.x -= offsetX;
             rect.width = rect.height;
@@ -168,32 +191,35 @@ public class DVDelegatesViewer : EditorWindow
         _delegates = new Dictionary<UnityEngine.Object, List<Delegate>>();
         _delegateTracks = new Dictionary<Delegate, List<MonoBehaviour>>();
 
-        _unityEvents = new Dictionary<UnityEngine.Object, List<UnityEvent>>();
-        _eventTracks = new Dictionary<UnityEvent, List<MonoBehaviour>>();
+        _unityEvents = new Dictionary<UnityEngine.Object, List<UnityEventBase>>();
+        _eventTracks = new Dictionary<UnityEventBase, List<MonoBehaviour>>();
+        _eventKeyTitles = new Dictionary<UnityEventBase, string>();
 
         foreach (var script in _activeScripts)
         {
             Type type = script.GetType();
-            FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
 
             foreach (var field in fields)
             {
-                if (typeof(Delegate).IsAssignableFrom(field.FieldType)) {
+                if (typeof(Delegate).IsAssignableFrom(field.FieldType))
+                {
                     Delegate del = field.GetValue(script) as Delegate;
-                    if (del == null)
-                        continue;
-
-                    TrackDelegate(script, del);
-                    _monoObjects[script] = script.gameObject;
+                    if (del != null)
+                    {
+                        TrackDelegate(script, del);
+                        _monoObjects[script] = script.gameObject;
+                    }
                 }
 
-                if (typeof(UnityEvent).IsAssignableFrom(field.FieldType)) {
-                    UnityEvent unityEvent = field.GetValue(script) as UnityEvent;
-                    if (unityEvent == null)
-                        continue;
-
-                    TrackUnityEvent(script, unityEvent);
-                    _monoObjects[script] = script.gameObject;
+                if (typeof(UnityEvent).IsAssignableFrom(field.FieldType))
+                {
+                    UnityEventBase unityEvent = field.GetValue(script) as UnityEventBase;
+                    if (unityEvent != null)
+                    {
+                        TrackUnityEvent(script, unityEvent);
+                        _monoObjects[script] = script.gameObject;
+                    }
                 }
             }
         }
@@ -217,19 +243,17 @@ public class DVDelegatesViewer : EditorWindow
                 if (typeof(Delegate).IsAssignableFrom(field.FieldType))
                 {
                     Delegate del = field.GetValue(null) as Delegate;
-                    if (del == null)
-                        continue;
 
-                    TrackDelegate(monoScript, del);
+                    if (del != null)
+                        TrackDelegate(monoScript, del);
                 }
 
                 if (typeof(UnityEvent).IsAssignableFrom(field.FieldType))
                 {
-                    UnityEvent unityEvent = field.GetValue(null) as UnityEvent;
-                    if (unityEvent == null)
-                        continue;
+                    UnityEventBase unityEvent = field.GetValue(null) as UnityEventBase;
 
-                    TrackUnityEvent(monoScript, unityEvent);
+                    if (unityEvent != null)
+                        TrackUnityEvent(monoScript, unityEvent);
                 }
             }
         }
@@ -247,7 +271,7 @@ public class DVDelegatesViewer : EditorWindow
                 _delTargetFolds[track.Key] = false;
         }
 
-        _ueTargetFolds = new Dictionary<UnityEvent, bool>();
+        _ueTargetFolds = new Dictionary<UnityEventBase, bool>();
         foreach (var evt in _eventTracks)
         {
             _ueTargetFolds[evt.Key] = false;
@@ -265,7 +289,7 @@ public class DVDelegatesViewer : EditorWindow
         {
             foreach (var script in _activeScripts)
             {
-                if (script != method.Target)
+                if (script != (UnityEngine.Object)method.Target)
                     continue;
 
                 if (!_delegateTracks.ContainsKey(del))
@@ -275,10 +299,10 @@ public class DVDelegatesViewer : EditorWindow
         }
     }
 
-    private void TrackUnityEvent(UnityEngine.Object source, UnityEvent unityEvent)
+    private void TrackUnityEvent(UnityEngine.Object source, UnityEventBase unityEvent)
     {
         if (!_unityEvents.ContainsKey(source))
-            _unityEvents[source] = new List<UnityEvent>();
+            _unityEvents[source] = new List<UnityEventBase>();
         _unityEvents[source].Add(unityEvent);
 
         for (int i = 0; i < unityEvent.GetPersistentEventCount(); i++)
@@ -311,7 +335,7 @@ public class DVDelegatesViewer : EditorWindow
 
             foreach (var script in _activeScripts)
             {
-                if (script != target)
+                if (script != (UnityEngine.Object)target)
                     continue;
 
                 if (!_eventTracks.ContainsKey(unityEvent))

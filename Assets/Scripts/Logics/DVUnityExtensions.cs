@@ -148,4 +148,97 @@ public static class DVUnityExtensions
         return v * rb.mass;
     }
     #endregion
+
+    #region MonoBehaviour
+    public static bool Usable(this MonoBehaviour mb)
+    {
+        if (mb == null || !mb.gameObject.activeSelf)
+            return false;
+
+        return true;
+    }
+    #endregion
+
+    #region String
+    public static bool Contains(this string str, params string[] checks)
+    {
+        bool res = false;
+        foreach (string check in checks)
+        {
+            if (str.Contains(check))
+            {
+                res = true;
+                break;
+            }
+        }
+
+        return res;
+    }
+
+    public static Vector3 ParseVector3(this string str)
+    {
+        int startIndex = str.IndexOf('(');
+        if (startIndex == -1)
+        {
+            Debug.LogError($"잘못된 형식의 문자열입니다.");
+            return Vector3.zero;
+        }
+
+        string vectorPart = str.Substring(startIndex).Trim('(', ')');
+
+        // 쉼표(,) 기준으로 분리
+        string[] parts = vectorPart.Split(',');
+
+        if (parts.Length != 3)
+        {
+            Debug.LogError($"Vector3는 3개의 요소가 필요합니다.");
+            return Vector3.zero;
+        }
+
+        // 실수형 변환
+        float x = float.Parse(parts[0].Trim());
+        float y = float.Parse(parts[1].Trim());
+        float z = float.Parse(parts[2].Trim());
+
+        return new Vector3(x, y, z);
+    }
+
+    public static string UpperFirst(this string str)
+    {
+        if (string.IsNullOrEmpty(str))
+            return str;
+
+        return char.ToUpper(str[0]) + str.Substring(1);
+    }
+
+    public static bool IsSame(this string str, params string[] checks)
+    {
+        for (int i = 0; i < checks.Length; i++)
+        {
+            if (str.Equals(checks[i]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    #endregion
+
+    #region Long
+    public static string SizeToString(this long size)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+        double len = size;
+        int order = 0;
+
+        while (len >= 1024d && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024d;
+        }
+
+        return $"{len:F2}{sizes[order]}";
+    }
+    #endregion
 }
