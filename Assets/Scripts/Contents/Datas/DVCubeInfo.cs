@@ -53,9 +53,9 @@ public struct DVStatus
     }
 
     public void SetChildValue(DVStatus status) { 
-        Point_HP = Mathf.Max(Point_HP - 1, 0);
-        Point_Armor = Mathf.Max(Point_Armor - 1, 0);
-        Point_Attack = Mathf.Max(Point_Attack - 1, 0);
+        Point_HP = Mathf.Max(status.Point_HP - 1, 0);
+        Point_Armor = Mathf.Max(status.Point_Armor - 1, 0);
+        Point_Attack = Mathf.Max(status.Point_Attack - 1, 0);
         _color = status._color * DVStatusConfig.COLOR_CHILD_RATE;
         _color.Clamp(status._color * DVStatusConfig.COLOR_CHILD_RATE, Color.white);
         CurrentStatus.SetInitValue(this);
@@ -81,25 +81,43 @@ public struct DVCurrentStatus {
         _attack = DVStatusConfig.INIT_ATTACK + status.Point_Attack * DVStatusConfig.ADD_ATTACK;
     }
 
-    public void OnDamaged(DVCubeInfo cubeInfo) { 
-        // TODO: 물리, 속도 계산 추가
+    public void OnDamaged(float selfMass, Vector3 impulse, DVCubeInfo colCubeInfo) { 
+        float cubeHP = colCubeInfo.Status.CurrentStatus.HP;
+        float cubeMaxHP = colCubeInfo.Status.CurrentStatus.MaxHP;
+        float cubeArmor = colCubeInfo.Status.CurrentStatus.Armor;
+        float cubeAttack = colCubeInfo.AttackMode ? colCubeInfo.Status.CurrentStatus.Attack : 0f;
+        int damage = Mathf.RoundToInt(cubeHP / cubeMaxHP * cubeArmor + cubeAttack);
 
-        int cubeHP = cubeInfo.Status.CurrentStatus.HP;
-        int cubeMaxHP = cubeInfo.Status.CurrentStatus.MaxHP;
-        int cubeArmor = cubeInfo.Status.CurrentStatus.Armor;
-        int cubeAttack = cubeInfo.AttackMode ? cubeInfo.Status.CurrentStatus.Attack : 0;
-        int damage = Mathf.RoundToInt((float)cubeHP / (float)cubeMaxHP * (float)cubeArmor) + cubeAttack;
-        damage = Mathf.RoundToInt((float)damage * Mathf.Exp((float)-_armor / DVStatusConfig.DAMAGE_ARMOR_RATE));
-        damage = Mathf.RoundToInt(Mathf.Max(damage, 1f));
+        OnDamaged(damage, selfMass, impulse);
+    }
 
-        _hp = Mathf.RoundToInt(Mathf.Max(_hp - damage, 0f));
+    public void OnDamaged(float selfMass, Vector3 impulse)
+    {
+        OnDamaged(1, selfMass, impulse);
+    }
+
+    private void OnDamaged(int damage, float selfMass, Vector3 impulse) {
+        const float damageImpulseRate = 6f;
+        float calDamage = damage;
+        calDamage = Mathf.RoundToInt(calDamage * Mathf.Clamp01(impulse.magnitude / damageImpulseRate)); // 충격량에 따라 데미지 비율 변경
+
+        float impulseDamage = impulse.magnitude / selfMass * DVConfigs.IMPULSE_DAMAGE_RATE; // 물리 충격량 반영
+        calDamage = calDamage + Mathf.Min(calDamage * 2f, impulseDamage); // 물리 충격량이 데미지의 2배를 넘지 못하도록 제한
+        calDamage = calDamage * Mathf.Exp((float)-_armor / DVStatusConfig.DAMAGE_ARMOR_RATE); // 방어 스텟 반영
+        calDamage = Mathf.Max(calDamage, 1f); // 데미지 최솟값 제한
+
+        damage = Mathf.RoundToInt(calDamage);
+        _hp = Mathf.Max(_hp - damage, 0); // 데미지 반영
     }
 
     public void SetAttackOff() {
         _attack = 0;
     }
 
-    public void OnHealed(int heal) {
-        _hp = Mathf.RoundToInt(Mathf.Max(_hp + heal, MaxHP));
+    // TODO: 남은 힐 량은 자식에게 전이
+    public int OnHealed(int heal) {
+        _hp = Mathf.Max(_hp + heal, MaxHP);
+        int rest = heal - _hp;
+        return Mathf.Max(rest, 0);
     }
 }

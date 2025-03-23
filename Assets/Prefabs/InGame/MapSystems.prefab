@@ -90,4 +90,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5af123029c5eefa4d8adfd39c2350cb7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _baseCube: {fileID: 584223288029311799, guid: 4b6387d686151cc4e9819034097a5980, type: 3}
+  _golemCube: {fileID: 584223288029311799, guid: 4b6387d686151cc4e9819034097a5980, type: 3}
+  _golemCore: {fileID: 584223288029311799, guid: e44d04891dc8f8842935d361a8045b92, type: 3}
+  _obstacleCube: {fileID: 584223288029311799, guid: 9ce43030bc4ef7e4998971d0c943bd45, type: 3}

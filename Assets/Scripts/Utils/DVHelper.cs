@@ -43,7 +43,7 @@ public class DVHelper : SingletonMonoBehaviour<DVHelper>
 
     public IEnumerator WaitFrameActCor(int frame, Action callback)
     {
-        for(int i=0; i<frame; i++)
+        for (int i = 0; i < frame; i++) 
             yield return null;
         callback?.Invoke();
     }

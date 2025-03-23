@@ -30,7 +30,7 @@ public class DVGolemController : MonoBehaviour
             Front = rotation * Front;
         }
 
-        public Vector3[] GetDirections() { 
+        public Vector3[] GetDirections() {
             return new Vector3[] {
                 Right,
                 Left,
@@ -91,7 +91,8 @@ public class DVGolemController : MonoBehaviour
     #endregion
 
     #region Variables
-    public const int MAX_JUMP_HEIGHT = 8;
+    protected const float MAX_MOVE_TIME = 1f;
+    protected const float MIN_MOVE_TIME = 0.1f;
 
     protected DVGolemCore _golemCore;
 
@@ -103,26 +104,44 @@ public class DVGolemController : MonoBehaviour
     protected float _chargeHeight;
 
     protected Vector3 _prevPos;
-    protected Quaternion _prevRot;
 
     protected bool _jumping;
+
+    public Vector3 MoveVelocity { get; private set; }
 
     protected DVGolemInfo GolemInfo { get => _golemCore.CurrentGolemInfo; }
     protected int AnimationFrame { get => DVPerfomanceConfigs.AnimationFrame; }
 
-    // TODO: 큐브 개수 및 능력치 고려
-    public float MoveTime { get => 0.7f; } // 큐브 수가 많을 수록 시간 증가, 곱연산으로 증가량이 점점 미미해질 수 있도록, 이속 강화를 계속해야 큐브가 많아져도 이속이 느려지지 않게
-    public float RotateTime { get => 0.3f; } // MoveTime * 0.8f;
-    protected float JumpTime { get => MoveTime * MoveTime; }
-    protected float JumpChargeTime { get => 0.3f; } // MoveTime * 0.2f;
+    public float MoveTime
+    {
+        get {
+            const float initMoveTime = 0.5f;
+            DVStatus status = new DVStatus();
+            status.SetInitValue();
+            float initMass = DVUtil.GetCubeMass(status.CurrentStatus);
+            float weightFactor = Mathf.Pow(_golemCore.rb.mass, 0.2f) / Mathf.Pow(initMass, 0.2f);
+            float speedFactor = Mathf.Pow((float)DVStatusConfig.INIT_MOVE_SPEED /(float)_golemCore.GolemInfo.MoveSpeed, 0.3f);
+            float moveTime = initMoveTime * weightFactor * speedFactor;
+            Debug.Log($"MoveTime ({moveTime}), weightFactor({weightFactor}), speedFactor({speedFactor})");
+
+            return Mathf.Clamp(moveTime, MIN_MOVE_TIME, MAX_MOVE_TIME);
+        }
+    }
+    public float RotateTime { get => Mathf.Clamp(MoveTime * 0.9f, MIN_MOVE_TIME, MAX_MOVE_TIME); }
+
+    public int MaxJumpHeight { get => GetGolemHeight() * 3; } // 0.5 height per 1 jumpHeight
+    protected float JumpChargeTime { get => (float)GetGolemHeight() * 0.1f; }
+    protected float SizeUpTime { get => 0.1f; }
     #endregion
 
     #region Unity Functions
     protected virtual void Awake()
     {
         _golemCore = GetComponent<DVGolemCore>();
+        _golemCore.SetGolemController(this);
         _moveDirection = new MoveDirection(transform.forward, transform.right, transform.up);
         _chargeHeight = 0f;
+        _prevPos = transform.position;
         SetInit();
     }
 
@@ -134,56 +153,23 @@ public class DVGolemController : MonoBehaviour
     protected virtual void OnDestroy()
     {
     }
+
+    protected virtual void FixedUpdate() {
+        MoveVelocity = (transform.position - _prevPos) / Time.fixedDeltaTime;
+        _prevPos = transform.position;
+    }
     #endregion
 
-    #region Event
-    /*private void FallCube(DVGolemCube parts, DVGolemCube colCube)
-    {
-        _golemCore.RemoveCube(parts);
-        KnockbackCube(parts, colCube, 2);
-    }
-
-    private void KnockbackCube(DVGolemCube parts, DVGolemCube colCube) {
-        KnockbackCube(parts, colCube, 1);
-    }
-
-    private void KnockbackCube(DVGolemCube parts, DVGolemCube colCube, int moveCount)
-    {
+    #region Public Functions
+    public void OnImpulse(Vector3 impulse) {
+        _golemCore.rb.CancelVelocity();
         StopAllCoroutines();
-        CancelMoveGolem();
-        _golemCore.SetAttackMode(true);
-        _move.Acting = true;
 
-        Vector3 dir = GetKnockbackDirection(parts, colCube);
-
-        StartCoroutine(GravityDownCor(KnockBackTime));
-
-        float time = KnockBackTime * 2f;
-        StartCoroutine(CubeMoveCor(dir, KnockBackTime, moveCount: moveCount, controllActing:false));
-        // TODO: Resize
-        StartCoroutine(DVUtil.NormalizeRotationCor(transform, prevRot:_prevRot, time));
-        StartCoroutine(DVHelper.In.WaitTimeActCor(time, () => {
-            CancelMoveGolem();
-            _move.Acting = false;
-        }));
+        const float maxMove = 10f;
+        float power = Mathf.Min(impulse.magnitude, _golemCore.rb.GetMoveForce(maxMove));
+        StartCoroutine(KnockbackCor(impulse.normalized * power));
     }
-
-    private void ForceCancelMoveGolem(DVGolemCube parts, DVGolemCube colCube) {
-        StopAllCoroutines();
-        CancelMoveGolem();
-        _golemCore.SetAttackMode(true);
-        _move.Acting = true;
-
-        StartCoroutine(GravityDownCor(KnockBackTime));
-        float time = KnockBackTime * 2f;
-        // TODO: Resize
-        StartCoroutine(DVUtil.NormalizePositionCor(transform, _prevPos, time));
-        StartCoroutine(DVUtil.NormalizeRotationCor(transform, _prevRot, time));
-        StartCoroutine(DVHelper.In.WaitTimeActCor(time, () => {
-            CancelMoveGolem();
-            _move.Acting = false;
-            }));
-    }*/
+    
     #endregion
 
     #region Controller
@@ -192,8 +178,6 @@ public class DVGolemController : MonoBehaviour
         _golemCore.SetAttackMode(false);
         UseGravity(true);
 
-        _prevPos = transform.position;
-        _prevRot = transform.rotation;
         _move.Acting = false;
         _jumping = false;
     }
@@ -227,7 +211,10 @@ public class DVGolemController : MonoBehaviour
             return;
         _move.ActFlag = true;
 
-        StartCoroutine(MoveJumpCor(_moveDirection.GetDirection(direction), JumpTime));
+        float gravity = Mathf.Abs(Physics.gravity.y);
+        float velocity = _golemCore.rb.GetUpForce(0.5f) / _golemCore.rb.mass;
+        float jumpTime = velocity / gravity * 1.2f;
+        StartCoroutine(MoveJumpCor(_moveDirection.GetDirection(direction), jumpTime));
     }
 
     protected void Rotate(DVEnums.Direction direction)
@@ -253,14 +240,13 @@ public class DVGolemController : MonoBehaviour
     {
         if (_jumping || _chargeCor == null)
             return;
-        float jumpTime = JumpTime;
+
         int jumpHeight = 1;
         if (keyingTime > JumpChargeTime)
         {
             int add = Mathf.RoundToInt(Mathf.Floor(keyingTime / JumpChargeTime));
-            add = Mathf.RoundToInt(Mathf.Clamp(add, 0, MAX_JUMP_HEIGHT - 1));
+            add = Mathf.RoundToInt(Mathf.Clamp(add, 0, MaxJumpHeight - 1));
             jumpHeight += add;
-            jumpTime = jumpTime + jumpTime / 4f * (float)add;
         }
 
         CancelChargeCor();
@@ -286,6 +272,11 @@ public class DVGolemController : MonoBehaviour
     protected void UseGravity(bool on)
     {
         _golemCore.rb.useGravity = on;
+    }
+
+    protected void UseRigidbody(bool on) { 
+        UseGravity(on);
+        _golemCore.rb.UseAngular(on);
     }
 
     protected List<Vector3Int> FindBottomCubes() {
@@ -353,10 +344,15 @@ public class DVGolemController : MonoBehaviour
     }
 
     protected float CalculateRotateTime() {
-        // TODO: 데이터 화
-        const float slow = 1.1f;
+        const float slow = 1.03f;
         int bottomCount = FindBottomCubes().Count;
-        return Mathf.Max(RotateTime, RotateTime * (slow * (float)(bottomCount - 1)));
+        float rotateTime = Mathf.Max(RotateTime, RotateTime * (slow * (float)(bottomCount - 1)));
+        rotateTime = Mathf.Clamp(rotateTime, MIN_MOVE_TIME, MAX_MOVE_TIME);
+        return rotateTime;
+    }
+
+    protected int GetGolemHeight() { 
+        return GolemInfo.GetDirectionSize(ConvertMoveToTransformDirection(DVEnums.Direction3D.DOWN));
     }
     #endregion
 
@@ -366,8 +362,8 @@ public class DVGolemController : MonoBehaviour
         if (!_jumping)
             UseGravity(false);
 
-        Vector3 prevPos = DVUtil.NormalizeCubePosition(transform.position);
-        Vector3 targetPos = DVUtil.NormalizeCubePosition(prevPos + dir.normalized * DVConfigs.CUBE_BASE_LENGHT);
+        Vector3 prevPos = transform.position.NormalizeCube();
+        Vector3 targetPos = (prevPos + dir.normalized * DVConfigs.CUBE_BASE_LENGHT).NormalizeCube();
         Vector3 moveDir = targetPos - prevPos;
         Vector3 addMove = moveDir / (float)AnimationFrame;
         float addTime = time / (float)AnimationFrame;
@@ -404,7 +400,7 @@ public class DVGolemController : MonoBehaviour
                 yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
             }
 
-            transform.position = DVUtil.NormalizeCubePosition(transform.position);
+            transform.position = transform.position.NormalizeCube();
         }
 
         if (!_jumping)
@@ -413,6 +409,10 @@ public class DVGolemController : MonoBehaviour
 
     protected IEnumerator RollRightAngleCor(DVEnums.Direction direction, float time)
     {
+        if (_jumping) { 
+            // TODO: Roll 동작 중 최대 높이(curCube, nextCube, angle, rollHeight 고려) 보다 높이가 낮으면 동작하지 않도록 수정
+        }
+
         _move.Acting = true;
         _golemCore.SetAttackMode(true);
         if (!_jumping)
@@ -430,7 +430,7 @@ public class DVGolemController : MonoBehaviour
         
         while (_move.ActFlag)
         {
-            curCube = GolemInfo.GetDirectionSize(ConvertMoveToTransformDirection(DVEnums.Direction3D.DOWN));
+            curCube = GetGolemHeight();
             nextCube = GolemInfo.GetDirectionSize(ConvertMoveToTransformDirection(DVUtil.ConvertDirection2DTo3D(direction)));
 
             curHeight = ((float)curCube * 2f - 1f) * halfLine;
@@ -462,7 +462,7 @@ public class DVGolemController : MonoBehaviour
                 yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
             }
 
-            transform.position = DVUtil.NormalizeCubePosition(transform.position);
+            transform.position = transform.position.NormalizeCube();
         }
 
         if (!_jumping)
@@ -509,13 +509,11 @@ public class DVGolemController : MonoBehaviour
     protected IEnumerator ResizeDownCor(float chargeTime)
     {
         _move.Acting = true;
-        if(!_jumping)
-            UseGravity(false);
 
-        float sizeLength = (float)(GolemInfo.GetDirectionSize(ConvertMoveToTransformDirection(DVEnums.Direction3D.DOWN)) - 1)
+        float sizeLength = (float)(GetGolemHeight() - 1)
             * DVConfigs.CUBE_BASE_LENGHT;
         float stdTime = chargeTime / (float)AnimationFrame * 2f;
-        float addSize = 0.5f / (float)MAX_JUMP_HEIGHT / (float)AnimationFrame * 2f;
+        float addSize = 0.5f / (float)MaxJumpHeight / (float)AnimationFrame * 2f;
         float addHeight = (0.5f + sizeLength) * addSize;
 
         Vector3[] tDirs = new Vector3[] {
@@ -527,7 +525,7 @@ public class DVGolemController : MonoBehaviour
 
         DVUtil.GetClosestAxisVector(tDirs, Vector3.up, out int index);
 
-        for (int i = 0; i < MAX_JUMP_HEIGHT * AnimationFrame / 2; i++)
+        for (int i = 0; i < MaxJumpHeight * AnimationFrame / 2; i++)
         {
             transform.localScale -= scaleDirs[index / 2] * addSize;
             transform.position -= Vector3.up * addHeight;
@@ -564,19 +562,107 @@ public class DVGolemController : MonoBehaviour
         _golemCore.SetAttackMode(true);
 
         _jumping = true;
-        _golemCore.rb.AddForce(Vector3.up * _golemCore.rb.GetUpForce((float)jumpHeight), ForceMode.Impulse);
+        _golemCore.rb.AddForce(Vector3.up * _golemCore.rb.GetUpForce((float)jumpHeight / 2f), ForceMode.Impulse);
 
-        yield return StartCoroutine(ResizeUpCor(0.1f));
+        yield return StartCoroutine(ResizeUpCor(SizeUpTime));
         _move.ActFlag = false;
         _move.Acting = true;
 
         while (_golemCore.rb.linearVelocity.y > 0f)
             yield return null;
 
-        while(_golemCore.rb.GetGravitySpeed() > 0.01f)
+        while(_golemCore.rb.CheckGravity())
             yield return null;
 
         SetInit();
+    }
+
+    protected IEnumerator KnockbackCor(Vector3 impulse) {
+        UseRigidbody(true);
+        _move.Acting = true;
+
+        Vector3 prevPos = transform.position;
+
+        _golemCore.rb.ImpulseCube(impulse);
+        float waitTime = Mathf.Min(_golemCore.rb.GetMoveTimeFromImpulse(impulse), 0.4f);
+
+        StartCoroutine(NormalizeSizeCor(SizeUpTime));
+        float rotateTime = RotateTime / 2f;
+        StartCoroutine(NormalizeRotationCor(rotateTime));
+        float restTime = Mathf.Max(rotateTime, SizeUpTime);
+
+        if (waitTime > 0f)
+        {
+            yield return DVHelper.In.YieldCache.GetWaitForSeconds(waitTime);
+            restTime -= waitTime;
+        }
+
+        _golemCore.rb.CancelVelocity();
+        UseRigidbody(false);
+        UseGravity(true);
+
+        float moveDist = DVUtil.GetDistanceXZ(transform.position, prevPos);
+        Vector3 normalizePos = transform.position.NormalizeCube();
+        float normalizeDist = DVUtil.GetDistanceXZ(transform.position, normalizePos);
+
+        if (normalizeDist > 0f)
+        {
+            const float moveTime = DVConfigs.MAX_CUBE_NOMALIZE_TIME;
+            float normalizeTime = moveTime * normalizeDist;
+            if (moveDist > 0f && waitTime > 0f) {
+                float timeUnit = waitTime / moveDist;
+                timeUnit = Mathf.Min(moveTime, timeUnit);
+                normalizeTime = timeUnit * normalizeDist;
+            }
+
+            yield return StartCoroutine(DVUtil.NormalizePositionCor(transform, transform.position, normalizeTime));
+            restTime -= normalizeTime;
+        }
+
+        while (_golemCore.rb.CheckGravity()) {
+            yield return null;
+            if (restTime > 0f)
+                restTime -= Time.deltaTime;
+        }
+
+        if(restTime > 0f)
+            yield return DVHelper.In.YieldCache.GetWaitForSeconds(restTime);
+
+        SetInit();
+    }
+
+    protected IEnumerator NormalizeSizeCor(float time) {
+        Vector3 chargeScale = (Vector3.one - transform.localScale).Abs();
+        float sizeRate = chargeScale.magnitude;
+        if (sizeRate > 0f) {
+            int halfFrame = AnimationFrame / 2;
+            int chargeFrame = halfFrame / 4 - halfFrame % 4;
+            float addTime = time / (float)chargeFrame;
+            float sizeLength = (float)(GetGolemHeight() - 1)
+            * DVConfigs.CUBE_BASE_LENGHT;
+
+            float force = _golemCore.rb.GetUpForce(sizeLength * sizeRate);
+            _golemCore.rb.AddForce(Vector3.up * force, ForceMode.Impulse);
+
+            for (int i = 0; i < chargeFrame; i++)
+            {
+                transform.localScale = (transform.localScale + chargeScale).Clamp(0, 1f);
+                yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
+            }
+        }
+    }
+
+    protected IEnumerator NormalizeRotationCor(float time)
+    {
+        Quaternion prevRot = transform.rotation;
+        Quaternion normalRot = transform.rotation.NormalizeCube();
+        Quaternion deltaRot = normalRot * Quaternion.Inverse(prevRot);
+        deltaRot.ToAngleAxis(out float angle, out Vector3 axis);
+
+        if (angle <= 0f)
+            yield break;
+
+        yield return StartCoroutine(DVUtil.NormalizeRotationCor(transform, prevRot, time));
     }
     #endregion
 }

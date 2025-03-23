@@ -51,6 +51,27 @@ public static class DVUnityExtensions
             Mathf.RoundToInt(Mathf.Abs(vector.z))
         );
     }
+
+    public static Vector3 NormalizeCube(this Vector3 pos)
+    {
+        Vector3 normalPos = pos;
+        normalPos.x = Mathf.Round(pos.x / DVConfigs.CUBE_BASE_LENGHT) * DVConfigs.CUBE_BASE_LENGHT;
+        normalPos.z = Mathf.Round(pos.z / DVConfigs.CUBE_BASE_LENGHT) * DVConfigs.CUBE_BASE_LENGHT;
+        
+        return normalPos;
+    }
+    #endregion
+
+    #region Quaternion
+    public static Quaternion NormalizeCube(this Quaternion quaternion)
+    {
+        Vector3 eulerAngles = quaternion.eulerAngles;
+        eulerAngles.x = Mathf.Round(eulerAngles.x / 90f) * 90f;
+        eulerAngles.y = Mathf.Round(eulerAngles.y / 90f) * 90f;
+        eulerAngles.z = Mathf.Round(eulerAngles.z / 90f) * 90f;
+
+        return Quaternion.Euler(eulerAngles);
+    }
     #endregion
 
     #region Color
@@ -72,16 +93,6 @@ public static class DVUnityExtensions
         rb.isKinematic = false;
         rb.useGravity = true;
         rb.constraints = RigidbodyConstraints.None;
-    }
-
-    public static void SetGolemMass(this Rigidbody rb, DVGolemCore core = null) {
-        if (rb == null)
-            return;
-
-        if (core == null)
-            rb.mass = DVConfigs.OBSTACLE_CUBE_MASS;
-        else
-            rb.mass = core.CurrentGolemInfo.Shape.Count * DVConfigs.ONE_CUBE_MASS;
     }
 
     public static void UseOnlyGravity(this Rigidbody rb)
@@ -122,6 +133,13 @@ public static class DVUnityExtensions
         return Mathf.Abs(rb.linearVelocity.y);
     }
 
+    public static bool CheckGravity(this Rigidbody rb) {
+        if (rb == null)
+            return false;
+
+        return rb.GetGravitySpeed() > 0.01f;
+    }
+
     public static float GetAngularSpeed(this Rigidbody rb)
     {
         if (rb == null)
@@ -146,6 +164,52 @@ public static class DVUnityExtensions
 
         float v = Mathf.Sqrt(Mathf.Abs(2f * Physics.gravity.y * height));
         return v * rb.mass;
+    }
+
+    public static float GetMoveForce(this Rigidbody rb, float distance) {
+        if (rb == null)
+            return 0f;
+
+        float v = Mathf.Sqrt(2f * distance);
+        return v * rb.mass;
+    }
+
+    public static void ImpulseCube(this Rigidbody rb, Vector3 impulse) {
+        if (rb == null)
+            return;
+
+        float minForce = rb.GetMoveForce(0.7f);
+        float xzForce = DVUtil.ConvertXZVector2(impulse).magnitude;
+        if (xzForce < minForce) {
+            impulse.x = 0f; impulse.z = 0f;
+        }
+
+        rb.AddForce(impulse, ForceMode.Impulse);
+    }
+
+    public static float GetMoveDistance(this Rigidbody rb, Vector3 impulse, float deceleration = 2f) {
+        if (rb == null || rb.mass <= 0f || impulse == Vector3.zero || deceleration <= 0f)
+            return 0f;
+
+        float v = impulse.magnitude / rb.mass;
+        return (v * v) / (2f * deceleration);
+    }
+
+    public static float GetMoveTimeFromImpulse(this Rigidbody rb, Vector3 impulse, float deceleration = 2f)
+    {
+        if (rb == null || rb.mass <= 0f || impulse == Vector3.zero || deceleration <= 0f)
+            return 0f;
+
+        float v = DVUtil.ConvertXZVector2(impulse).magnitude / rb.mass;
+        return v / deceleration;
+    }
+
+    public static void CancelVelocity(this Rigidbody rb) {
+        if (rb == null)
+            return;
+
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
     }
     #endregion
 

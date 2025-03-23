@@ -518,6 +518,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 269cb687d6c3c1c448fe9602927b026c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _golemCube: {fileID: 0}
 --- !u!1 &1868916323
 GameObject:
   m_ObjectHideFlags: 0
@@ -713,6 +714,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: MapSystems
       objectReference: {fileID: 0}
+    - target: {fileID: 5284807451515334133, guid: b71ef2ebf03c9724888d98ebe7644a83, type: 3}
+      propertyPath: _obstacleCube
+      value: 
+      objectReference: {fileID: 584223288029311799, guid: 9ce43030bc4ef7e4998971d0c943bd45, type: 3}
     - target: {fileID: 6688118987438014892, guid: b71ef2ebf03c9724888d98ebe7644a83, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

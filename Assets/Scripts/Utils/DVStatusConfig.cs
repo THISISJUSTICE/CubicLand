@@ -4,7 +4,7 @@ using UnityEngine;
 public class DVStatusConfig
 {
     public const int INIT_MOVE_SPEED = 10;
-    public const int ADD_MOVE_SPEED = 3;
+    public const int ADD_MOVE_SPEED = 2;
 
     public const int INIT_HP = 10;
     public const int ADD_HP = 5;

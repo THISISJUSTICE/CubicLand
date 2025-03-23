@@ -148,7 +148,7 @@ public class DVGolemInfo
     {
         if (!_shape.Contains(cubePos))
         {
-            Debug.Log($"{cubePos} is not exist");
+            //Debug.Log($"{cubePos} is not exist");
             return false;
         }
 

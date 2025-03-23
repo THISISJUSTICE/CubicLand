@@ -50,6 +50,7 @@ public class DVObjectManager : SingletonMonoBehaviour<DVObjectManager>
         if (_objects[prefab].Count > 0)
         {
             res = _objects[prefab].Pop();
+            res.SetActive(true);
         }
         else
         {

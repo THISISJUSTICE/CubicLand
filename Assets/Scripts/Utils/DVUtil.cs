@@ -109,7 +109,7 @@ public static partial class DVUtil
     #region Cube Transform
     public static IEnumerator NormalizePositionCor(Transform tf, Vector3 prevPos, float time)
     {
-        Vector3 normalPos = NormalizeCubePosition(prevPos);
+        Vector3 normalPos = prevPos.NormalizeCube();
 
         Vector3 moveDir = normalPos - prevPos;
         Vector3 addMove = moveDir / (float)DVPerfomanceConfigs.AnimationFrame;
@@ -122,18 +122,9 @@ public static partial class DVUtil
         }
     }
 
-    public static Vector3 NormalizeCubePosition(Vector3 pos)
-    {
-        Vector3 normalPos = pos;
-        normalPos.x = Mathf.Round(pos.x / DVConfigs.CUBE_BASE_LENGHT) * DVConfigs.CUBE_BASE_LENGHT;
-        normalPos.z = Mathf.Round(pos.z / DVConfigs.CUBE_BASE_LENGHT) * DVConfigs.CUBE_BASE_LENGHT;
-
-        return normalPos;
-    }
-
     public static IEnumerator NormalizeRotationCor(Transform tf, Quaternion prevRot, float time)
     {
-        Quaternion normalRot = NormalizeCubeRotation(prevRot);
+        Quaternion normalRot = prevRot.NormalizeCube();
         float addTime = time / (float)DVPerfomanceConfigs.AnimationFrame;
 
         for (int i = 0; i < DVPerfomanceConfigs.AnimationFrame; i++)
@@ -142,18 +133,9 @@ public static partial class DVUtil
             yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
         }
     }
-
-    public static Quaternion NormalizeCubeRotation(Quaternion quaternion)
-    {
-        Vector3 eulerAngles = quaternion.eulerAngles;
-        eulerAngles.x = Mathf.Round(eulerAngles.x / 90f) * 90f;
-        eulerAngles.y = Mathf.Round(eulerAngles.y / 90f) * 90f;
-        eulerAngles.z = Mathf.Round(eulerAngles.z / 90f) * 90f;
-
-        return Quaternion.Euler(eulerAngles);
-    }
     #endregion
 
+    #region Math
     public static int GetGCD(int a, int b)
     {
         while (b != 0)
@@ -172,13 +154,11 @@ public static partial class DVUtil
     public static float GetBaseLine(float hypotenuse, float angle) => hypotenuse * Mathf.Cos(angle * Mathf.Deg2Rad);
 
     public static float GetAngle(float baseLine, float heightLine) => Mathf.Atan2(heightLine, baseLine) * Mathf.Rad2Deg;
+    #endregion
 
-    public static float GetEaseOut(float ratio) { 
-        Mathf.Clamp01(ratio);
-        return 1f - Mathf.Pow(1f - ratio, 2f);
-    }
-
-    public static Vector3 GetClosestAxisVector(Vector3[] vectors, Vector3 direction, out int index) {
+    #region Vector
+    public static Vector3 GetClosestAxisVector(Vector3[] vectors, Vector3 direction, out int index)
+    {
         if (vectors == null || vectors.Length == 0)
         {
             index = -1;
@@ -205,8 +185,50 @@ public static partial class DVUtil
         return closestVector;
     }
 
+    public static Vector2 ConvertXZVector2(Vector3 vec)
+    {
+        return new Vector2(vec.x, vec.z);
+    }
+
+    public static float GetDistanceXZ(Vector3 vec1, Vector3 vec2)
+    {
+        return Vector2.Distance(ConvertXZVector2(vec1), ConvertXZVector2(vec2));
+    }
+    #endregion
+
+    #region Rigidbody
+    public static float GetCubeMass(DVCurrentStatus status)
+    {
+        const float massRate = 0.2f;
+        return DVConfigs.ONE_CUBE_MASS *
+            (status.HP / status.MaxHP
+            * status.Armor * massRate + 1f);
+    }
+
+    public static Vector3 EstimateImpulse(Vector3 velocityA, float massA, Vector3 velocityB, float massB, Vector3 normal) 
+    {
+        Vector3 impulse = Vector3.zero;
+        Vector3 relativeVelocity = velocityA - velocityB;
+        float velAlong = Vector3.Dot(relativeVelocity, -normal);
+        if (velAlong > 0f)
+        {
+            const float restitution = 0.5f;
+            float power = (-(1 + restitution) * velAlong) / (1f / massA + 1f / massB);
+            impulse = power * normal;
+        }
+
+        return impulse;
+    }
+    #endregion
+
+    public static float GetEaseOut(float ratio) { 
+        Mathf.Clamp01(ratio);
+        return 1f - Mathf.Pow(1f - ratio, 2f);
+    }
+
     public static float CalculateProgressValue(float value, float loadingValue)
     {
+        loadingValue = Mathf.Clamp01(loadingValue);
 
         if (value < loadingValue)
         {
@@ -224,14 +246,8 @@ public static partial class DVUtil
             }
         }
 
-        return Mathf.Clamp(value, 0f, 1f);
+        return Mathf.Clamp(value, 0f, loadingValue);
     }
 
-    public static Vector2 ConvertXZVector2(Vector3 vec) { 
-        return new Vector2(vec.x, vec.z);
-    }
-
-    public static float GetDistanceXZ(Vector3 vec1, Vector3 vec2) { 
-        return Vector2.Distance(ConvertXZVector2(vec1), ConvertXZVector2(vec2));
-    }
+    
 }
