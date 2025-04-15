@@ -3,7 +3,6 @@ using System.Collections;
 
 public class DVIntroManager : MonoBehaviour
 {
-
     #region Unity Functions
     private void Awake()
     {
@@ -11,7 +10,6 @@ public class DVIntroManager : MonoBehaviour
         
     }
 
-    private void Start()
     private IEnumerator Start()
     {
         LimitFrameRate();
@@ -19,7 +17,7 @@ public class DVIntroManager : MonoBehaviour
         yield return StartCoroutine(DVResourceManager.Instance.LoadAssets((success) => 
         {
             if (!success) { 
-                // TODO: ï¿½ï¿½ï¿½ï¿½ ï¿½Ë¾ï¿½ ï¿½ï¿½ ï¿½ï¿½Ãµï¿½ È¤ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+                // TODO: ½ÇÆÐ ÆË¾÷ ÈÄ Àç½Ãµµ È¤Àº Á¾·á
             }
         }));
 
@@ -37,6 +35,7 @@ public class DVIntroManager : MonoBehaviour
         _ = DVHelper.Instance;
         _ = DVDataManager.Instance;
         _ = DVResourceManager.Instance;
+        _ = DVEffectManager.Instance;
     }
 
     private void LimitFrameRate() { 
