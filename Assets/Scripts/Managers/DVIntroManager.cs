@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class DVIntroManager : MonoBehaviour
 {
@@ -11,8 +12,16 @@ public class DVIntroManager : MonoBehaviour
     }
 
     private void Start()
+    private IEnumerator Start()
     {
         LimitFrameRate();
+
+        yield return StartCoroutine(DVResourceManager.Instance.LoadAssets((success) => 
+        {
+            if (!success) { 
+                // TODO: ���� �˾� �� ��õ� Ȥ�� ����
+            }
+        }));
 
         DVSceneConfigs.LoadScene(DVSceneConfigs.SceneList.MAP);
 
@@ -22,10 +31,12 @@ public class DVIntroManager : MonoBehaviour
 
     #region Utils
     private void CreateSingletones() {
+        _ = DVAddresableManager.Instance;
         _ = DVKeyboardManager.Instance;
         _ = DVObjectManager.Instance;
         _ = DVHelper.Instance;
         _ = DVDataManager.Instance;
+        _ = DVResourceManager.Instance;
     }
 
     private void LimitFrameRate() { 
