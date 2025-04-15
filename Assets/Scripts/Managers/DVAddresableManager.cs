@@ -12,16 +12,14 @@ public class DVAddresableManager : SingletonMonoBehaviour<DVAddresableManager>
     #endregion
 
     #region Coroutines
-    public IEnumerator LoadAssetAsync<T>(string key, bool release = true, Action<T> onFinishedCallback = null) {
+    public IEnumerator LoadAssetAsync<T>(string key, bool release = true, Action<bool, T> onFinishedCallback = null) {
         AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(key);
         handle.Completed += (op) =>
         {
-            if (op.Status == AsyncOperationStatus.Succeeded)
+            onFinishedCallback?.Invoke(op.Status == AsyncOperationStatus.Succeeded, op.Result);
+            if (op.Status != AsyncOperationStatus.Succeeded)
             {
-                onFinishedCallback?.Invoke(op.Result);
-            }
-            else {
-                Debug.LogError($"Load Failed {key}\n{op.OperationException}");
+                Debug.Log($"Load Failed {key}\n{op.OperationException}");
             }
         };
 
