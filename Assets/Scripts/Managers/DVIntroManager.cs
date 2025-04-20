@@ -21,6 +21,12 @@ public class DVIntroManager : MonoBehaviour
             }
         }));
 
+        var monoBehaviours = GameObject.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+        foreach (var monoBehaviour in monoBehaviours) {
+            if (monoBehaviour is IIntroInitializable init)
+                init.OnIntroInit();
+        }
+
         DVSceneConfigs.LoadScene(DVSceneConfigs.SceneList.MAP);
 
         Physics.defaultContactOffset = 0.0001f;
@@ -36,6 +42,7 @@ public class DVIntroManager : MonoBehaviour
         _ = DVDataManager.Instance;
         _ = DVResourceManager.Instance;
         _ = DVEffectManager.Instance;
+        _ = DVCubeCreator.Instance;
     }
 
     private void LimitFrameRate() { 

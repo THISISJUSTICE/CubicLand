@@ -47,7 +47,7 @@ public class DVGolemCube : DVCubeBase
             _childs = null;
         }
 
-        var obstacle = GameObject.FindAnyObjectByType<DVGolemCreator>().CreateObstacle(_cubeInfo.Status);
+        var obstacle = GameObject.FindAnyObjectByType<DVCubeCreator>().CreateObstacleCube(_cubeInfo.Status);
         obstacle.transform.position = transform.position;
         obstacle.transform.rotation = transform.rotation;
         obstacle.NormalizeTransform();

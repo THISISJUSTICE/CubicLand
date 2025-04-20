@@ -122,7 +122,6 @@ public class DVGolemController : MonoBehaviour
             float weightFactor = Mathf.Pow(_golemCore.rb.mass, 0.2f) / Mathf.Pow(initMass, 0.2f);
             float speedFactor = Mathf.Pow((float)DVStatusConfig.INIT_MOVE_SPEED /(float)_golemCore.GolemInfo.MoveSpeed, 0.3f);
             float moveTime = initMoveTime * weightFactor * speedFactor;
-            Debug.Log($"MoveTime ({moveTime}), weightFactor({weightFactor}), speedFactor({speedFactor})");
 
             return Mathf.Clamp(moveTime, MIN_MOVE_TIME, MAX_MOVE_TIME);
         }
