@@ -410,6 +410,7 @@ public class DVGolemController : MonoBehaviour
     {
         if (_jumping) { 
             // TODO: Roll 동작 중 최대 높이(curCube, nextCube, angle, rollHeight 고려) 보다 높이가 낮으면 동작하지 않도록 수정
+            
         }
 
         _move.Acting = true;
@@ -583,7 +584,7 @@ public class DVGolemController : MonoBehaviour
         Vector3 prevPos = transform.position;
 
         _golemCore.rb.ImpulseCube(impulse);
-        float waitTime = Mathf.Min(_golemCore.rb.GetMoveTimeFromImpulse(impulse), 0.4f);
+        float waitTime = Mathf.Min(_golemCore.rb.GetMoveTimeFromImpulse(impulse), 0.1f);
 
         StartCoroutine(NormalizeSizeCor(SizeUpTime));
         float rotateTime = RotateTime / 2f;
