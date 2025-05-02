@@ -408,11 +408,6 @@ public class DVGolemController : MonoBehaviour
 
     protected IEnumerator RollRightAngleCor(DVEnums.Direction direction, float time)
     {
-        if (_jumping) { 
-            // TODO: Roll 동작 중 최대 높이(curCube, nextCube, angle, rollHeight 고려) 보다 높이가 낮으면 동작하지 않도록 수정
-            
-        }
-
         _move.Acting = true;
         _golemCore.SetAttackMode(true);
         if (!_jumping)

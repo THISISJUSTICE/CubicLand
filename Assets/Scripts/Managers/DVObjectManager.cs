@@ -54,15 +54,46 @@ public class DVObjectManager : SingletonMonoBehaviour<DVObjectManager>
         }
         else
         {
-            res = GameObject.Instantiate(prefab);
+            res = Instantiate(prefab);
             _instKeys[res] = prefab;
 
             if (instMat) { 
-                Renderer baseRen = prefab.GetComponent<Renderer>();
-                Renderer ren = res.GetComponent<Renderer>();
+                Renderer baseRen = res.GetComponent<Renderer>();
 
-                if(baseRen.sharedMaterial != null)
-                    ren.sharedMaterial = GameObject.Instantiate(baseRen.sharedMaterial);
+                if (baseRen != null) {
+                    switch (baseRen) {
+                        case TrailRenderer trail:
+                            if(trail.sharedMaterial != null)
+                                trail.sharedMaterial = Instantiate(trail.sharedMaterial);
+                            break;
+                        case LineRenderer line:
+                            if (line.sharedMaterial != null)
+                                line.sharedMaterial = Instantiate(line.sharedMaterial);
+                            break;
+                        case ParticleSystemRenderer particle:
+                            {
+                                var sharedMats = particle.sharedMaterials;
+                                var newMats = new Material[sharedMats.Length];
+
+                                for (int i = 0; i < sharedMats.Length; i++)
+                                    newMats[i] = sharedMats[i] != null ? Instantiate(sharedMats[i]) : null;
+
+                                particle.sharedMaterials = newMats;
+                            }
+                            break;
+                        default:
+                            {
+                                var sharedMats = baseRen.sharedMaterials;
+                                var newMats = new Material[sharedMats.Length];
+
+                                for (int i = 0; i < sharedMats.Length; i++)
+                                    newMats[i] = sharedMats[i] != null ? Object.Instantiate(sharedMats[i]) : null;
+
+                                baseRen.sharedMaterials = newMats;
+                            }
+                            break;
+                    }
+                }
             }
         }
 

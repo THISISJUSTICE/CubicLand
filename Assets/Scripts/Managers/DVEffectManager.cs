@@ -15,18 +15,25 @@ public class DVEffectManager : SingletonMonoBehaviour<DVEffectManager>, IIntroIn
     #endregion
 
     #region Utils
-    public void MakeEffect(string effectName, Vector3 position) {
+    public GameObject MakeEffect(string effectName, Vector3 position) {
         if (!_effects.ContainsKey(effectName)) {
             Debug.Log($"'{effectName}' is invalid name");
-            return;
+            return null;
         }
 
         GameObject effect = (GameObject)_effects[effectName];
-        var instance = DVObjectManager.Instance.InstanitateObject(effect);
+        var instance = DVObjectManager.Instance.InstanitateObject(effect, instMat:true);
         instance.transform.position = position;
         instance.transform.SetParent(transform);
         var particle = instance.GetComponent<ParticleSystem>();
         StartCoroutine(DVHelper.In.WaitTimeActCor(particle.main.startLifetime.constantMax, () => DVObjectManager.Instance.DestroyObject(instance)));
+
+        return effect;
+    }
+
+    public void MakeCubeDestroyEffect(Vector3 position, Color color) {
+        GameObject effect = MakeEffect("CubeDestroyEffect", transform.position);
+        effect.GetComponent<ParticleSystemRenderer>().sharedMaterial.color = color;
     }
     #endregion
 }

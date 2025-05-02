@@ -94,6 +94,7 @@ public abstract class DVCubeBase : MonoBehaviour
     protected virtual void OnCubeDestroied()
     {
         DVEffectManager.Instance.MakeEffect("CubeDestroyEffect", transform.position);
+        DVEffectManager.Instance.MakeCubeDestroyEffect(transform.position, _cubeInfo.Status.Color);
 
         // TODO: 드롭 아이템
 
