@@ -5,7 +5,7 @@ using System.Collections.Generic;
 public class DVGolemController : MonoBehaviour
 {
     #region Types
-    protected struct MoveDirection
+    public struct MoveDirection
     {
         public Vector3 Right;
         public Vector3 Left { get => -Right; }
@@ -28,6 +28,50 @@ public class DVGolemController : MonoBehaviour
             Right = rotation * Right;
             Up = rotation * Up;
             Front = rotation * Front;
+        }
+
+        public Quaternion GetRotation() {
+            float m00 = Right.x, m01 = Up.x, m02 = Front.x;
+            float m10 = Right.y, m11 = Up.y, m12 = Front.y;
+            float m20 = Right.z, m21 = Up.z, m22 = Front.z;
+
+            float trace = m00 + m11 + m22;
+            Quaternion q;
+
+            if (trace > 0f)
+            {
+                float s = Mathf.Sqrt(trace + 1f) * 2f;
+                q.w = 0.25f * s;
+                q.x = (m21 - m12) / s;
+                q.y = (m02 - m20) / s;
+                q.z = (m10 - m01) / s;
+            }
+            else if (m00 > m11 && m00 > m22)
+            {
+                float s = Mathf.Sqrt(1f + m00 - m11 - m22) * 2f;
+                q.w = (m21 - m12) / s;
+                q.x = 0.25f * s;
+                q.y = (m01 + m10) / s;
+                q.z = (m02 + m20) / s;
+            }
+            else if (m11 > m22)
+            {
+                float s = Mathf.Sqrt(1f + m11 - m00 - m22) * 2f;
+                q.w = (m02 - m20) / s;
+                q.x = (m01 + m10) / s;
+                q.y = 0.25f * s;
+                q.z = (m12 + m21) / s;
+            }
+            else
+            {
+                float s = Mathf.Sqrt(1f + m22 - m00 - m11) * 2f;
+                q.w = (m10 - m01) / s;
+                q.x = (m02 + m20) / s;
+                q.y = (m12 + m21) / s;
+                q.z = 0.25f * s;
+            }
+
+            return q;
         }
 
         public Vector3[] GetDirections() {
@@ -108,6 +152,15 @@ public class DVGolemController : MonoBehaviour
     protected bool _jumping;
 
     public Vector3 MoveVelocity { get; private set; }
+    public DVGolemCube AxisCube { get; private set; }
+    public DVGolemCube UpEdgeCube { get; private set; }
+    public DVGolemCube BackEdgeCube { get; private set; }
+    public DVGolemCube FrontEdgeCube { get; private set; }
+
+    public int GolemHeight { get; private set; }
+    public int GolemWidth { get; private set; }
+    public int GolemBack { get; private set; }
+    public Quaternion PlayerRotation { get; private set; }
 
     protected DVGolemInfo GolemInfo { get => _golemCore.CurrentGolemInfo; }
     protected int AnimationFrame { get => DVPerfomanceConfigs.AnimationFrame; }
@@ -128,8 +181,8 @@ public class DVGolemController : MonoBehaviour
     }
     public float RotateTime { get => Mathf.Clamp(MoveTime * 0.9f, MIN_MOVE_TIME, MAX_MOVE_TIME); }
 
-    public int MaxJumpHeight { get => GetGolemHeight() * 3; } // 0.5 height per 1 jumpHeight
-    protected float JumpChargeTime { get => (float)GetGolemHeight() * 0.1f; }
+    public int MaxJumpHeight { get => GolemHeight * 2; }
+    protected float JumpChargeTime { get => (float)GolemHeight * 0.01f; }
     protected float SizeUpTime { get => 0.1f; }
     #endregion
 
@@ -141,12 +194,10 @@ public class DVGolemController : MonoBehaviour
         _moveDirection = new MoveDirection(transform.forward, transform.right, transform.up);
         _chargeHeight = 0f;
         _prevPos = transform.position;
-        SetInit();
-    }
 
-    protected virtual void Start() {
-        
-        
+        SetInit();
+        SetControllData();
+        PlayerRotation = _moveDirection.GetRotation();
     }
 
     protected virtual void OnDestroy()
@@ -168,7 +219,18 @@ public class DVGolemController : MonoBehaviour
         float power = Mathf.Min(impulse.magnitude, _golemCore.rb.GetMoveForce(maxMove));
         StartCoroutine(KnockbackCor(impulse.normalized * power));
     }
-    
+
+    public void SetControllData()
+    {
+        AxisCube = _golemCore.FindCube(FindRotateAxis(DVEnums.Direction.RIGHT));
+        UpEdgeCube = _golemCore.FindCube(FindAxisCandidates(DVEnums.Direction3D.UP)[0]);
+        BackEdgeCube = _golemCore.FindCube(FindAxisCandidates(DVEnums.Direction3D.BACK)[0]);
+        FrontEdgeCube = _golemCore.FindCube(FindAxisCandidates(DVEnums.Direction3D.FRONT)[0]);
+
+        GolemHeight = GetGolemLength(DVEnums.Direction3D.DOWN) + GetGolemLength(DVEnums.Direction3D.UP) - 1;
+        GolemWidth = GetGolemLength(DVEnums.Direction3D.LEFT) + GetGolemLength(DVEnums.Direction3D.RIGHT) - 1;
+        GolemBack = GetGolemLength(DVEnums.Direction3D.BACK);
+    }
     #endregion
 
     #region Controller
@@ -278,35 +340,53 @@ public class DVGolemController : MonoBehaviour
         _golemCore.rb.UseAngular(on);
     }
 
-    protected List<Vector3Int> FindBottomCubes() {
-        DVEnums.Direction3D direction = ConvertMoveToTransformDirection(DVEnums.Direction3D.DOWN);
-        int bottomHeight = GolemInfo.GetDirectionSize(direction) - 1;
-        return GolemInfo.FindEdgeChilds(direction, bottomHeight);
+    protected List<Vector3Int> FindEdgeCubes(DVEnums.Direction3D moveDirection) {
+        DVEnums.Direction3D direction = ConvertMoveToTransformDirection(moveDirection);
+        int directionSize = GolemInfo.GetDirectionSize(direction) - 1;
+        return GolemInfo.FindEdgeChilds(direction, directionSize);
+    }
+    protected List<Vector3Int> FindBottomCubes()
+    {
+        return FindEdgeCubes(DVEnums.Direction3D.DOWN);
     }
 
-    protected Vector3Int FindRotateAxis(DVEnums.Direction rotDirection)
+    protected List<Vector3Int> FindAxisCandidates(DVEnums.Direction3D moveDirection) 
     {
-        var bottomCubes = FindBottomCubes();
-        if (bottomCubes == null || bottomCubes.Count <= 0) // Error
-            return Vector3Int.zero;
+        List<Vector3Int> candidates = new List<Vector3Int>();
 
-        if (bottomCubes.Count == 1)
-            return bottomCubes[0];
+        var EdgeCubes = FindEdgeCubes(moveDirection);
+        if (EdgeCubes == null || EdgeCubes.Count <= 0) // Error
+        {
+            candidates.Add(Vector3Int.zero);
+            return candidates;
+        }
 
-        List<Vector3Int> nearestCubes = new List<Vector3Int>();
-        float nearestDist = Vector3Int.Distance(Vector3Int.zero, bottomCubes[0]);
-        foreach (var cube in bottomCubes)
+        if (EdgeCubes.Count == 1)
+        {
+            candidates.Add(EdgeCubes[0]);
+            return candidates;
+        }
+
+        float nearestDist = Vector3Int.Distance(Vector3Int.zero, EdgeCubes[0]);
+        foreach (var cube in EdgeCubes)
         {
             float dist = Vector3Int.Distance(Vector3Int.zero, cube);
             if (dist < nearestDist)
             {
-                nearestCubes.Clear();
-                nearestCubes.Add(cube);
+                candidates.Clear();
+                candidates.Add(cube);
                 nearestDist = dist;
             }
             else if (dist == nearestDist)
-                nearestCubes.Add(cube);
+                candidates.Add(cube);
         }
+
+        return candidates;
+    }
+
+    protected Vector3Int FindRotateAxis(DVEnums.Direction rotDirection)
+    {
+        List<Vector3Int> nearestCubes = FindAxisCandidates(DVEnums.Direction3D.DOWN);
 
         if (nearestCubes.Count == 1)
             return nearestCubes[0];
@@ -350,8 +430,9 @@ public class DVGolemController : MonoBehaviour
         return rotateTime;
     }
 
-    protected int GetGolemHeight() { 
-        return GolemInfo.GetDirectionSize(ConvertMoveToTransformDirection(DVEnums.Direction3D.DOWN));
+    protected int GetGolemLength(DVEnums.Direction3D direction)
+    {
+        return GolemInfo.GetDirectionSize(ConvertMoveToTransformDirection(direction));
     }
     #endregion
 
@@ -422,16 +503,21 @@ public class DVGolemController : MonoBehaviour
         int curCube, nextCube;
         float curHeight, nextHeight, angle, prevAngle;
         float rollHypot, rollAxisAngle;
+
+        DVGolemCube prevAxisCube, nextAxisCube;
         
         while (_move.ActFlag)
         {
-            curCube = GetGolemHeight();
+            curCube = GetGolemLength(DVEnums.Direction3D.DOWN);
             nextCube = GolemInfo.GetDirectionSize(ConvertMoveToTransformDirection(DVUtil.ConvertDirection2DTo3D(direction)));
+
+            prevAxisCube = AxisCube;
+            nextAxisCube = _golemCore.FindCube(FindAxisCandidates(DVUtil.ConvertDirection2DTo3D(direction))[0]);
 
             curHeight = ((float)curCube * 2f - 1f) * halfLine;
             nextHeight = ((float)nextCube * 2f - 1f) * halfLine;
-            rollAxisAngle = DVUtil.GetAngle(nextHeight, curHeight);
-            rollHypot = DVUtil.GetHypotenuse(nextHeight, curHeight);
+            rollAxisAngle = DVUtil.GetAngleBH(nextHeight, curHeight);
+            rollHypot = DVUtil.GetHypotenuseBH(nextHeight, curHeight);
 
             startRot = transform.rotation;
             targetRot = Quaternion.FromToRotation(dir, _moveDirection.Down) * startRot;
@@ -445,13 +531,18 @@ public class DVGolemController : MonoBehaviour
 
                 // Height
                 transform.position += Vector3.up *
-                    (DVUtil.GetHeightLine(rollHypot, angle + rollAxisAngle)
-                    - DVUtil.GetHeightLine(rollHypot, prevAngle + rollAxisAngle));
+                    (DVUtil.GetHeightLineHyA(rollHypot, angle + rollAxisAngle)
+                    - DVUtil.GetHeightLineHyA(rollHypot, prevAngle + rollAxisAngle));
 
                 // Move
                 transform.position += moveDir *
-                    (DVUtil.GetBaseLine(rollHypot, angle + rollAxisAngle)
-                    - DVUtil.GetBaseLine(rollHypot, prevAngle + rollAxisAngle));
+                    (DVUtil.GetBaseLineHyA(rollHypot, angle + rollAxisAngle)
+                    - DVUtil.GetBaseLineHyA(rollHypot, prevAngle + rollAxisAngle));
+
+                if (prevAxisCube.transform.position.y > nextAxisCube.transform.position.y)
+                    AxisCube = nextAxisCube;
+                else 
+                    AxisCube = prevAxisCube;
 
                 prevAngle = angle;
                 yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
@@ -462,6 +553,8 @@ public class DVGolemController : MonoBehaviour
 
         if (!_jumping)
             SetInit();
+
+        SetControllData();
     }
 
     protected IEnumerator RotateRightAngleCor(DVEnums.Direction direction)
@@ -471,30 +564,37 @@ public class DVGolemController : MonoBehaviour
 
         float time = CalculateRotateTime();
         float addTime = time / (float)AnimationFrame;
-        DVGolemCube axisCube = _golemCore.FindCube(FindRotateAxis(direction));
+        AxisCube = _golemCore.FindCube(FindRotateAxis(direction));
 
         Vector3 dir, axisPos, addPos;
         Quaternion startRot, targetRot, rot;
+        Quaternion targetPlayerRot, playerBaseRot;
 
         while (_move.ActFlag)
         {
             startRot = transform.rotation;
             dir = _moveDirection.GetDirection(direction);
-            axisPos = axisCube.transform.position;
+            axisPos = AxisCube.transform.position;
             axisPos.y = 0f;
             rot = Quaternion.FromToRotation(_moveDirection.Front, dir);
             targetRot = rot * startRot;
 
+            playerBaseRot = PlayerRotation;
+            targetPlayerRot = rot * playerBaseRot;
+
             for (int i = 0; i < AnimationFrame; i++)
             {
                 transform.rotation = Quaternion.Slerp(startRot, targetRot, (float)(i + 1) / (float)AnimationFrame);
-                addPos = axisCube.transform.position;
+                addPos = AxisCube.transform.position;
                 addPos.y = 0f;
                 transform.position += axisPos - addPos;
+
+                PlayerRotation = Quaternion.Slerp(playerBaseRot, targetPlayerRot, (float)(i + 1) / (float)AnimationFrame);
                 yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
             }
 
             _moveDirection.Rotate(rot.eulerAngles);
+            PlayerRotation = _moveDirection.GetRotation();
         }
 
         if (!_jumping)
@@ -505,7 +605,7 @@ public class DVGolemController : MonoBehaviour
     {
         _move.Acting = true;
 
-        float sizeLength = (float)(GetGolemHeight() - 1)
+        float sizeLength = (float)(GolemHeight - 1)
             * DVConfigs.CUBE_BASE_LENGHT;
         float stdTime = chargeTime / (float)AnimationFrame * 2f;
         float addSize = 0.5f / (float)MaxJumpHeight / (float)AnimationFrame * 2f;
@@ -624,6 +724,7 @@ public class DVGolemController : MonoBehaviour
             yield return DVHelper.In.YieldCache.GetWaitForSeconds(restTime);
 
         SetInit();
+        SetControllData();
     }
 
     protected IEnumerator NormalizeSizeCor(float time) {
@@ -633,7 +734,7 @@ public class DVGolemController : MonoBehaviour
             int halfFrame = AnimationFrame / 2;
             int chargeFrame = halfFrame / 4 - halfFrame % 4;
             float addTime = time / (float)chargeFrame;
-            float sizeLength = (float)(GetGolemHeight() - 1)
+            float sizeLength = (float)(GolemHeight - 1)
             * DVConfigs.CUBE_BASE_LENGHT;
 
             float force = _golemCore.rb.GetUpForce(sizeLength * sizeRate);
@@ -658,6 +759,7 @@ public class DVGolemController : MonoBehaviour
             yield break;
 
         yield return StartCoroutine(DVUtil.NormalizeRotationCor(transform, prevRot, time));
+        PlayerRotation = _moveDirection.GetRotation();
     }
     #endregion
 }

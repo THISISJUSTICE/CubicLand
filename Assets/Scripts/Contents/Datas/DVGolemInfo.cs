@@ -172,11 +172,10 @@ public class DVGolemInfo
 
         foreach (Vector3Int pos in _shape)
         {
-            int[] posDirs = new int[3] { pos.x, pos.y, pos.z };
             if (isMax)
-                value = Mathf.RoundToInt(Mathf.Max(value, posDirs[vectorDirection]));
+                value = Mathf.RoundToInt(Mathf.Max(value, pos[vectorDirection]));
             else
-                value = Mathf.RoundToInt(Mathf.Min(value, posDirs[vectorDirection]));
+                value = Mathf.RoundToInt(Mathf.Min(value, pos[vectorDirection]));
         }
 
         return (int)Mathf.Abs(value) + 1;
@@ -186,7 +185,6 @@ public class DVGolemInfo
         List<Vector3Int> childs = new List<Vector3Int>();
         foreach (Vector3Int pos in _shape)
         {
-            int[] posDirs = new int[3] { pos.x, pos.y, pos.z };
             if (pos[vectorDirection] == edge) 
                 childs.Add(pos);
         }

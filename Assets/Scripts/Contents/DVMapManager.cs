@@ -4,6 +4,7 @@ using System.Collections;
 public class DVMapManager : MonoBehaviour
 {
     #region Variables
+    [SerializeField] private DVPlayerFollower _playerfollower;
     // TODO: SO 변수를 통해 맵 관련 정보 프리셋 보유
     #endregion
 
@@ -14,14 +15,16 @@ public class DVMapManager : MonoBehaviour
         DVStatus status = new DVStatus(1000, 50, 50);
 
         DVGolemInfo playerInfo = new DVGolemInfo(status, moveSpeedPoint: 40);
-        for (int i = 0; i < 10; i++) 
+        for (int i = 0; i < 0; i++)
             DVCubeCreator.Instance.AddRandomGolemCube(playerInfo);
-        DVCubeCreator.Instance.CreatePlayer(playerInfo);
+        DVGolemCore player = DVCubeCreator.Instance.CreatePlayer(playerInfo);
 
         /*DVGolemInfo monsterInfo = new DVGolemInfo(status);
         DVCubeCreator.Instance.CreateMonster(monsterInfo);*/
 
-        StartCoroutine(TempFall());
+        //+StartCoroutine(TempFall());
+
+        _playerfollower.SetPlayer(player.gameObject);
     }
     #endregion
 

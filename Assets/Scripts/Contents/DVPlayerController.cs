@@ -28,9 +28,8 @@ public sealed class DVPlayerController : DVGolemController
         _playerActKeys = new KeyCode[System.Enum.GetValues(typeof(PlayerActKey)).Length];
     }
 
-    protected override void Start()
+    private void Start()
     {
-        base.Start();
         SetInitActKey();
 
     }

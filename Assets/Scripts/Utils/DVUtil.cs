@@ -147,13 +147,15 @@ public static partial class DVUtil
         return Mathf.Abs(a);
     }
 
-    public static float GetHypotenuse(float baseLine, float heightLine) => Mathf.Sqrt(Mathf.Pow(baseLine, 2) + Mathf.Pow(heightLine, 2));
+    public static float GetHypotenuseBH(float baseLine, float heightLine) => Mathf.Sqrt(Mathf.Pow(baseLine, 2) + Mathf.Pow(heightLine, 2));
 
-    public static float GetHeightLine(float hypotenuse, float angle) => hypotenuse * Mathf.Sin(angle * Mathf.Deg2Rad);
+    public static float GetHeightLineHyA(float hypotenuse, float angle) => hypotenuse * Mathf.Sin(angle * Mathf.Deg2Rad);
 
-    public static float GetBaseLine(float hypotenuse, float angle) => hypotenuse * Mathf.Cos(angle * Mathf.Deg2Rad);
+    public static float GetBaseLineHyA(float hypotenuse, float angle) => hypotenuse * Mathf.Cos(angle * Mathf.Deg2Rad);
 
-    public static float GetAngle(float baseLine, float heightLine) => Mathf.Atan2(heightLine, baseLine) * Mathf.Rad2Deg;
+    public static float GetBaseLineHA(float height, float angle) => height / Mathf.Tan(angle * Mathf.Deg2Rad);
+
+    public static float GetAngleBH(float baseLine, float heightLine) => Mathf.Atan2(heightLine, baseLine) * Mathf.Rad2Deg;
     #endregion
 
     #region Vector
