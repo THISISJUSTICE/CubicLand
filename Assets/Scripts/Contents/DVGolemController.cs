@@ -161,6 +161,7 @@ public class DVGolemController : MonoBehaviour
     public int GolemWidth { get; private set; }
     public int GolemBack { get; private set; }
     public Quaternion PlayerRotation { get; private set; }
+    public Quaternion PlayerViewRotation { get; private set; }
 
     protected DVGolemInfo GolemInfo { get => _golemCore.CurrentGolemInfo; }
     protected int AnimationFrame { get => DVPerfomanceConfigs.AnimationFrame; }
@@ -198,6 +199,7 @@ public class DVGolemController : MonoBehaviour
         SetInit();
         SetControllData();
         PlayerRotation = _moveDirection.GetRotation();
+        PlayerViewRotation = PlayerRotation;
     }
 
     protected virtual void OnDestroy()
@@ -345,10 +347,6 @@ public class DVGolemController : MonoBehaviour
         int directionSize = GolemInfo.GetDirectionSize(direction) - 1;
         return GolemInfo.FindEdgeChilds(direction, directionSize);
     }
-    protected List<Vector3Int> FindBottomCubes()
-    {
-        return FindEdgeCubes(DVEnums.Direction3D.DOWN);
-    }
 
     protected List<Vector3Int> FindAxisCandidates(DVEnums.Direction3D moveDirection) 
     {
@@ -424,7 +422,7 @@ public class DVGolemController : MonoBehaviour
 
     protected float CalculateRotateTime() {
         const float slow = 1.03f;
-        int bottomCount = FindBottomCubes().Count;
+        int bottomCount = FindEdgeCubes(DVEnums.Direction3D.DOWN).Count;
         float rotateTime = Mathf.Max(RotateTime, RotateTime * (slow * (float)(bottomCount - 1)));
         rotateTime = Mathf.Clamp(rotateTime, MIN_MOVE_TIME, MAX_MOVE_TIME);
         return rotateTime;
@@ -499,12 +497,13 @@ public class DVGolemController : MonoBehaviour
         float addTime = time / (float)AnimationFrame;
         float halfLine = DVConfigs.CUBE_BASE_LENGHT / 2f;
 
-        Quaternion startRot, targetRot;
+        Quaternion startRot, targetRot, rot;
         int curCube, nextCube;
         float curHeight, nextHeight, angle, prevAngle;
         float rollHypot, rollAxisAngle;
 
         DVGolemCube prevAxisCube, nextAxisCube;
+        DVGolemCube prevFrontCube, nextFrontCube;
         
         while (_move.ActFlag)
         {
@@ -514,13 +513,18 @@ public class DVGolemController : MonoBehaviour
             prevAxisCube = AxisCube;
             nextAxisCube = _golemCore.FindCube(FindAxisCandidates(DVUtil.ConvertDirection2DTo3D(direction))[0]);
 
+            prevFrontCube = FrontEdgeCube;
+            nextFrontCube = direction == DVEnums.Direction.BACK ? 
+                _golemCore.FindCube(FindAxisCandidates(DVEnums.Direction3D.DOWN)[0]) : prevFrontCube;
+
             curHeight = ((float)curCube * 2f - 1f) * halfLine;
             nextHeight = ((float)nextCube * 2f - 1f) * halfLine;
             rollAxisAngle = DVUtil.GetAngleBH(nextHeight, curHeight);
             rollHypot = DVUtil.GetHypotenuseBH(nextHeight, curHeight);
 
             startRot = transform.rotation;
-            targetRot = Quaternion.FromToRotation(dir, _moveDirection.Down) * startRot;
+            rot = Quaternion.FromToRotation(dir, _moveDirection.Down);
+            targetRot = rot * startRot;
             prevAngle = 0;
 
             for (int i = 0; i < AnimationFrame; i++)
@@ -540,9 +544,15 @@ public class DVGolemController : MonoBehaviour
                     - DVUtil.GetBaseLineHyA(rollHypot, prevAngle + rollAxisAngle));
 
                 if (prevAxisCube.transform.position.y > nextAxisCube.transform.position.y)
+                {
                     AxisCube = nextAxisCube;
-                else 
+                    FrontEdgeCube = nextFrontCube;
+                }
+                else
+                {
                     AxisCube = prevAxisCube;
+                    FrontEdgeCube = prevFrontCube;
+                }
 
                 prevAngle = angle;
                 yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
@@ -590,11 +600,13 @@ public class DVGolemController : MonoBehaviour
                 transform.position += axisPos - addPos;
 
                 PlayerRotation = Quaternion.Slerp(playerBaseRot, targetPlayerRot, (float)(i + 1) / (float)AnimationFrame);
+                PlayerViewRotation = PlayerRotation;
                 yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
             }
 
             _moveDirection.Rotate(rot.eulerAngles);
             PlayerRotation = _moveDirection.GetRotation();
+            PlayerViewRotation = PlayerRotation;
         }
 
         if (!_jumping)
@@ -760,6 +772,7 @@ public class DVGolemController : MonoBehaviour
 
         yield return StartCoroutine(DVUtil.NormalizeRotationCor(transform, prevRot, time));
         PlayerRotation = _moveDirection.GetRotation();
+        PlayerViewRotation = PlayerRotation;
     }
     #endregion
 }

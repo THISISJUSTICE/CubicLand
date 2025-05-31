@@ -1,14 +1,12 @@
 using UnityEngine;
 
-public class DVPlayerFollower : MonoBehaviour
+public class DVPlayerBackFollower : MonoBehaviour
 {
     #region Variables
+    [SerializeField] private Camera _mainCam;
     [SerializeField] private float _lerp;
 
-    private GameObject _playerObject;
     private DVPlayerController _playerController;
-
-    private Camera _mainCam;
 
     private Vector3 PlayerBack 
     { 
@@ -31,14 +29,9 @@ public class DVPlayerFollower : MonoBehaviour
     #endregion
 
     #region Unity Functions
-    private void Start()
-    {
-        _mainCam = Camera.main;
-    }
-
     private void LateUpdate()
     {
-        if (_playerObject == null || _playerController == null)
+        if (_playerController == null)
             return;
 
         transform.rotation = _playerController.PlayerRotation;
@@ -54,8 +47,7 @@ public class DVPlayerFollower : MonoBehaviour
     #endregion
 
     public void SetPlayer(GameObject playerObject) { 
-        _playerObject = playerObject;
-        _playerController = _playerObject.GetComponent<DVPlayerController>();
+        _playerController = playerObject.GetComponent<DVPlayerController>();
     }
 
     #region Utils
