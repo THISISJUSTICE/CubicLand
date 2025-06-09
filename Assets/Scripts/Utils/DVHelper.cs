@@ -11,10 +11,8 @@ public class DVHelper : SingletonMonoBehaviour<DVHelper>
     #endregion
 
     #region Properties
-    public static DVHelper In { get => Instance as DVHelper; }
-
-    public string DataPath { get { return _dataPath; } }
-    public DVYieldCache YieldCache { get { return _yieldCache; } }
+    public static string DataPath { get { return Instance._dataPath; } }
+    public static DVYieldCache YieldCache { get { return Instance._yieldCache; } }
     #endregion
 
     #region Unity Functions
@@ -26,25 +24,14 @@ public class DVHelper : SingletonMonoBehaviour<DVHelper>
     #endregion
 
     #region Public Functions
-    public void WaitTimeAct(float waitTime, Action callback) { 
-        StartCoroutine(WaitTimeActCor(waitTime, callback));
-    }
-
-    public void WaitFrameAct(int frame, Action callback) {
-        StartCoroutine(WaitFrameActCor(frame, callback));
-    }
-    #endregion
-
-    #region Coroutines
-    public IEnumerator WaitTimeActCor(float waitTime, Action callback) {
-        yield return _yieldCache.GetWaitForSeconds(waitTime);
+    public async void WaitTimeAct(float waitTime, Action callback) {
+        await Awaitable.WaitForSecondsAsync(waitTime);
         callback?.Invoke();
     }
 
-    public IEnumerator WaitFrameActCor(int frame, Action callback)
-    {
-        for (int i = 0; i < frame; i++) 
-            yield return null;
+    public async void WaitFrameAct(int frame, Action callback) {
+        for (int i = 0; i < frame; i++)
+            await Awaitable.NextFrameAsync();
         callback?.Invoke();
     }
     #endregion

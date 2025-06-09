@@ -10,10 +10,8 @@ public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour
 
     public static T Instance {
         get {
-            if (_quit) {
-
+            if (_quit) 
                 return null;
-            }
 
             lock (_lock) {
                 if (_instance == null) {

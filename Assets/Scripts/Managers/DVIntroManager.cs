@@ -10,16 +10,16 @@ public class DVIntroManager : MonoBehaviour
         
     }
 
-    private IEnumerator Start()
+    private async void Start()
     {
         LimitFrameRate();
 
-        yield return StartCoroutine(DVResourceManager.Instance.LoadAssets((success) => 
+        await DVResourceManager.Instance.LoadAssets((success) => 
         {
             if (!success) { 
                 // TODO: 실패 팝업 후 재시도 혹은 종료
             }
-        }));
+        });
 
         var monoBehaviours = GameObject.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
         foreach (var monoBehaviour in monoBehaviours) {

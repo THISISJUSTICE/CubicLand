@@ -118,7 +118,7 @@ public static partial class DVUtil
         for (int i = 0; i < DVPerfomanceConfigs.AnimationFrame; i++)
         {
             tf.position += addMove;
-            yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
+            yield return DVHelper.YieldCache.GetWaitForSeconds(addTime);
         }
     }
 
@@ -130,7 +130,7 @@ public static partial class DVUtil
         for (int i = 0; i < DVPerfomanceConfigs.AnimationFrame; i++)
         {
             tf.rotation = Quaternion.Slerp(prevRot, normalRot, (float)(i + 1) / (float)DVPerfomanceConfigs.AnimationFrame);
-            yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
+            yield return DVHelper.YieldCache.GetWaitForSeconds(addTime);
         }
     }
     #endregion

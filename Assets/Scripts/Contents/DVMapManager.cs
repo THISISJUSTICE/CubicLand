@@ -23,7 +23,7 @@ public class DVMapManager : MonoBehaviour
         /*DVGolemInfo monsterInfo = new DVGolemInfo(status);
         DVCubeCreator.Instance.CreateMonster(monsterInfo);*/
 
-        //+StartCoroutine(TempFall());
+        //StartCoroutine(TempFall());
 
         _playerfollower.SetPlayer(player.gameObject);
         _playerViewfollower.SetPlayer(player.gameObject);
@@ -45,7 +45,7 @@ public class DVMapManager : MonoBehaviour
             float z = Mathf.RoundToInt(Random.Range(-range, range));
             obstacle.transform.position = new Vector3(x, height, z);
 
-            yield return DVHelper.In.YieldCache.GetWaitForSeconds(0.02f);
+            yield return DVHelper.YieldCache.GetWaitForSeconds(0.02f);
         }
     }
     #endregion

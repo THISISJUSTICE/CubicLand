@@ -139,7 +139,7 @@ public class DVGolemCore : MonoBehaviour
                 if(impulse.magnitude <= collision.impulse.magnitude)
                     impulse = -collision.impulse;
 
-                DVHelper.In.WaitFrameAct(1, () =>
+                DVHelper.Instance.WaitFrameAct(1, () =>
                 {
                     if (child.Usable())
                     {
@@ -148,7 +148,7 @@ public class DVGolemCore : MonoBehaviour
                     }
                 });
 
-                DVHelper.In.WaitFrameAct(1, () =>
+                DVHelper.Instance.WaitFrameAct(1, () =>
                 {
                     if (obstacle.Usable())
                     {
@@ -161,7 +161,7 @@ public class DVGolemCore : MonoBehaviour
             _golemController.OnImpulse(impulse);
         }
 
-        DVHelper.In.WaitFrameAct(1, () => 
+        DVHelper.Instance.WaitFrameAct(1, () => 
         { 
             if(this.Usable())
                 SetGolemMass(); 

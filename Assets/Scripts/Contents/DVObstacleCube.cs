@@ -44,7 +44,7 @@ public class DVObstacleCube : DVCubeBase
         var obstacle = collision.gameObject.GetComponent<DVObstacleCube>();
         if (obstacle != null) {
             // 충격량 계산
-            StartCoroutine(DVHelper.In.WaitFrameActCor(1,() => OnDamaged(_rb.mass, collision.impulse, obstacle.CubeInfo)));
+            DVHelper.Instance.WaitFrameAct(1, () => OnDamaged(_rb.mass, collision.impulse, obstacle.CubeInfo));
         }
 
         // TODO: Skill Collision
@@ -92,7 +92,7 @@ public class DVObstacleCube : DVCubeBase
         float waitTime = Mathf.Min(_rb.GetMoveTimeFromImpulse(impulse), 0.4f);
 
         if (waitTime > 0f)
-            yield return DVHelper.In.YieldCache.GetWaitForSeconds(waitTime);
+            yield return DVHelper.YieldCache.GetWaitForSeconds(waitTime);
         _rb.CancelVelocity();
 
         float moveDist = DVUtil.GetDistanceXZ(transform.position, prevPos);

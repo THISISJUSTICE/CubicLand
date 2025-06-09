@@ -475,7 +475,7 @@ public class DVGolemController : MonoBehaviour
                     transform.position += Vector3.up * addHeight;
                 }
 
-                yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
+                yield return DVHelper.YieldCache.GetWaitForSeconds(addTime);
             }
 
             transform.position = transform.position.NormalizeCube();
@@ -555,7 +555,7 @@ public class DVGolemController : MonoBehaviour
                 }
 
                 prevAngle = angle;
-                yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
+                yield return DVHelper.YieldCache.GetWaitForSeconds(addTime);
             }
 
             transform.position = transform.position.NormalizeCube();
@@ -601,7 +601,7 @@ public class DVGolemController : MonoBehaviour
 
                 PlayerRotation = Quaternion.Slerp(playerBaseRot, targetPlayerRot, (float)(i + 1) / (float)AnimationFrame);
                 PlayerViewRotation = PlayerRotation;
-                yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
+                yield return DVHelper.YieldCache.GetWaitForSeconds(addTime);
             }
 
             _moveDirection.Rotate(rot.eulerAngles);
@@ -637,11 +637,11 @@ public class DVGolemController : MonoBehaviour
             transform.localScale -= scaleDirs[index / 2] * addSize;
             transform.position -= Vector3.up * addHeight;
             _chargeHeight += addHeight;
-            yield return DVHelper.In.YieldCache.GetWaitForSeconds(stdTime);
+            yield return DVHelper.YieldCache.GetWaitForSeconds(stdTime);
         }
 
         while (true)
-            yield return DVHelper.In.YieldCache.GetWaitForSeconds(10f);
+            yield return DVHelper.YieldCache.GetWaitForSeconds(10f);
     }
 
     protected IEnumerator ResizeUpCor(float time)
@@ -659,7 +659,7 @@ public class DVGolemController : MonoBehaviour
         {
             transform.position += Vector3.up * chargeHeight;
             transform.localScale = (transform.localScale + chargeScale).Clamp(0, 1f);
-            yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
+            yield return DVHelper.YieldCache.GetWaitForSeconds(addTime);
         }
     }
 
@@ -700,7 +700,7 @@ public class DVGolemController : MonoBehaviour
 
         if (waitTime > 0f)
         {
-            yield return DVHelper.In.YieldCache.GetWaitForSeconds(waitTime);
+            yield return DVHelper.YieldCache.GetWaitForSeconds(waitTime);
             restTime -= waitTime;
         }
 
@@ -733,7 +733,7 @@ public class DVGolemController : MonoBehaviour
         }
 
         if(restTime > 0f)
-            yield return DVHelper.In.YieldCache.GetWaitForSeconds(restTime);
+            yield return DVHelper.YieldCache.GetWaitForSeconds(restTime);
 
         SetInit();
         SetControllData();
@@ -755,7 +755,7 @@ public class DVGolemController : MonoBehaviour
             for (int i = 0; i < chargeFrame; i++)
             {
                 transform.localScale = (transform.localScale + chargeScale).Clamp(0, 1f);
-                yield return DVHelper.In.YieldCache.GetWaitForSeconds(addTime);
+                yield return DVHelper.YieldCache.GetWaitForSeconds(addTime);
             }
         }
     }

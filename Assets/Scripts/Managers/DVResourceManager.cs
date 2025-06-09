@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class DVResourceManager : SingletonMonoBehaviour<DVResourceManager>
 {
@@ -20,25 +21,12 @@ public class DVResourceManager : SingletonMonoBehaviour<DVResourceManager>
     #endregion
 
     #region Coroutines
-    public IEnumerator LoadAssets(Action<bool> onFinishedCallback = null) {
-        DVLoadFlag flag = new DVLoadFlag(keys.Length);
+    public async Awaitable LoadAssets(Action<bool> onFinishedCallback = null) 
+    {
+        IList<DVAssets> assets = await DVAddresableManager.Instance.LoadAssets<DVAssets>(onFinishedCallback, keys);
 
-        for (int i = 0; i < keys.Length; i++) {
-            StartCoroutine(DVAddresableManager.Instance.LoadAssetAsync<DVAssets>(keys[i], release: false,
-                (success, asset) =>
-                {
-                    if (asset != null)
-                    {
-                        _assets[asset.Type] = asset;
-                    }
-                    flag.SetFlag(success);
-                }));
-        }
-
-        while(flag.Loading)
-            yield return null;
-
-        onFinishedCallback?.Invoke(flag.IsSuccess);
+        foreach (DVAssets asset in assets) 
+            _assets[asset.Type] = asset;
     }
     #endregion
 

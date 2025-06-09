@@ -26,13 +26,14 @@ public class DVEffectManager : SingletonMonoBehaviour<DVEffectManager>, IIntroIn
         instance.transform.position = position;
         instance.transform.SetParent(transform);
         var particle = instance.GetComponent<ParticleSystem>();
-        StartCoroutine(DVHelper.In.WaitTimeActCor(particle.main.startLifetime.constantMax, () => DVObjectManager.Instance.DestroyObject(instance)));
+        DVHelper.Instance.WaitTimeAct(particle.main.startLifetime.constantMax,
+            () => DVObjectManager.Instance.DestroyObject(instance));
 
         return effect;
     }
 
     public void MakeCubeDestroyEffect(Vector3 position, Color color) {
-        GameObject effect = MakeEffect("CubeDestroyEffect", transform.position);
+        GameObject effect = MakeEffect("CubeDestroyEffect", position);
         effect.GetComponent<ParticleSystemRenderer>().sharedMaterial.color = color;
     }
     #endregion
