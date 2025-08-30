@@ -13,10 +13,10 @@ public class DVMapManager : MonoBehaviour
     private void Start()
     {
         // TODO: 로컬 데이터 베이스 데이터가 있으면 이를 반환
-        DVStatus status = new DVStatus(1000, 50, 50);
+        DVStatus status = new DVStatus(1, 1, 50);
 
         DVGolemInfo playerInfo = new DVGolemInfo(status, moveSpeedPoint: 40);
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 10; i++)
             DVCubeCreator.Instance.AddRandomGolemCube(playerInfo);
         DVGolemCore player = DVCubeCreator.Instance.CreatePlayer(playerInfo);
 

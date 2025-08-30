@@ -26,7 +26,7 @@ public class DVEffectManager : SingletonMonoBehaviour<DVEffectManager>, IIntroIn
         instance.transform.position = position;
         instance.transform.SetParent(transform);
         var particle = instance.GetComponent<ParticleSystem>();
-        DVHelper.Instance.WaitTimeAct(particle.main.startLifetime.constantMax,
+        DVHelper.WaitTimeAct(particle.main.startLifetime.constantMax,
             () => DVObjectManager.Instance.DestroyObject(instance));
 
         return effect;

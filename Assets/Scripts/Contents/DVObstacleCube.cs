@@ -35,26 +35,20 @@ public class DVObstacleCube : DVCubeBase
             return;
         }
 
-        // Golem Collision 시 GolemCore에서 충돌 호출
-        var core = collision.gameObject.GetComponent<DVGolemCore>();
+        // Golem Collision 시 Core 쪽에서 충돌 호출
+        var core = collision.gameObject.GetComponent<DVCubeCore<DVCubeBase>>();
         if (core != null)
             return;
 
         // Obstacle Collision
-        var obstacle = collision.gameObject.GetComponent<DVObstacleCube>();
-        if (obstacle != null) {
+        var cube = collision.gameObject.GetComponent<DVCubeBase>();
+        if (cube != null) {
             // 충격량 계산
-            DVHelper.Instance.WaitFrameAct(1, () => OnDamaged(_rb.mass, collision.impulse, obstacle.CubeInfo));
+            this.WaitFrameAct(1, () => OnDamaged(_rb.mass, collision.impulse, cube.CubeInfo));
         }
 
         // TODO: Skill Collision
 
-        /*DVGolemCube colCube = collision.gameObject.GetComponent<DVGolemCube>();
-        if (colCube == null)
-            return;
-
-        DVCubeInfo cubeInfo = colCube.CubeInfo;
-        StartCoroutine(DVHelper.In.WaitFrameActCor(1, () => OnDamaged(cubeInfo, colCube)));*/
     }
     #endregion
 

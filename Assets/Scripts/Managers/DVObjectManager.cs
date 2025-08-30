@@ -8,6 +8,8 @@ public class DVObjectManager : SingletonMonoBehaviour<DVObjectManager>
     private Dictionary<GameObject, GameObject> _instKeys;
     private Dictionary<GameObject, List<Component>> _componentDic;
     private Dictionary<GameObject, long> _memorySizes;
+
+    private GameObject _emptyObject;
     #endregion
 
     #region Properties
@@ -34,6 +36,11 @@ public class DVObjectManager : SingletonMonoBehaviour<DVObjectManager>
         _instKeys = new Dictionary<GameObject, GameObject>();
         _componentDic = new Dictionary<GameObject, List<Component>>();
         _memorySizes = new Dictionary<GameObject, long>();
+
+        _emptyObject = new GameObject("Empty");
+        _emptyObject.transform.SetParent(transform);
+        _emptyObject.transform.Reset();
+        _emptyObject.SetActive(false);
     }
     #endregion
 
@@ -98,6 +105,16 @@ public class DVObjectManager : SingletonMonoBehaviour<DVObjectManager>
         }
 
         res.transform.Reset();
+
+        return res;
+    }
+
+    public GameObject GetEmptyObject(string objectName = "")
+    {
+        GameObject res = InstanitateObject(_emptyObject);
+
+        if(!string.IsNullOrEmpty(objectName))
+            res.name = objectName;
 
         return res;
     }

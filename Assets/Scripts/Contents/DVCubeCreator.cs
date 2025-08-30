@@ -9,6 +9,9 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
     private GameObject _golemCube;
     private GameObject _golemCore;
     private GameObject _obstacleCube;
+    private GameObject _skillCube;
+    private GameObject _skillGolemCore;
+    private GameObject _skillGolemCube;
 
     private Transform _obstacleParent;
     private Transform _monsterParent;
@@ -44,6 +47,9 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
         _golemCube = (GameObject)_cubes["GolemCube"];
         _golemCore = (GameObject)_cubes["GolemCore"];
         _obstacleCube = (GameObject)_cubes["ObstacleCube"];
+        _skillCube = (GameObject)_cubes["SkillCube"];
+        _skillGolemCore = (GameObject)_cubes["SkillGolemCore"];
+        _skillGolemCube = (GameObject)_cubes["SkillGolemCube"];
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode) {
@@ -106,7 +112,7 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
         DVCubeInfo cubeInfo = new DVCubeInfo(status, false, Vector3Int.zero);
         GameObject cube = DVObjectManager.Instance.InstanitateObject(_obstacleCube, instMat: true);
         DVObstacleCube obstacle = cube.GetComponent<DVObstacleCube>();
-        obstacle.SetInit(cubeInfo);        
+        obstacle.SetCubeInfo(cubeInfo);        
         obstacle.transform.SetParent(_obstacleParent.transform);
 
         return obstacle;
@@ -136,13 +142,55 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
 
         AddRandomGolemCube(golemInfo);
     }
+
+    // TODO: Summon 함수는 생성 시 애니메이션 효과 추가
+    public DVSkillGolemCore SummonSkillGolemCore(DVGolemController owner, DVGolemInfo golemInfo, string skillName, Vector3 pos)
+    {
+        GameObject core = DVObjectManager.Instance.InstanitateObject(_skillGolemCore, instMat: true);
+        core.name = skillName;
+        core.transform.position = pos;
+        core.transform.rotation = owner.PlayerViewRotation;
+
+        DVCubeInfo cubeInfo = new DVCubeInfo(golemInfo.Status, true, Vector3Int.zero);
+        DVSkillGolemCore golemCore = core.GetComponent<DVSkillGolemCore>();
+
+        DVSkillGolemCube childCube = core.GetComponent<DVSkillGolemCube>();
+        childCube.SetGolemCubeInfo(cubeInfo, null, golemCore);
+
+        golemCore.SetInit(golemInfo, owner);
+        return golemCore;
+    }
+
+    public DVSkillGolemCube[] SummonSkillGolemChilds(DVSkillGolemCore golemCore, Vector3Int[] childs)
+    {
+        DVSkillGolemCube[] childCubes = new DVSkillGolemCube[childs.Length];
+        
+        for (int i = 0; i < childs.Length; i++)
+        {
+            GameObject cube = DVObjectManager.Instance.InstanitateObject(_skillGolemCube, instMat: true);
+            Vector3Int parentPos = golemCore.GolemInfo.ParentMap[childs[i]];
+            DVSkillGolemCube parentCube = golemCore.FindCube(parentPos);
+            DVStatus status = parentCube.CubeInfo.Status.GetChildStatus();
+            DVCubeInfo cubeInfo = new DVCubeInfo(status, false, childs[i]);
+
+            DVSkillGolemCube childCube = cube.GetComponent<DVSkillGolemCube>();
+            childCube.SetGolemCubeInfo(cubeInfo, parentCube, golemCore);
+            SetChlidObject(childCube, parentCube);
+            parentCube.AddGolemChild(childCube);
+            golemCore.AddChild(childCube);
+
+            childCubes[i] = childCube;            
+        }
+
+        return childCubes;
+    }
     #endregion
 
     #region Utils
     private GameObject CreateGolem(DVGolemInfo golemInfo, string golemName, Vector3 pos) {
         GameObject core = DVObjectManager.Instance.InstanitateObject(_golemCore, instMat: true);
         core.name = golemName;
-        pos.y += (float)(golemInfo.GetDirectionSize(DVEnums.Direction3D.DOWN) - 1) * DVConfigs.CUBE_BASE_LENGHT;
+        pos.y += (float)golemInfo.GetDirectionSize(DVEnums.Direction3D.DOWN) * DVConfigs.CUBE_BASE_LENGHT;
         core.transform.position = pos;
 
         DVCubeInfo cubeInfo = new DVCubeInfo(golemInfo.Status, true, Vector3Int.zero);
@@ -150,11 +198,8 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
         DVGolemCore golemCore = core.GetComponent<DVGolemCore>();
 
         golemCube.SetGolemCubeInfo(cubeInfo, null, golemCore);
-        golemCore.SetGolemInfo(golemInfo);
-
         MakeChildCube(ref golemInfo, cubeInfo, golemCube, golemCore);
-        golemCore.SetInit();
-        golemCore.SetupChilds();
+        golemCore.SetInit(golemInfo);
 
         return core;
     }
@@ -165,27 +210,29 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
         if (!golemInfo.ChildMap.ContainsKey(pCubeInfo.ShapePosition) || golemInfo.ChildMap[pCubeInfo.ShapePosition].Count <= 0)
             return;
 
-        DVStatus status = new DVStatus();
-        status.SetChildValue(pCubeInfo.Status);
-
-        List<DVGolemCube> childs = new List<DVGolemCube>();
+        DVStatus status = pCubeInfo.Status.GetChildStatus();
 
         foreach (var shapePos in golemInfo.ChildMap[pCubeInfo.ShapePosition]) {
             GameObject cube = DVObjectManager.Instance.InstanitateObject(_golemCube, instMat: true);
-            cube.name = $"Child_{shapePos.x}_{shapePos.y}_{shapePos.z}";
-            cube.transform.SetParent(pGolemCube.transform);
-            cube.transform.localPosition = (Vector3)(shapePos - pGolemCube.CubeInfo.ShapePosition) * DVConfigs.CUBE_BASE_LENGHT;
 
             DVCubeInfo cubeInfo = new DVCubeInfo(status, false, shapePos);
             DVGolemCube golemCube = cube.GetComponent<DVGolemCube>();
             golemCube.SetGolemCubeInfo(cubeInfo, pGolemCube, core);
+            SetChlidObject(golemCube, pGolemCube);
 
-            childs.Add(golemCube);
+            pGolemCube.AddGolemChild(golemCube);
 
             MakeChildCube(ref golemInfo, cubeInfo, golemCube, core);
         }
+    }
 
-        pGolemCube.SetGolemChild(childs.ToArray());
+    private void SetChlidObject<T>(T childCube, T parentCube) where T : DVCubeBase
+    {
+        Vector3Int shapePos = childCube.CubeInfo.ShapePosition;
+
+        childCube.name = $"Child_{shapePos.x}_{shapePos.y}_{shapePos.z}";
+        childCube.transform.SetParent(parentCube.transform);
+        childCube.transform.localPosition = (Vector3)(shapePos - parentCube.CubeInfo.ShapePosition) * DVConfigs.CUBE_BASE_LENGHT;
     }
     #endregion
 }

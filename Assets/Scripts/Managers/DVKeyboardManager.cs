@@ -183,8 +183,8 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
         _keyChanged = true;
     }
 
-    public void DeleteKeys(KeyCode[] keyCodes) {
-        for (int i = 0; i < keyCodes.Length; i++)
+    public void DeleteKeys(IList<KeyCode> keyCodes) {
+        for (int i = 0; i < keyCodes.Count; i++)
             DeleteKey(keyCodes[i]);
     }
 
@@ -210,11 +210,11 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
         return false;
     }
 
-    public void SetKeyLocks(KeyCode[] keyCodes) {
+    public void SetKeyLocks(IList<KeyCode> keyCodes) {
         KeyLock keyLock = new KeyLock();
         _keyLockFinder[keyLock] = new HashSet<KeyCode>();
 
-        for (int i = 0; i < keyCodes.Length; i++) {
+        for (int i = 0; i < keyCodes.Count; i++) {
             if (!CheckAddKeyLock(keyCodes[i]))
                 continue;
 
@@ -223,14 +223,14 @@ public class DVKeyboardManager : SingletonMonoBehaviour<DVKeyboardManager>
         }
     }
 
-    public void AddKeyLocks(KeyCode key, KeyCode[] keyCodes) {
+    public void AddKeyLocks(KeyCode key, IList<KeyCode> keyCodes) {
         if (!TryGetKeyLock(key, out var keyLock))
             return;
 
         if (_keyLockFinder[keyLock] == null)
             _keyLockFinder[keyLock] = new HashSet<KeyCode>();
 
-        for (int i = 0; i < keyCodes.Length; i++)
+        for (int i = 0; i < keyCodes.Count; i++)
         {
             if (!CheckAddKeyLock(keyCodes[i]))
                 continue;

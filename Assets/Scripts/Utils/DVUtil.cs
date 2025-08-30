@@ -5,7 +5,8 @@ using UnityEngine;
 public static partial class DVUtil
 {
     #region Directions
-    public static int GetEnumLength(Type type) {
+    public static int GetEnumLength(Type type)
+    {
         if (!type.IsEnum)
         {
             Debug.LogError($"{type} is not Enum");
@@ -17,8 +18,10 @@ public static partial class DVUtil
     public static int DirectionLength { get => GetEnumLength(typeof(DVEnums.Direction)); }
     public static int Direction3DLength { get => GetEnumLength(typeof(DVEnums.Direction3D)); }
 
-    public static Vector3Int GetDirection3DValue(DVEnums.Direction3D direction) {
-        switch (direction) {
+    public static Vector3Int GetDirection3DValue(DVEnums.Direction3D direction)
+    {
+        switch (direction)
+        {
             case DVEnums.Direction3D.RIGHT:
                 return Vector3Int.right;
             case DVEnums.Direction3D.LEFT:
@@ -28,16 +31,17 @@ public static partial class DVUtil
             case DVEnums.Direction3D.DOWN:
                 return Vector3Int.down;
             case DVEnums.Direction3D.FRONT:
+            default:
                 return Vector3Int.forward;
             case DVEnums.Direction3D.BACK:
                 return Vector3Int.back;
-            default:
-                return Vector3Int.zero;
         }
     }
 
-    public static DVEnums.Direction3D ConvertDirection2DTo3D(DVEnums.Direction direction) {
-        switch (direction) {
+    public static DVEnums.Direction3D ConvertDirection2DTo3D(DVEnums.Direction direction)
+    {
+        switch (direction)
+        {
             default:
             case DVEnums.Direction.RIGHT:
                 return DVEnums.Direction3D.RIGHT;
@@ -66,7 +70,8 @@ public static partial class DVUtil
         }
     }
 
-    public static DVEnums.Direction ReverseDirection(DVEnums.Direction direction) {
+    public static DVEnums.Direction ReverseDirection(DVEnums.Direction direction)
+    {
         switch (direction)
         {
             default:
@@ -81,7 +86,8 @@ public static partial class DVUtil
         }
     }
 
-    public static DVEnums.Direction3D ReverseDirection(DVEnums.Direction3D direction) {
+    public static DVEnums.Direction3D ReverseDirection(DVEnums.Direction3D direction)
+    {
         switch (direction)
         {
             default:
@@ -100,9 +106,23 @@ public static partial class DVUtil
         }
     }
 
-    public static DVEnums.Direction3D ConvertDirection(Vector3[] dirs, Vector3 dir) {
+    public static DVEnums.Direction3D ConvertDirection(Vector3[] dirs, Vector3 dir)
+    {
         GetClosestAxisVector(dirs, dir, out int index);
         return (DVEnums.Direction3D)index;
+    }
+
+    public static DVEnums.Direction3D ConvertDirection(Vector3 dir)
+    {
+        Vector3[] dirs = new Vector3[] {
+            Vector3.right,
+            Vector3.left,
+            Vector3.up,
+            Vector3.down,
+            Vector3.forward,
+            Vector3.back
+        };
+        return ConvertDirection(dirs, dir);
     }
     #endregion
 
@@ -170,15 +190,15 @@ public static partial class DVUtil
         direction = direction.normalized;
 
         Vector3 closestVector = vectors[0];
-        float minAngle = Vector3.Angle(vectors[0].normalized, direction);
+        float maxDot = Vector3.Dot(vectors[0].normalized, direction);
         index = 0;
 
         for (int i = 1; i < vectors.Length; i++)
         {
-            float angle = Vector3.Angle(vectors[i].normalized, direction);
-            if (angle < minAngle)
+            float dot = Vector3.Dot(vectors[i].normalized, direction);
+            if (dot > maxDot)
             {
-                minAngle = angle;
+                maxDot = dot;
                 index = i;
                 closestVector = vectors[i];
             }
@@ -207,7 +227,7 @@ public static partial class DVUtil
             * status.Armor * massRate + 1f);
     }
 
-    public static Vector3 EstimateImpulse(Vector3 velocityA, float massA, Vector3 velocityB, float massB, Vector3 normal) 
+    public static Vector3 EstimateImpulse(Vector3 velocityA, float massA, Vector3 velocityB, float massB, Vector3 normal)
     {
         Vector3 impulse = Vector3.zero;
         Vector3 relativeVelocity = velocityA - velocityB;
@@ -223,7 +243,8 @@ public static partial class DVUtil
     }
     #endregion
 
-    public static float GetEaseOut(float ratio) { 
+    public static float GetEaseOut(float ratio)
+    {
         Mathf.Clamp01(ratio);
         return 1f - Mathf.Pow(1f - ratio, 2f);
     }
@@ -251,5 +272,5 @@ public static partial class DVUtil
         return Mathf.Clamp(value, 0f, loadingValue);
     }
 
-    
+
 }

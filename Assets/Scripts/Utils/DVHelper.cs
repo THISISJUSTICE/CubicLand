@@ -24,12 +24,12 @@ public class DVHelper : SingletonMonoBehaviour<DVHelper>
     #endregion
 
     #region Public Functions
-    public async void WaitTimeAct(float waitTime, Action callback) {
+    public static async void WaitTimeAct(float waitTime, Action callback) {
         await Awaitable.WaitForSecondsAsync(waitTime);
         callback?.Invoke();
     }
 
-    public async void WaitFrameAct(int frame, Action callback) {
+    public static async void WaitFrameAct(int frame, Action callback) {
         for (int i = 0; i < frame; i++)
             await Awaitable.NextFrameAsync();
         callback?.Invoke();

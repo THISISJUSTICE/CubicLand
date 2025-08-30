@@ -7,7 +7,10 @@ public class DVYieldCache
     private LimitedDictionary<float, WaitForSeconds> _waitforSeconds
         = new LimitedDictionary<float, WaitForSeconds>(200);
 
-    public DVYieldCache() {
+    public readonly WaitForFixedUpdate WaitForFixedUpdate = new WaitForFixedUpdate();
+
+    public DVYieldCache() 
+    {
 
     }
 

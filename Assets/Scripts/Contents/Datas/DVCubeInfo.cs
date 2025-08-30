@@ -3,12 +3,14 @@ using UnityEngine;
 [System.Serializable]
 public struct DVCubeInfo
 {
-    public DVStatus Status;
-    public bool AttackMode;
+    [SerializeField] public DVStatus Status;
+    [SerializeField] public bool AttackMode;
+    [SerializeField] public DVCurrentStatus CurrentStatus;
 
-    private bool _isCore;
+    [SerializeField] private bool _isCore;
     public bool IsCore { get { return _isCore; } }
-    private Vector3Int _shapePosition;
+
+    [SerializeField] private Vector3Int _shapePosition;
     public Vector3Int ShapePosition { get { return _shapePosition; } }
 
     public DVCubeInfo(DVStatus status, bool isCore, Vector3Int shapePosition)
@@ -17,6 +19,20 @@ public struct DVCubeInfo
         _isCore = isCore;
         _shapePosition = shapePosition;
         AttackMode = false;
+        CurrentStatus = new DVCurrentStatus();
+        CurrentStatus.SetInitValue(status);
+    }
+
+    public void SetChildValue(DVStatus status)
+    {
+        Status.SetChildValue(status);
+        CurrentStatus.SetInitValue(Status);
+    }
+
+    public void EnhanceStatus(DVStatus status)
+    {
+        Status = status;
+        CurrentStatus.EnhanceStatus(status);
     }
 
     public void DetachParent() {
@@ -27,20 +43,18 @@ public struct DVCubeInfo
 [System.Serializable]
 public struct DVStatus
 {
-    public int Point_HP;
-    public int Point_Armor;
-    public int Point_Attack;
-    private Color _color;
+    [SerializeField] public int Point_HP;
+    [SerializeField] public int Point_Armor;
+    [SerializeField] public int Point_Attack;
+    [SerializeField] private Color _color;
+
     public Color Color { get => _color; }
-    public DVCurrentStatus CurrentStatus;
 
     public DVStatus(int point_hp = 0, int point_armor = 0, int point_attack = 0) {
         Point_HP = Mathf.Max(point_hp, 0);
         Point_Armor = Mathf.Max(point_armor, 0);
         Point_Attack = Mathf.Max(point_attack, 0);
         _color = Color.white;
-        CurrentStatus = new DVCurrentStatus();
-        CurrentStatus.SetInitValue(this);
     }
 
     public void SetInitValue() { 
@@ -48,8 +62,6 @@ public struct DVStatus
         Point_Armor = 0;
         Point_Attack = 0;
         _color = Color.white;
-        CurrentStatus = new DVCurrentStatus();
-        CurrentStatus.SetInitValue(this);
     }
 
     public void SetChildValue(DVStatus status) { 
@@ -58,7 +70,14 @@ public struct DVStatus
         Point_Attack = Mathf.Max(status.Point_Attack - 1, 0);
         _color = status._color * DVStatusConfig.COLOR_CHILD_RATE;
         _color.Clamp(status._color * DVStatusConfig.COLOR_CHILD_RATE, Color.white);
-        CurrentStatus.SetInitValue(this);
+    }
+
+    public DVStatus GetChildStatus()
+    {
+        DVStatus newStatus = new DVStatus(0, 0, 0);
+        newStatus.SetChildValue(this);
+
+        return newStatus;
     }
 }
 
@@ -81,11 +100,20 @@ public struct DVCurrentStatus {
         _attack = DVStatusConfig.INIT_ATTACK + status.Point_Attack * DVStatusConfig.ADD_ATTACK;
     }
 
+    public void EnhanceStatus(DVStatus status)
+    {
+        int prevMaxHP = MaxHP;
+        _pointHP = status.Point_HP;
+        _hp += MaxHP - prevMaxHP;
+        _armor = DVStatusConfig.INIT_ARMOR + status.Point_Armor * DVStatusConfig.ADD_ARMOR;
+        _attack = DVStatusConfig.INIT_ATTACK + status.Point_Attack * DVStatusConfig.ADD_ATTACK;
+    }
+
     public void OnDamaged(float selfMass, Vector3 impulse, DVCubeInfo colCubeInfo) { 
-        float cubeHP = colCubeInfo.Status.CurrentStatus.HP;
-        float cubeMaxHP = colCubeInfo.Status.CurrentStatus.MaxHP;
-        float cubeArmor = colCubeInfo.Status.CurrentStatus.Armor;
-        float cubeAttack = colCubeInfo.AttackMode ? colCubeInfo.Status.CurrentStatus.Attack : 0f;
+        float cubeHP = colCubeInfo.CurrentStatus.HP;
+        float cubeMaxHP = colCubeInfo.CurrentStatus.MaxHP;
+        float cubeArmor = colCubeInfo.CurrentStatus.Armor;
+        float cubeAttack = colCubeInfo.AttackMode ? colCubeInfo.CurrentStatus.Attack : 0f;
         int damage = Mathf.RoundToInt(cubeHP / cubeMaxHP * cubeArmor + cubeAttack);
 
         OnDamaged(damage, selfMass, impulse);

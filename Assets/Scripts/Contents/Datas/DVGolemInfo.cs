@@ -5,8 +5,8 @@ using UnityEngine;
 public class DVGolemInfo
 { 
     #region Data Variables
-    private DVStatus _status;
-    private int _moveSpeedPoint;
+    [SerializeField] private DVStatus _status;
+    [SerializeField] private int _moveSpeedPoint;
     private HashSet<Vector3Int> _shape;// (0,0,0)은 Core (R:x+1, L:x-1, U:y+1, D:y-1, F:z+1, B:z-1)
 
     // TODO: Dictionary를 List<KeyValuePair<TKey, TValue>>로 변환
@@ -70,47 +70,19 @@ public class DVGolemInfo
     }
     #endregion
 
-    #region Public Functions
+    #region Utils
     public int GetDirectionSize(DVEnums.Direction3D direction)
+    { 
+        return Mathf.Abs(GetDirectionValue(direction));
+    }
+
+    public int GetDirectionValue(DVEnums.Direction3D direction)
     {
-        switch (direction)
-        {
-            case DVEnums.Direction3D.RIGHT:
-                return GetSize(0, true);
-            case DVEnums.Direction3D.LEFT:
-                return GetSize(0, false);
-            case DVEnums.Direction3D.UP:
-                return GetSize(1, true);
-            case DVEnums.Direction3D.DOWN:
-                return GetSize(1, false);
-            case DVEnums.Direction3D.FRONT:
-                return GetSize(2, true);
-            case DVEnums.Direction3D.BACK:
-                return GetSize(2, false);
-            default:
-                return 0;
-        }
+        return ShapeUtil.GetDirectionValue(_shape, direction);
     }
 
     public List<Vector3Int> FindEdgeChilds(DVEnums.Direction3D direction, int length) {
-        length = Mathf.RoundToInt(Mathf.Abs(length));
-        switch (direction)
-        {
-            case DVEnums.Direction3D.RIGHT:
-                return FindChilds(0, length);
-            case DVEnums.Direction3D.LEFT:
-                return FindChilds(0, -length);
-            case DVEnums.Direction3D.UP:
-                return FindChilds(1, length);
-            case DVEnums.Direction3D.DOWN:
-                return FindChilds(1, -length);
-            case DVEnums.Direction3D.FRONT:
-                return FindChilds(2, length);
-            case DVEnums.Direction3D.BACK:
-                return FindChilds(2, -length);
-            default:
-                return null;
-        }
+        return ShapeUtil.FindEdgeChilds(_shape, direction, length);
     }
 
     public Vector3Int[] GetAbleAddCubePosition(Vector3Int parentPos)
@@ -163,36 +135,8 @@ public class DVGolemInfo
 
         return true;
     }
-    #endregion
 
-    #region Utils
-    private int GetSize(int vectorDirection, bool isMax)
-    {
-        int value = 0;
-
-        foreach (Vector3Int pos in _shape)
-        {
-            if (isMax)
-                value = Mathf.RoundToInt(Mathf.Max(value, pos[vectorDirection]));
-            else
-                value = Mathf.RoundToInt(Mathf.Min(value, pos[vectorDirection]));
-        }
-
-        return (int)Mathf.Abs(value) + 1;
-    }
-
-    private List<Vector3Int> FindChilds(int vectorDirection, int edge) {
-        List<Vector3Int> childs = new List<Vector3Int>();
-        foreach (Vector3Int pos in _shape)
-        {
-            if (pos[vectorDirection] == edge) 
-                childs.Add(pos);
-        }
-
-        return childs;
-    }
-
-    private List<Vector3Int> GetChilds(Vector3Int cubePos, bool remove = false)
+    public List<Vector3Int> GetChilds(Vector3Int cubePos, bool remove = false)
     {
         List<Vector3Int> list = new List<Vector3Int>();
         List<Vector3Int> childList = new List<Vector3Int>();
@@ -225,4 +169,78 @@ public class DVGolemInfo
     }
     #endregion
 
+}
+
+public static class ShapeUtil
+{
+    public static int GetDirectionValue(HashSet<Vector3Int> shape, DVEnums.Direction3D direction)
+    {
+        switch (direction)
+        {
+            case DVEnums.Direction3D.RIGHT:
+                return GetValue(shape, 0, true);
+            case DVEnums.Direction3D.LEFT:
+                return GetValue(shape, 0, false);
+            case DVEnums.Direction3D.UP:
+                return GetValue(shape, 1, true);
+            case DVEnums.Direction3D.DOWN:
+                return GetValue(shape, 1, false);
+            case DVEnums.Direction3D.FRONT:
+                return GetValue(shape, 2, true);
+            case DVEnums.Direction3D.BACK:
+                return GetValue(shape, 2, false);
+            default:
+                return 0;
+        }
+    }
+
+    private static int GetValue(HashSet<Vector3Int> shape, int vectorDirection, bool isMax)
+    {
+        int value = 0;
+
+        foreach (Vector3Int pos in shape)
+        {
+            if (isMax)
+                value = Mathf.RoundToInt(Mathf.Max(value, pos[vectorDirection]));
+            else
+                value = Mathf.RoundToInt(Mathf.Min(value, pos[vectorDirection]));
+        }
+
+        return Mathf.Abs(value);
+    }
+
+    public static List<Vector3Int> FindEdgeChilds(HashSet<Vector3Int> shape, DVEnums.Direction3D direction, int length)
+    {
+        length = Mathf.RoundToInt(Mathf.Abs(length));
+
+        switch (direction)
+        {
+            case DVEnums.Direction3D.RIGHT:
+                return FindChilds(shape, 0, length);
+            case DVEnums.Direction3D.LEFT:
+                return FindChilds(shape, 0, -length);
+            case DVEnums.Direction3D.UP:
+                return FindChilds(shape, 1, length);
+            case DVEnums.Direction3D.DOWN:
+                return FindChilds(shape, 1, -length);
+            case DVEnums.Direction3D.FRONT:
+                return FindChilds(shape, 2, length);
+            case DVEnums.Direction3D.BACK:
+                return FindChilds(shape, 2, -length);
+            default:
+                return null;
+        }
+    }
+
+    private static List<Vector3Int> FindChilds(HashSet<Vector3Int> shape, int vectorDirection, int edge)
+    {
+        List<Vector3Int> childs = new List<Vector3Int>();
+        foreach (Vector3Int pos in shape)
+        {
+            if (pos[vectorDirection] == edge)
+                childs.Add(pos);
+        }
+
+        return childs;
+    }
 }

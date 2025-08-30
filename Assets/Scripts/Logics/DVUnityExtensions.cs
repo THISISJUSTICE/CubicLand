@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using UnityEngine;
 
 public static class DVUnityExtensions
@@ -10,10 +12,8 @@ public static class DVUnityExtensions
         tf.transform.localPosition = Vector3.zero;
     }
 
-    public static Vector3[] GetDirections(this Transform tf) {
-        if (tf == null)
-            return null;
-
+    public static Vector3[] GetDirections(this Transform tf)
+    {
         return new Vector3[] {
             tf.right,
             -tf.right,
@@ -35,7 +35,8 @@ public static class DVUnityExtensions
         );
     }
 
-    public static Vector3 Clamp(this Vector3 vector, float min, float max) {
+    public static Vector3 Clamp(this Vector3 vector, float min, float max)
+    {
         return new Vector3(
             Mathf.Clamp(vector.x, min, max),
             Mathf.Clamp(vector.y, min, max),
@@ -57,7 +58,7 @@ public static class DVUnityExtensions
         Vector3 normalPos = pos;
         normalPos.x = Mathf.Round(pos.x / DVConfigs.CUBE_BASE_LENGHT) * DVConfigs.CUBE_BASE_LENGHT;
         normalPos.z = Mathf.Round(pos.z / DVConfigs.CUBE_BASE_LENGHT) * DVConfigs.CUBE_BASE_LENGHT;
-        
+
         return normalPos;
     }
     #endregion
@@ -75,7 +76,8 @@ public static class DVUnityExtensions
     #endregion
 
     #region Color
-    public static Color Clamp(this Color color, Color min, Color max) {
+    public static Color Clamp(this Color color, Color min, Color max)
+    {
         return new Color(
             Mathf.Clamp(color.r, min.r, max.r),
             Mathf.Clamp(color.g, min.g, max.g),
@@ -86,10 +88,8 @@ public static class DVUnityExtensions
     #endregion
 
     #region Rigidbody
-    public static void Reset(this Rigidbody rb) {
-        if (rb == null)
-            return;
-
+    public static void Reset(this Rigidbody rb)
+    {
         rb.isKinematic = false;
         rb.useGravity = true;
         rb.constraints = RigidbodyConstraints.None;
@@ -97,19 +97,14 @@ public static class DVUnityExtensions
 
     public static void UseOnlyGravity(this Rigidbody rb)
     {
-        if (rb == null)
-            return;
-
         rb.useGravity = true;
         rb.constraints = RigidbodyConstraints.FreezePositionX
                 | RigidbodyConstraints.FreezePositionZ
                 | RigidbodyConstraints.FreezeRotation;
     }
 
-    public static void UseLinear(this Rigidbody rb, bool on) {
-        if (rb == null)
-            return;
-
+    public static void UseLinear(this Rigidbody rb, bool on)
+    {
         if (!on)
             rb.constraints |= RigidbodyConstraints.FreezePositionX
                 | RigidbodyConstraints.FreezePositionZ;
@@ -118,77 +113,72 @@ public static class DVUnityExtensions
                 & ~RigidbodyConstraints.FreezePositionZ;
     }
 
-    public static float GetLinearXZSpeed(this Rigidbody rb) {
-        if (rb == null)
-            return 0f;
-
+    public static float GetLinearXZSpeed(this Rigidbody rb)
+    {
         return Mathf.Abs(DVUtil.ConvertXZVector2(rb.linearVelocity).magnitude);
     }
 
     public static float GetGravitySpeed(this Rigidbody rb)
     {
-        if (rb == null)
-            return 0f;
-
         return Mathf.Abs(rb.linearVelocity.y);
     }
 
-    public static bool CheckGravity(this Rigidbody rb) {
-        if (rb == null)
-            return false;
-
+    public static bool CheckGravity(this Rigidbody rb)
+    {
         return rb.GetGravitySpeed() > 0.01f;
     }
 
     public static float GetAngularSpeed(this Rigidbody rb)
     {
-        if (rb == null)
-            return 0f;
-
         return Mathf.Abs(rb.angularVelocity.magnitude);
     }
 
-    public static void UseAngular(this Rigidbody rb, bool on) {
-        if (rb == null)
-            return;
-
+    public static void UseAngular(this Rigidbody rb, bool on)
+    {
         if (!on)
             rb.constraints |= RigidbodyConstraints.FreezeRotation;
         else
             rb.constraints &= ~RigidbodyConstraints.FreezeRotation;
     }
 
-    public static float GetUpForce(this Rigidbody rb, float height) {
-        if (rb == null)
-            return 0f;
-
+    public static float GetUpForce(this Rigidbody rb, float height)
+    {
         float v = Mathf.Sqrt(Mathf.Abs(2f * Physics.gravity.y * height));
         return v * rb.mass;
     }
 
-    public static float GetMoveForce(this Rigidbody rb, float distance) {
-        if (rb == null)
-            return 0f;
-
+    public static float GetMoveForce(this Rigidbody rb, float distance)
+    {
         float v = Mathf.Sqrt(2f * distance);
         return v * rb.mass;
     }
 
-    public static void ImpulseCube(this Rigidbody rb, Vector3 impulse) {
-        if (rb == null)
-            return;
+    public static float GetVelocityForce(this Rigidbody rb, float distance, float time)
+    {
+        if (time <= 0f || distance <= 0f)
+            return 0f;
 
+        float velocity = distance / time;
+        float force = velocity * rb.mass;
+
+        return force;
+    }
+
+    public static void ImpulseCube(this Rigidbody rb, Vector3 impulse)
+    {
         float minForce = rb.GetMoveForce(0.7f);
         float xzForce = DVUtil.ConvertXZVector2(impulse).magnitude;
-        if (xzForce < minForce) {
+        if (xzForce < minForce)
+        {
             impulse.x = 0f; impulse.z = 0f;
         }
 
         rb.AddForce(impulse, ForceMode.Impulse);
     }
 
-    public static float GetMoveDistance(this Rigidbody rb, Vector3 impulse, float deceleration = 2f) {
-        if (rb == null || rb.mass <= 0f || impulse == Vector3.zero || deceleration <= 0f)
+    public static float GetMoveDistance(this Rigidbody rb, Vector3 impulse, float deceleration = 2f)
+    {
+        if (rb.mass <= 0f || impulse == Vector3.zero || deceleration <= 0f)
             return 0f;
 
         float v = impulse.magnitude / rb.mass;
@@ -197,17 +187,15 @@ public static class DVUnityExtensions
 
     public static float GetMoveTimeFromImpulse(this Rigidbody rb, Vector3 impulse, float deceleration = 2f)
     {
-        if (rb == null || rb.mass <= 0f || impulse == Vector3.zero || deceleration <= 0f)
+        if (rb.mass <= 0f || impulse == Vector3.zero || deceleration <= 0f)
             return 0f;
 
         float v = DVUtil.ConvertXZVector2(impulse).magnitude / rb.mass;
         return v / deceleration;
     }
 
-    public static void CancelVelocity(this Rigidbody rb) {
-        if (rb == null)
-            return;
-
+    public static void CancelVelocity(this Rigidbody rb)
+    {
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
     }
@@ -216,10 +204,33 @@ public static class DVUnityExtensions
     #region MonoBehaviour
     public static bool Usable(this MonoBehaviour mb)
     {
-        if (mb == null || !mb.gameObject.activeSelf)
+        if (mb == null || !mb.gameObject.activeInHierarchy)
             return false;
 
         return true;
+    }
+
+    public static Coroutine WaitTimeAct(this MonoBehaviour mb, float waitTime, Action callback)
+    { 
+        return mb.StartCoroutine(WaitTimeActCor(waitTime, callback));
+    }
+
+    public static Coroutine WaitFrameAct(this MonoBehaviour mb, int frame, Action callback)
+    {
+        return mb.StartCoroutine(WaitFrameActCor(frame, callback));
+    }
+
+    private static IEnumerator WaitTimeActCor(float waitTime, Action callback)
+    {
+        yield return DVHelper.YieldCache.GetWaitForSeconds(waitTime);
+        callback?.Invoke();
+    }
+
+    private static IEnumerator WaitFrameActCor(int frame, Action callback)
+    {
+        for (int i = 0; i < frame; i++)
+            yield return null;
+        callback?.Invoke();
     }
     #endregion
 
@@ -303,6 +314,17 @@ public static class DVUnityExtensions
         }
 
         return $"{len:F2}{sizes[order]}";
+    }
+    #endregion
+
+    #region Cube
+    public static void SetupChildCube(this DVGolemCube childCube, DVGolemCube parentCube)
+    {
+        Vector3Int shapePos = childCube.CubeInfo.ShapePosition;
+
+        childCube.name = $"Child_{shapePos.x}_{shapePos.y}_{shapePos.z}";
+        childCube.transform.SetParent(parentCube.transform);
+        childCube.transform.localPosition = (Vector3)(shapePos - parentCube.CubeInfo.ShapePosition) * DVConfigs.CUBE_BASE_LENGHT;
     }
     #endregion
 }

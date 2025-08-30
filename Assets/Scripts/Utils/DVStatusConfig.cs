@@ -1,6 +1,6 @@
 using UnityEngine;
 
-// TODO: 서버 로드 데이터 화
+// TODO: 데이터 에셋으로 변경
 public class DVStatusConfig
 {
     public const int INIT_MOVE_SPEED = 10;

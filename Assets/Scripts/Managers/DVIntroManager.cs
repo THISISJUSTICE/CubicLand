@@ -7,7 +7,8 @@ public class DVIntroManager : MonoBehaviour
     private void Awake()
     {
         CreateSingletones();
-        
+
+        DVConfigs.Setup();
     }
 
     private async void Start()
