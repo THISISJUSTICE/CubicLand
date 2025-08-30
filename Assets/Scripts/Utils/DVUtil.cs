@@ -22,18 +22,18 @@ public static partial class DVUtil
     {
         switch (direction)
         {
-            case DVEnums.Direction3D.RIGHT:
+            case DVEnums.Direction3D.Right:
                 return Vector3Int.right;
-            case DVEnums.Direction3D.LEFT:
+            case DVEnums.Direction3D.Left:
                 return Vector3Int.left;
-            case DVEnums.Direction3D.UP:
+            case DVEnums.Direction3D.Up:
                 return Vector3Int.up;
-            case DVEnums.Direction3D.DOWN:
+            case DVEnums.Direction3D.Down:
                 return Vector3Int.down;
-            case DVEnums.Direction3D.FRONT:
+            case DVEnums.Direction3D.Front:
             default:
                 return Vector3Int.forward;
-            case DVEnums.Direction3D.BACK:
+            case DVEnums.Direction3D.Back:
                 return Vector3Int.back;
         }
     }
@@ -43,14 +43,14 @@ public static partial class DVUtil
         switch (direction)
         {
             default:
-            case DVEnums.Direction.RIGHT:
-                return DVEnums.Direction3D.RIGHT;
-            case DVEnums.Direction.LEFT:
-                return DVEnums.Direction3D.LEFT;
-            case DVEnums.Direction.FRONT:
-                return DVEnums.Direction3D.FRONT;
-            case DVEnums.Direction.BACK:
-                return DVEnums.Direction3D.BACK;
+            case DVEnums.Direction.Right:
+                return DVEnums.Direction3D.Right;
+            case DVEnums.Direction.Left:
+                return DVEnums.Direction3D.Left;
+            case DVEnums.Direction.Front:
+                return DVEnums.Direction3D.Front;
+            case DVEnums.Direction.Back:
+                return DVEnums.Direction3D.Back;
         }
     }
 
@@ -59,14 +59,14 @@ public static partial class DVUtil
         switch (direction)
         {
             default:
-            case DVEnums.Direction3D.RIGHT:
-                return DVEnums.Direction.RIGHT;
-            case DVEnums.Direction3D.LEFT:
-                return DVEnums.Direction.LEFT;
-            case DVEnums.Direction3D.FRONT:
-                return DVEnums.Direction.FRONT;
-            case DVEnums.Direction3D.BACK:
-                return DVEnums.Direction.BACK;
+            case DVEnums.Direction3D.Right:
+                return DVEnums.Direction.Right;
+            case DVEnums.Direction3D.Left:
+                return DVEnums.Direction.Left;
+            case DVEnums.Direction3D.Front:
+                return DVEnums.Direction.Front;
+            case DVEnums.Direction3D.Back:
+                return DVEnums.Direction.Back;
         }
     }
 
@@ -75,14 +75,14 @@ public static partial class DVUtil
         switch (direction)
         {
             default:
-            case DVEnums.Direction.RIGHT:
-                return DVEnums.Direction.LEFT;
-            case DVEnums.Direction.LEFT:
-                return DVEnums.Direction.RIGHT;
-            case DVEnums.Direction.FRONT:
-                return DVEnums.Direction.BACK;
-            case DVEnums.Direction.BACK:
-                return DVEnums.Direction.FRONT;
+            case DVEnums.Direction.Right:
+                return DVEnums.Direction.Left;
+            case DVEnums.Direction.Left:
+                return DVEnums.Direction.Right;
+            case DVEnums.Direction.Front:
+                return DVEnums.Direction.Back;
+            case DVEnums.Direction.Back:
+                return DVEnums.Direction.Front;
         }
     }
 
@@ -91,18 +91,18 @@ public static partial class DVUtil
         switch (direction)
         {
             default:
-            case DVEnums.Direction3D.RIGHT:
-                return DVEnums.Direction3D.LEFT;
-            case DVEnums.Direction3D.LEFT:
-                return DVEnums.Direction3D.RIGHT;
-            case DVEnums.Direction3D.UP:
-                return DVEnums.Direction3D.DOWN;
-            case DVEnums.Direction3D.DOWN:
-                return DVEnums.Direction3D.UP;
-            case DVEnums.Direction3D.FRONT:
-                return DVEnums.Direction3D.BACK;
-            case DVEnums.Direction3D.BACK:
-                return DVEnums.Direction3D.FRONT;
+            case DVEnums.Direction3D.Right:
+                return DVEnums.Direction3D.Left;
+            case DVEnums.Direction3D.Left:
+                return DVEnums.Direction3D.Right;
+            case DVEnums.Direction3D.Up:
+                return DVEnums.Direction3D.Down;
+            case DVEnums.Direction3D.Down:
+                return DVEnums.Direction3D.Up;
+            case DVEnums.Direction3D.Front:
+                return DVEnums.Direction3D.Back;
+            case DVEnums.Direction3D.Back:
+                return DVEnums.Direction3D.Front;
         }
     }
 

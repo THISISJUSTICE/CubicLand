@@ -177,17 +177,17 @@ public static class ShapeUtil
     {
         switch (direction)
         {
-            case DVEnums.Direction3D.RIGHT:
+            case DVEnums.Direction3D.Right:
                 return GetValue(shape, 0, true);
-            case DVEnums.Direction3D.LEFT:
+            case DVEnums.Direction3D.Left:
                 return GetValue(shape, 0, false);
-            case DVEnums.Direction3D.UP:
+            case DVEnums.Direction3D.Up:
                 return GetValue(shape, 1, true);
-            case DVEnums.Direction3D.DOWN:
+            case DVEnums.Direction3D.Down:
                 return GetValue(shape, 1, false);
-            case DVEnums.Direction3D.FRONT:
+            case DVEnums.Direction3D.Front:
                 return GetValue(shape, 2, true);
-            case DVEnums.Direction3D.BACK:
+            case DVEnums.Direction3D.Back:
                 return GetValue(shape, 2, false);
             default:
                 return 0;
@@ -215,17 +215,17 @@ public static class ShapeUtil
 
         switch (direction)
         {
-            case DVEnums.Direction3D.RIGHT:
+            case DVEnums.Direction3D.Right:
                 return FindChilds(shape, 0, length);
-            case DVEnums.Direction3D.LEFT:
+            case DVEnums.Direction3D.Left:
                 return FindChilds(shape, 0, -length);
-            case DVEnums.Direction3D.UP:
+            case DVEnums.Direction3D.Up:
                 return FindChilds(shape, 1, length);
-            case DVEnums.Direction3D.DOWN:
+            case DVEnums.Direction3D.Down:
                 return FindChilds(shape, 1, -length);
-            case DVEnums.Direction3D.FRONT:
+            case DVEnums.Direction3D.Front:
                 return FindChilds(shape, 2, length);
-            case DVEnums.Direction3D.BACK:
+            case DVEnums.Direction3D.Back:
                 return FindChilds(shape, 2, -length);
             default:
                 return null;

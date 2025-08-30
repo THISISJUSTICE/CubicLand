@@ -45,7 +45,7 @@ public class DVChargeShoot : DVGolemSkillSummon
 
         if (moveDirections == null || convertDirections == null)
         {
-            moveDirections = new List<DVEnums.Direction3D>() { DVEnums.Direction3D.FRONT };
+            moveDirections = new List<DVEnums.Direction3D>() { DVEnums.Direction3D.Front };
             convertDirections = new List<int>();
         }
 
@@ -107,9 +107,9 @@ public class DVChargeShoot : DVGolemSkillSummon
     private Vector3 CalculateCorePosition()
     {
         Vector3 ownerFrontDirection = (_owner.PlayerViewRotation * Vector3.forward).normalized;
-        DVEnums.Direction3D viewFront = _owner.ConvertMoveToTransformDirection(DVEnums.Direction3D.FRONT);
-        DVEnums.Direction3D viewBack = _owner.ConvertMoveToTransformDirection(DVEnums.Direction3D.BACK);
-        DVEnums.Direction3D viewDown = _owner.ConvertMoveToTransformDirection(DVEnums.Direction3D.DOWN);
+        DVEnums.Direction3D viewFront = _owner.ConvertMoveToTransformDirection(DVEnums.Direction3D.Front);
+        DVEnums.Direction3D viewBack = _owner.ConvertMoveToTransformDirection(DVEnums.Direction3D.Back);
+        DVEnums.Direction3D viewDown = _owner.ConvertMoveToTransformDirection(DVEnums.Direction3D.Down);
 
         float ownerFrontLength = DVConfigs.CUBE_BASE_LENGHT * 
             (_ownerCore.GolemInfo.GetDirectionSize(viewFront) + 1);

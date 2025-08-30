@@ -91,26 +91,26 @@ public sealed class DVPlayerController : DVGolemController
         // Move
         {
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.MOVE_FRONT],
-                () => MoveJump(DVEnums.Direction.FRONT),
+                () => MoveJump(DVEnums.Direction.Front),
                 (keyTime) => CancelMove());
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.MOVE_RIGHT],
-                () => RollGolem(DVEnums.Direction.RIGHT),
+                () => RollGolem(DVEnums.Direction.Right),
                 (keyTime) => CancelMove());
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.MOVE_LEFT],
-                () => RollGolem(DVEnums.Direction.LEFT),
+                () => RollGolem(DVEnums.Direction.Left),
                 (keyTime) => CancelMove());
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.MOVE_BACK],
-                () => RollGolem(DVEnums.Direction.BACK),
+                () => RollGolem(DVEnums.Direction.Back),
                 (keyTime) => CancelMove());
         }
 
         // Rotate
         {
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.ROTATE_RIGHT],
-                () => Rotate(DVEnums.Direction.RIGHT),
+                () => Rotate(DVEnums.Direction.Right),
                 (keyTime) => CancelMove());
             DVKeyboardManager.Instance.SetKeyDownUp(_playerActKeys[(int)PlayerActKey.ROTATE_LEFT],
-                () => Rotate(DVEnums.Direction.LEFT),
+                () => Rotate(DVEnums.Direction.Left),
                 (keyTime) => CancelMove());
         }
 

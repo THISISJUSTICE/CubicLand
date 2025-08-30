@@ -2,19 +2,19 @@ namespace DVEnums
 {
     public enum Direction
     {
-        RIGHT,
-        LEFT,
-        FRONT,
-        BACK,
+        Right,
+        Left,
+        Front,
+        Back,
     }
 
     public enum Direction3D
     {
-        RIGHT,
-        LEFT,
-        UP,
-        DOWN,
-        FRONT,
-        BACK,
+        Right,
+        Left,
+        Up,
+        Down,
+        Front,
+        Back,
     }
 }

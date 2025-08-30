@@ -190,7 +190,7 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
     private GameObject CreateGolem(DVGolemInfo golemInfo, string golemName, Vector3 pos) {
         GameObject core = DVObjectManager.Instance.InstanitateObject(_golemCore, instMat: true);
         core.name = golemName;
-        pos.y += (float)golemInfo.GetDirectionSize(DVEnums.Direction3D.DOWN) * DVConfigs.CUBE_BASE_LENGHT;
+        pos.y += (float)golemInfo.GetDirectionSize(DVEnums.Direction3D.Down) * DVConfigs.CUBE_BASE_LENGHT;
         core.transform.position = pos;
 
         DVCubeInfo cubeInfo = new DVCubeInfo(golemInfo.Status, true, Vector3Int.zero);
