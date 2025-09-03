@@ -19,9 +19,9 @@ public class DVResourceManager : SingletonMonoBehaviour<DVResourceManager>
     #endregion
 
     #region Coroutines
-    public async UniTask LoadAssets(Action<bool> onFinishedCallback = null) 
+    public async UniTask LoadAssets() 
     {
-        IList<DVAssets> assets = await DVAddresableManager.Instance.LoadAssets<DVAssets>(keys, onFinishedCallback);
+        IList<DVAssets> assets = await DVAddresableManager.Instance.LoadAssets<DVAssets>(keys);
 
         foreach (DVAssets asset in assets) 
             _assets[asset.Type] = asset;

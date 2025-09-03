@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 
 public class DVIntroManager : MonoBehaviour
@@ -15,12 +15,7 @@ public class DVIntroManager : MonoBehaviour
     {
         LimitFrameRate();
 
-        await DVResourceManager.Instance.LoadAssets((success) => 
-        {
-            if (!success) { 
-                // TODO: ½ÇÆÐ ÆË¾÷ ÈÄ Àç½Ãµµ È¤Àº Á¾·á
-            }
-        });
+        await DVResourceManager.Instance.LoadAssets();
 
         var monoBehaviours = GameObject.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
         foreach (var monoBehaviour in monoBehaviours) {
