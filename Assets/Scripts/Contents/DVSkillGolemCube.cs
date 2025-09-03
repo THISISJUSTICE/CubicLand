@@ -29,6 +29,7 @@ public class DVSkillGolemCube : DVCubeBase
 
         _trail.enabled = true;
     }
+
     public override void SetCubeInfo(DVCubeInfo cubeInfo)
     {
         _cubeInfo = cubeInfo;

@@ -1,7 +1,6 @@
 using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 using System;
+using Cysharp.Threading.Tasks;
 
 public class DVHelper : SingletonMonoBehaviour<DVHelper>
 {
@@ -25,13 +24,13 @@ public class DVHelper : SingletonMonoBehaviour<DVHelper>
 
     #region Public Functions
     public static async void WaitTimeAct(float waitTime, Action callback) {
-        await Awaitable.WaitForSecondsAsync(waitTime);
+        await UniTask.WaitForSeconds(waitTime);
         callback?.Invoke();
     }
 
     public static async void WaitFrameAct(int frame, Action callback) {
         for (int i = 0; i < frame; i++)
-            await Awaitable.NextFrameAsync();
+            await UniTask.NextFrame();
         callback?.Invoke();
     }
     #endregion

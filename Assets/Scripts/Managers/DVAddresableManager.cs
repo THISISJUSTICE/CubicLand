@@ -12,7 +12,7 @@ public class DVAddresableManager : SingletonMonoBehaviour<DVAddresableManager>
     #endregion
 
     #region Load Functions
-    public async Awaitable<T> LoadAsset<T>(string key, Action<bool> onDefineSuccess = null)
+    public async UniTask<T> LoadAsset<T>(string key, Action<bool> onDefineSuccess = null)
     {
         AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(key);
         T res = await handle;
@@ -24,7 +24,7 @@ public class DVAddresableManager : SingletonMonoBehaviour<DVAddresableManager>
         return res;
     }
 
-    public async Awaitable<IList<T>> LoadAssets<T>(string key, Action<bool> onDefineSuccess = null)
+    public async UniTask<IList<T>> LoadAssets<T>(string key, Action<bool> onDefineSuccess = null)
     {
         AsyncOperationHandle<IList<T>> handle = Addressables.LoadAssetsAsync<T>(key);
         IList<T> res = await handle;
@@ -36,9 +36,9 @@ public class DVAddresableManager : SingletonMonoBehaviour<DVAddresableManager>
         return res;
     }
 
-    public async Awaitable<IList<T>> LoadAssets<T>(params string[] keys) => await LoadAssets<T>(null, keys);
+    public async UniTask<IList<T>> LoadAssets<T>(params string[] keys) => await LoadAssets<T>(keys, null);
 
-    public async Awaitable<IList<T>> LoadAssets<T>(Action<bool> onDefineSuccess, params string[] keys)
+    public async UniTask<IList<T>> LoadAssets<T>(string[] keys, Action<bool> onDefineSuccess)
     {
         List<UniTask<T>> loadTasks = new List<UniTask<T>>();
         bool success = true;
@@ -59,7 +59,7 @@ public class DVAddresableManager : SingletonMonoBehaviour<DVAddresableManager>
         return res;
     }
 
-    public static async Awaitable<GameObject> InstantiateAsync(string key, Transform parent = null)
+    public static async UniTask<GameObject> InstantiateAsync(string key, Transform parent = null)
     {
         return await Addressables.InstantiateAsync(key, parent);
     }
