@@ -3,18 +3,13 @@ using System.Collections.Generic;
 
 public class DVEffectManager : SingletonMonoBehaviour<DVEffectManager>, IIntroInitializable
 {
-    #region Variables
     private Dictionary<string, UnityEngine.Object> _effects;
-    #endregion
 
-    #region Override
     public void OnIntroInit()
     {
-        DVResourceManager.Instance.TryGetAssetDictionary(DVAssets.AssetType.Effect, out _effects);
+        DVResourceManager.Instance.TryGetAssetDictionary("Effects", out _effects);
     }
-    #endregion
 
-    #region Utils
     public GameObject MakeEffect(string effectName, Vector3 position) {
         if (!_effects.ContainsKey(effectName)) {
             Debug.Log($"'{effectName}' is invalid name");
@@ -36,5 +31,4 @@ public class DVEffectManager : SingletonMonoBehaviour<DVEffectManager>, IIntroIn
         GameObject effect = MakeEffect("CubeDestroyEffect", position);
         effect.GetComponent<ParticleSystemRenderer>().sharedMaterial.color = color;
     }
-    #endregion
 }

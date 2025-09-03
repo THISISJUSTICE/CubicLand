@@ -15,13 +15,13 @@ MonoBehaviour:
   m_GroupName: PackedAssets
   m_GUID: 65e9e73ad592d9f49b05f7748ec6f4dd
   m_SerializeEntries:
-  - m_GUID: 62058fe07ba97d746b430c65cd63c2cd
-    m_Address: Effects
+  - m_GUID: 438bd7085aa27de4dbc5135c6bf4a1cf
+    m_Address: Cubes
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: d81218faa76d181448edf6bd07d2b888
-    m_Address: Cubes
+  - m_GUID: 62058fe07ba97d746b430c65cd63c2cd
+    m_Address: Effects
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

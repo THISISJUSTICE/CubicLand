@@ -42,7 +42,7 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
     #region Events
     public void OnIntroInit()
     {
-        DVResourceManager.Instance.TryGetAssetDictionary(DVAssets.AssetType.Cube, out _cubes);
+        DVResourceManager.Instance.TryGetAssetDictionary("Cubes", out _cubes);
 
         _golemCube = (GameObject)_cubes["GolemCube"];
         _golemCore = (GameObject)_cubes["GolemCore"];
