@@ -4,6 +4,9 @@ using System;
 using UnityEditor;
 #endif
 
+/// <summary>
+/// Target Type: string
+/// </summary>
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
 public class DVEnumPopupAttribute : PropertyAttribute
 {
