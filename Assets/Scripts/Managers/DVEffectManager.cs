@@ -1,12 +1,16 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
-public class DVEffectManager : SingletonMonoBehaviour<DVEffectManager>, IIntroInitializable
+public class DVEffectManager : SingletonMonoBehaviour<DVEffectManager>
 {
     private Dictionary<string, UnityEngine.Object> _effects;
 
-    public void OnIntroInit()
+    protected override async void Awake()
     {
+        base.Awake();
+
+        await UniTask.WaitUntil(() => DVResourceManager.Instance.IsLoaded);
         DVResourceManager.Instance.TryGetAssetDictionary("Effects", out _effects);
     }
 

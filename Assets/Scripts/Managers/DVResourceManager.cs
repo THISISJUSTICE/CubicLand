@@ -1,11 +1,19 @@
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 
-public class DVResourceManager : SingletonMonoBehaviour<DVResourceManager>
+public class DVResourceManager : SingletonMonoBehaviour<DVResourceManager>, IIntroLoadChecker
 {
     private readonly string[] keys = new string[] { "Cubes", "Effects" };
 
     private Dictionary<string, DVAssetPackSO> _assets = new Dictionary<string, DVAssetPackSO>();
+
+    private bool _isLoaded = false;
+    public bool IsLoaded => _isLoaded;
+
+    protected override void Awake()
+    {
+        LoadAssets().Forget();
+    }
 
     private void OnDestroy()
     {
@@ -19,6 +27,8 @@ public class DVResourceManager : SingletonMonoBehaviour<DVResourceManager>
 
         foreach (DVAssetPackSO asset in assets)
             _assets[asset.name] = asset;
+
+        _isLoaded = true;
     }
 
     public bool TryGetAssetDictionary(string assetPackName, out Dictionary<string, UnityEngine.Object> dic)

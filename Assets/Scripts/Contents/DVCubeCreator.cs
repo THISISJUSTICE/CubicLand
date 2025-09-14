@@ -1,11 +1,11 @@
+using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
-public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitializable
+public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>
 {
-    #region Variables
     private GameObject _golemCube;
     private GameObject _golemCore;
     private GameObject _obstacleCube;
@@ -17,11 +17,14 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
     private Transform _monsterParent;
 
     private Dictionary<string, UnityEngine.Object> _cubes;
-    #endregion
 
-    #region Unity Functions
-    private void Awake()
+    protected override async void Awake()
     {
+        base.Awake();
+
+        Init();
+
+        await UniTask.WaitUntil(() => DVResourceManager.Instance.IsLoaded);
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -37,10 +40,8 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
         _monsterParent = new GameObject("Monster Parent").transform;
         _monsterParent.SetParent(transform);
     }
-    #endregion
 
-    #region Events
-    public void OnIntroInit()
+    private void Init()
     {
         DVResourceManager.Instance.TryGetAssetDictionary("Cubes", out _cubes);
 
@@ -82,9 +83,7 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
         }
 
     }
-    #endregion
 
-    #region Public Functions
     public DVGolemCore CreatePlayer(DVGolemInfo golemInfo) {
         // TODO: 자식 데이터는 로컬 데이터 베이스에서 파싱
 
@@ -184,9 +183,7 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
 
         return childCubes;
     }
-    #endregion
 
-    #region Utils
     private GameObject CreateGolem(DVGolemInfo golemInfo, string golemName, Vector3 pos) {
         GameObject core = DVObjectManager.Instance.InstanitateObject(_golemCore, instMat: true);
         core.name = golemName;
@@ -234,5 +231,4 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitia
         childCube.transform.SetParent(parentCube.transform);
         childCube.transform.localPosition = (Vector3)(shapePos - parentCube.CubeInfo.ShapePosition) * DVConfigs.CUBE_BASE_LENGHT;
     }
-    #endregion
 }

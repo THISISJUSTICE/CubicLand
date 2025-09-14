@@ -39,6 +39,10 @@ public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour
         }
     }
 
+    protected virtual void Awake()
+    {
+    }
+
     private void OnApplicationQuit()
     {
         _quit = true;

@@ -1,13 +1,10 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 public class DVIntroManager : MonoBehaviour
 {
-    #region Unity Functions
     private void Awake()
     {
-        CreateSingletones();
-
         DVConfigs.Setup();
     }
 
@@ -17,32 +14,30 @@ public class DVIntroManager : MonoBehaviour
 
         await DVResourceManager.Instance.LoadAssets();
 
-        var monoBehaviours = GameObject.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
-        foreach (var monoBehaviour in monoBehaviours) {
-            if (monoBehaviour is IIntroInitializable init)
-                init.OnIntroInit();
-        }
+        await WaitIntroLoad();
 
         DVSceneConfigs.LoadScene(DVSceneConfigs.SceneList.MAP);
 
         Physics.defaultContactOffset = 0.0001f;
     }
-    #endregion
 
-    #region Utils
-    private void CreateSingletones() {
-        _ = DVAddresableManager.Instance;
-        _ = DVKeyboardManager.Instance;
-        _ = DVObjectManager.Instance;
-        _ = DVHelper.Instance;
-        _ = DVDataManager.Instance;
-        _ = DVResourceManager.Instance;
-        _ = DVEffectManager.Instance;
-        _ = DVCubeCreator.Instance;
+    private async UniTask WaitIntroLoad()
+    {
+        MonoBehaviour[] scripts = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+        for (int i = 0; i < scripts.Length; i++)
+        {
+            if (scripts[i] is IIntroLoadChecker introLoad)
+                await UniTask.WaitUntil(() => introLoad.IsLoaded);
+        }
     }
 
-    private void LimitFrameRate() { 
+    private void LimitFrameRate()
+    {
 
     }
-    #endregion
+}
+
+public interface IIntroLoadChecker
+{
+    public abstract bool IsLoaded { get; }
 }
