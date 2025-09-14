@@ -1,8 +1,12 @@
-using UnityEngine;
+﻿using UnityEngine;
+#if UNITY_EDITOR
+using UnityEditor;
+using System.Reflection;
+#endif
 
 public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour
 {
-    public const string SingletoneParentName = "Singletones";
+    public static Transform singletonParent = null;
 
     private static bool _quit = false;
     private static Object _lock = new Object();
@@ -13,25 +17,25 @@ public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour
             if (_quit) 
                 return null;
 
-            lock (_lock) {
-                if (_instance == null) {
-                    _instance = (T)GameObject.FindAnyObjectByType<T>();
-                    if (_instance == null) {
-                        string goName = typeof(T).ToString();
-                        if(goName.Substring(0, 2) == "DV")
-                            goName = goName.Substring(2);
+            lock (_lock) 
+            {
+                if (_instance == null)
+                {
+                    // Test가 아닌 이상 Find 했을 시 null이 나오면 안 됨
+                    _instance = FindFirstObjectByType<T>();
 
-                        GameObject go = new GameObject(goName);
-                        _instance = go.AddComponent<T>();
+#if UNITY_EDITOR
+                    // Editor 내 Test
+                    if (_instance == null)
+                    {
+                        MethodInfo mainMethod = DVExternableEditor.FindStaticMethod("DVSingletonCreator", "LoadSingleton");
+                        MethodInfo method = mainMethod.MakeGenericMethod(typeof(T));
 
-                        GameObject parent = GameObject.Find(SingletoneParentName);
-                        if (parent == null)
-                        {
-                            parent = new GameObject(SingletoneParentName);
-                            DontDestroyOnLoad(parent);
-                        }
-                        go.transform.SetParent(parent.transform);
+                        _instance = (T)method.Invoke(null, null);
                     }
+#endif
+
+                    SetSingletonParent(_instance.transform);
                 }
 
                 return _instance;
@@ -41,6 +45,7 @@ public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour
 
     protected virtual void Awake()
     {
+        SetSingleton();
     }
 
     private void OnApplicationQuit()
@@ -51,5 +56,42 @@ public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour
     private void OnDestroy()
     {
         _quit = true;
+    }
+
+    public static void SetSingletonParent(Transform singleton)
+    {
+        if (singletonParent == null)
+        {
+            const string singletonName = "Singletones";
+
+            GameObject parent = GameObject.Find(singletonName);
+            if (parent == null)
+            {
+                parent = new GameObject(singletonName);
+                parent.transform.Reset();
+            }
+
+#if UNITY_EDITOR
+            if (EditorApplication.isPlaying)
+                DontDestroyOnLoad(parent);
+#else
+            DontDestroyOnLoad(parent);
+#endif
+            singletonParent = parent.transform;
+        }
+
+        singleton.SetParent(singletonParent);
+        singleton.Reset();
+    }
+
+    private void SetSingleton()
+    {
+        if (_instance == null || (_instance != null && _instance.gameObject == gameObject))
+        {
+            _instance = this as T;
+            SetSingletonParent(gameObject.transform);
+        }
+        else
+            Destroy(gameObject);
     }
 }
