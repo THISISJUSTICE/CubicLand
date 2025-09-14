@@ -272,5 +272,12 @@ public static partial class DVUtil
         return Mathf.Clamp(value, 0f, loadingValue);
     }
 
+    public static string GetTypeName(Type type)
+    {
+        string typeName = type.Name;
+        if (typeName.Substring(0, 2) == "DV")
+            typeName = typeName.Substring(2);
 
+        return typeName;
+    }
 }

@@ -79,7 +79,7 @@ public class SceneSelector : EditorWindow
         }
     }
 
-    private void LoadScene(string scenePath)
+    public static void LoadScene(string scenePath)
     {
         if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
         {
