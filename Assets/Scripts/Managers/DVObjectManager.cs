@@ -30,8 +30,10 @@ public class DVObjectManager : SingletonMonoBehaviour<DVObjectManager>
     #endregion
 
     #region Unity Functions
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         _objects = new Dictionary<GameObject, Stack<GameObject>>();
         _instKeys = new Dictionary<GameObject, GameObject>();
         _componentDic = new Dictionary<GameObject, List<Component>>();

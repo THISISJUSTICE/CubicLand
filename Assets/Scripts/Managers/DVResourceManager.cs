@@ -12,6 +12,7 @@ public class DVResourceManager : SingletonMonoBehaviour<DVResourceManager>, IInt
 
     protected override void Awake()
     {
+        base.Awake();
         LoadAssets().Forget();
     }
 

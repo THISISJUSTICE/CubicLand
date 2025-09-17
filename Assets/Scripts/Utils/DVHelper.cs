@@ -15,8 +15,10 @@ public class DVHelper : SingletonMonoBehaviour<DVHelper>
     #endregion
 
     #region Unity Functions
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         _yieldCache = new DVYieldCache();
         _dataPath = Application.persistentDataPath;
     }
