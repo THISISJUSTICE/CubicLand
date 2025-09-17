@@ -28,8 +28,10 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
+
         SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 

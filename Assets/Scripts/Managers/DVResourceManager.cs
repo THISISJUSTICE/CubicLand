@@ -16,8 +16,10 @@ public class DVResourceManager : SingletonMonoBehaviour<DVResourceManager>, IInt
         LoadAssets().Forget();
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
+        base.OnDestroy();
+
         for (int i = 0; i < keys.Length; i++) 
             DVAddresableManager.Instance?.ReleaseAsset(keys[i]);
     }

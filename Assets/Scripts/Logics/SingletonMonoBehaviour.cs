@@ -48,12 +48,12 @@ public class SingletonMonoBehaviour<T> : MonoBehaviour where T : MonoBehaviour
         SetSingleton();
     }
 
-    private void OnApplicationQuit()
+    protected virtual void OnApplicationQuit()
     {
         _quit = true;
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
         _quit = true;
     }

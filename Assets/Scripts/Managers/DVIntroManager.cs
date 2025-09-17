@@ -12,8 +12,6 @@ public class DVIntroManager : MonoBehaviour
     {
         LimitFrameRate();
 
-        await DVResourceManager.Instance.LoadAssets();
-
         await WaitIntroLoad();
 
         DVSceneConfigs.LoadScene(DVSceneConfigs.SceneList.MAP);
