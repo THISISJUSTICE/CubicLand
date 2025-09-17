@@ -89,7 +89,7 @@ public class DVAssetReferenceFinder : EditorWindow
     #endregion
 
     #region Editor Functions
-    [MenuItem("Custom/Editor Utils/Find Asset References")]
+    [MenuItem("Custom Editor Utils/Find Asset References")]
     public static void ShowWindow()
     {
         GetWindow<DVAssetReferenceFinder>("Find Asset References");

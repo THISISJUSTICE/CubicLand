@@ -112,7 +112,7 @@ public class DVCalculator : EditorWindow
     #endregion
 
     #region Editor Functions
-    [MenuItem("Custom/Editor Utils/Calculator")]
+    [MenuItem("Custom Editor Utils/Calculator")]
     public static void ShowWindow()
     {
         GetWindow<DVCalculator>("Calculator");

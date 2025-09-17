@@ -13,7 +13,7 @@ public class DVMeshMeasurer : EditorWindow
     #endregion
 
     #region Editor Functions
-    [MenuItem("Custom/Editor Utils/Mesh Measurer")]
+    [MenuItem("Custom Editor Utils/Mesh Measurer")]
     public static void ShowWindow()
     {
         GetWindow<DVMeshMeasurer>("Mesh Measurer");

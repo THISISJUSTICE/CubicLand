@@ -30,7 +30,7 @@ public class DVMonoBehaviourEventViewer : EditorWindow
     };
     #endregion
 
-    [MenuItem("Custom/Editor Utils/MonoBehaviour Event Viewer")]
+    [MenuItem("Custom Editor Utils/MonoBehaviour Event Viewer")]
     public static void ShowWindow()
     {
         GetWindow<DVMonoBehaviourEventViewer>("MonoBehaviour Event Viewer");

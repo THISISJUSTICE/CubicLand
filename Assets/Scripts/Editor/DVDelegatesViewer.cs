@@ -31,7 +31,7 @@ public class DVDelegatesViewer : EditorWindow
     #endregion
 
     #region Editor Functions
-    [MenuItem("Custom/Editor Utils/Delegates Viewer")]
+    [MenuItem("Custom Editor Utils/Delegates Viewer")]
     public static void OpenWindow()
     {
         DVDelegatesViewer window = (DVDelegatesViewer)EditorWindow.GetWindow(typeof(DVDelegatesViewer));

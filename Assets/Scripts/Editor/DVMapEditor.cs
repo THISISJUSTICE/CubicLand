@@ -17,7 +17,7 @@ public class DVMapEditor : EditorWindow
     #endregion
 
     #region Editor Functions
-    [MenuItem("Custom/Ingame Utils/Map Editor")]
+    [MenuItem("Custom Ingame Utils/Map Editor")]
     public static void ShowWindow()
     {
         GetWindow<DVMapEditor>("Map Editor");

@@ -19,7 +19,7 @@ public class DVTerrainEditor : EditorWindow
     #endregion
 
     #region Editor Functions
-    [MenuItem("Custom/Ingame Utils/Terrain Editor")]
+    [MenuItem("Custom Ingame Utils/Terrain Editor")]
     public static void ShowWindow()
     {
         GetWindow<DVTerrainEditor>("Terrain Editor");

@@ -10,7 +10,7 @@ public class SceneSelector : EditorWindow
     private int _hoveredIndex = -1;
     private int _selectedIndex = -1;
 
-    [MenuItem("Custom/Editor Utils/Scene Selector")]
+    [MenuItem("Custom Editor Utils/Scene Selector")]
     public static void ShowWindow()
     {
         GetWindow<SceneSelector>("Scene Selector");

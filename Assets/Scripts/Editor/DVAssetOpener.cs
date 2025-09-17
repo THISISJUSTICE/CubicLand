@@ -19,7 +19,7 @@ public class DVAssetOpener : EditorWindow
     #endregion
 
     #region GUI Functions
-    [MenuItem("Custom/Editor Utils/Asset Opener")]
+    [MenuItem("Custom Editor Utils/Asset Opener")]
     private static void ShowWindow() {
         GetWindow<DVAssetOpener>("Asset Opener");
     }
