@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
-public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>
+public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroLoadChecker
 {
     private GameObject _golemCube;
     private GameObject _golemCore;
@@ -18,13 +18,15 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>
 
     private Dictionary<string, UnityEngine.Object> _cubes;
 
-    protected override async void Awake()
+    private bool _isLoaded = false;
+    public bool IsLoaded => _isLoaded;
+
+    protected override void Awake()
     {
         base.Awake();
 
         Init();
 
-        await UniTask.WaitUntil(() => DVResourceManager.Instance.IsLoaded);
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -43,16 +45,16 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>
         _monsterParent.SetParent(transform);
     }
 
-    private void Init()
+    private async void Init()
     {
-        DVResourceManager.Instance.TryGetAssetDictionary("Cubes", out _cubes);
+        _golemCube = await DVAddresableManager.Instance.LoadAsset<GameObject>("GolemCube");
+        _golemCore = await DVAddresableManager.Instance.LoadAsset<GameObject>("GolemCore");
+        _obstacleCube = await DVAddresableManager.Instance.LoadAsset<GameObject>("ObstacleCube");
+        _skillCube = await DVAddresableManager.Instance.LoadAsset<GameObject>("SkillCube");
+        _skillGolemCore = await DVAddresableManager.Instance.LoadAsset<GameObject>("SkillGolemCore");
+        _skillGolemCube = await DVAddresableManager.Instance.LoadAsset<GameObject>("SkillGolemCube");
 
-        _golemCube = (GameObject)_cubes["GolemCube"];
-        _golemCore = (GameObject)_cubes["GolemCore"];
-        _obstacleCube = (GameObject)_cubes["ObstacleCube"];
-        _skillCube = (GameObject)_cubes["SkillCube"];
-        _skillGolemCore = (GameObject)_cubes["SkillGolemCore"];
-        _skillGolemCube = (GameObject)_cubes["SkillGolemCube"];
+        _isLoaded = true;
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode) {

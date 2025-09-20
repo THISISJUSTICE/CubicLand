@@ -14,7 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_GroupName: Effects
   m_GUID: affda602564754745a9b33658c58d0d2
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 9993771e3f5299641b5eea45196baf44
+    m_Address: CubeDestroyEffect
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: ab3dc9545e0bffb4e9e0c7b44c02b97c, type: 2}
   m_SchemaSet:

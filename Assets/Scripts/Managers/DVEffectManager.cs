@@ -1,17 +1,34 @@
 using UnityEngine;
 using System.Collections.Generic;
-using Cysharp.Threading.Tasks;
 
-public class DVEffectManager : SingletonMonoBehaviour<DVEffectManager>
+public class DVEffectManager : SingletonMonoBehaviour<DVEffectManager>, IIntroLoadChecker
 {
-    private Dictionary<string, UnityEngine.Object> _effects;
+    private readonly Dictionary<string, GameObject> _effects = new Dictionary<string, GameObject>();
 
-    protected override async void Awake()
+    private bool _isLoaded = false;
+    public bool IsLoaded => _isLoaded;
+
+    protected override void Awake()
     {
         base.Awake();
 
-        await UniTask.WaitUntil(() => DVResourceManager.Instance.IsLoaded);
-        DVResourceManager.Instance.TryGetAssetDictionary("Effects", out _effects);
+        Init();
+    }
+
+    private async void Init()
+    {
+        string[] keys = new string[]
+        {
+            "CubeDestroyEffect",
+        };
+
+        foreach (string key in keys)
+        {
+            GameObject effect = await DVAddresableManager.Instance.LoadAsset<GameObject>(key);
+            _effects.Add(key, effect);
+        }
+
+        _isLoaded = true;
     }
 
     public GameObject MakeEffect(string effectName, Vector3 position) {

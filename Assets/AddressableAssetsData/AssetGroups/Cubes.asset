@@ -14,7 +14,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_GroupName: Cubes
   m_GUID: 46a14aa17377aab43be424b99893193e
-  m_SerializeEntries: []
+  m_SerializeEntries:
+  - m_GUID: 0d308eea94fd3dc45bccf085bdd0d37d
+    m_Address: SkillCube
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 4b6387d686151cc4e9819034097a5980
+    m_Address: GolemCube
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 7a569b1d25016974b91ac11f6ca0204c
+    m_Address: SkillGolemCube
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 9ce43030bc4ef7e4998971d0c943bd45
+    m_Address: ObstacleCube
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: c1121dc3559de0040bdb35b1a8b22c23
+    m_Address: SkillGolemCore
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: e44d04891dc8f8842935d361a8045b92
+    m_Address: GolemCore
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: ab3dc9545e0bffb4e9e0c7b44c02b97c, type: 2}
   m_SchemaSet:
