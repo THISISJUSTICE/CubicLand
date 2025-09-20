@@ -4,17 +4,12 @@ using Cysharp.Threading.Tasks;
 
 public class DVHelper : SingletonMonoBehaviour<DVHelper>
 {
-    #region Variables
     private string _dataPath;
     private DVYieldCache _yieldCache;
-    #endregion
 
-    #region Properties
     public static string DataPath { get { return Instance._dataPath; } }
     public static DVYieldCache YieldCache { get { return Instance._yieldCache; } }
-    #endregion
 
-    #region Unity Functions
     protected override void Awake()
     {
         base.Awake();
@@ -22,9 +17,7 @@ public class DVHelper : SingletonMonoBehaviour<DVHelper>
         _yieldCache = new DVYieldCache();
         _dataPath = Application.persistentDataPath;
     }
-    #endregion
 
-    #region Public Functions
     public static async void WaitTimeAct(float waitTime, Action callback) {
         await UniTask.WaitForSeconds(waitTime);
         callback?.Invoke();
@@ -35,5 +28,4 @@ public class DVHelper : SingletonMonoBehaviour<DVHelper>
             await UniTask.NextFrame();
         callback?.Invoke();
     }
-    #endregion
 }
