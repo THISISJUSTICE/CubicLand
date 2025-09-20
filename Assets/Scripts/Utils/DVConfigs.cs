@@ -1,5 +1,3 @@
-using UnityEngine;
-
 public static class DVConfigs
 {
     public const long KB = 1024;
@@ -20,8 +18,6 @@ public static class DVConfigs
     public const float MAP_HEIGHT = 0.5f;
     public static float CubeBottomHeight { get => MAP_HEIGHT + CUBE_BASE_LENGHT / 2f; }
 
-    public static string DataPath { get; private set; }
-
     public static void Setup()
     {
         DVStatus status = new DVStatus();
@@ -29,7 +25,5 @@ public static class DVConfigs
         DVCurrentStatus currentStatus = new DVCurrentStatus();
         currentStatus.SetInitValue(status);
         INIT_CUBE_MASS = DVUtil.GetCubeMass(currentStatus);
-
-        DataPath = Application.persistentDataPath;
     }
 }
