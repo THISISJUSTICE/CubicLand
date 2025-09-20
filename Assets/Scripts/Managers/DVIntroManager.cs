@@ -14,7 +14,7 @@ public class DVIntroManager : MonoBehaviour
 
         await WaitIntroLoad();
 
-        DVSceneConfigs.LoadScene(DVSceneConfigs.SceneList.MAP);
+        DVSceneConfigs.LoadScene(DVSceneConfigs.SceneList.Map);
 
         Physics.defaultContactOffset = 0.0001f;
     }
