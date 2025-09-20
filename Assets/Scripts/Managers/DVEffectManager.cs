@@ -1,7 +1,8 @@
 using UnityEngine;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
-public class DVEffectManager : SingletonMonoBehaviour<DVEffectManager>, IIntroLoadChecker
+public class DVEffectManager : SingletonMonoBehaviour<DVEffectManager>, IIntroInitializer
 {
     private readonly Dictionary<string, GameObject> _effects = new Dictionary<string, GameObject>();
 
@@ -11,11 +12,9 @@ public class DVEffectManager : SingletonMonoBehaviour<DVEffectManager>, IIntroLo
     protected override void Awake()
     {
         base.Awake();
-
-        Init();
     }
 
-    private async void Init()
+    public async UniTask Initialize()
     {
         string[] keys = new string[]
         {

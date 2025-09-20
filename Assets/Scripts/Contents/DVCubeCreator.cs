@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
-public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroLoadChecker
+public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroInitializer
 {
     private GameObject _golemCube;
     private GameObject _golemCore;
@@ -25,8 +25,6 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroLoadCh
     {
         base.Awake();
 
-        Init();
-
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -45,7 +43,7 @@ public class DVCubeCreator : SingletonMonoBehaviour<DVCubeCreator>, IIntroLoadCh
         _monsterParent.SetParent(transform);
     }
 
-    private async void Init()
+    public async UniTask Initialize()
     {
         _golemCube = await DVAddresableManager.Instance.LoadAsset<GameObject>("GolemCube");
         _golemCore = await DVAddresableManager.Instance.LoadAsset<GameObject>("GolemCore");

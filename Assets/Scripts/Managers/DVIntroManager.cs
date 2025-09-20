@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class DVIntroManager : MonoBehaviour
@@ -12,21 +13,25 @@ public class DVIntroManager : MonoBehaviour
     {
         LimitFrameRate();
 
-        await WaitIntroLoad();
-
-        DVSceneConfigs.LoadScene(DVSceneConfigs.SceneList.Map);
+        await Initialize();
 
         Physics.defaultContactOffset = 0.0001f;
+
+        DVSceneConfigs.LoadScene(DVSceneConfigs.SceneList.Map);
     }
 
-    private async UniTask WaitIntroLoad()
+    private async UniTask Initialize()
     {
         MonoBehaviour[] scripts = FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None);
+        List<UniTask> initializers = new List<UniTask>();
+
         for (int i = 0; i < scripts.Length; i++)
         {
-            if (scripts[i] is IIntroLoadChecker introLoad)
-                await UniTask.WaitUntil(() => introLoad.IsLoaded);
+            if (scripts[i] is IIntroInitializer initializer)
+                initializers.Add(initializer.Initialize());
         }
+
+        await UniTask.WhenAll(initializers);
     }
 
     private void LimitFrameRate()
@@ -35,7 +40,7 @@ public class DVIntroManager : MonoBehaviour
     }
 }
 
-public interface IIntroLoadChecker
+public interface IIntroInitializer
 {
-    public abstract bool IsLoaded { get; }
+    public abstract UniTask Initialize();
 }
