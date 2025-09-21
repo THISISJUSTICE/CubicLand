@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace CustomTIJI.CubicLand
 {
@@ -96,15 +96,15 @@ namespace CustomTIJI.CubicLand
         {
             const float damageImpulseRate = 6f;
             float calDamage = damage;
-            calDamage = Mathf.RoundToInt(calDamage * Mathf.Clamp01(impulse.magnitude / damageImpulseRate)); // Ãæ°İ·®¿¡ µû¶ó µ¥¹ÌÁö ºñÀ² º¯°æ
+            calDamage = Mathf.RoundToInt(calDamage * Mathf.Clamp01(impulse.magnitude / damageImpulseRate)); // ì¶©ê²©ëŸ‰ì— ë”°ë¼ ë°ë¯¸ì§€ ë¹„ìœ¨ ë³€ê²½
 
-            float impulseDamage = impulse.magnitude / selfMass * Configs.IMPULSE_DAMAGE_RATE; // ¹°¸® Ãæ°İ·® ¹İ¿µ
-            calDamage = calDamage + Mathf.Min(calDamage * 2f, impulseDamage); // ¹°¸® Ãæ°İ·®ÀÌ µ¥¹ÌÁöÀÇ 2¹è¸¦ ³ÑÁö ¸øÇÏµµ·Ï Á¦ÇÑ
-            calDamage = calDamage * Mathf.Exp((float)-_armor / StatusConfig.DAMAGE_ARMOR_RATE); // ¹æ¾î ½ºÅİ ¹İ¿µ
-            calDamage = Mathf.Max(calDamage, 1f); // µ¥¹ÌÁö ÃÖ¼Ú°ª Á¦ÇÑ
+            float impulseDamage = impulse.magnitude / selfMass * Configs.IMPULSE_DAMAGE_RATE; // ë¬¼ë¦¬ ì¶©ê²©ëŸ‰ ë°˜ì˜
+            calDamage = calDamage + Mathf.Min(calDamage * 2f, impulseDamage); // ë¬¼ë¦¬ ì¶©ê²©ëŸ‰ì´ ë°ë¯¸ì§€ì˜ 2ë°°ë¥¼ ë„˜ì§€ ëª»í•˜ë„ë¡ ì œí•œ
+            calDamage = calDamage * Mathf.Exp((float)-_armor / StatusConfig.DAMAGE_ARMOR_RATE); // ë°©ì–´ ìŠ¤í…Ÿ ë°˜ì˜
+            calDamage = Mathf.Max(calDamage, 1f); // ë°ë¯¸ì§€ ìµœì†Ÿê°’ ì œí•œ
 
             damage = Mathf.RoundToInt(calDamage);
-            _hp = Mathf.Max(_hp - damage, 0); // µ¥¹ÌÁö ¹İ¿µ
+            _hp = Mathf.Max(_hp - damage, 0); // ë°ë¯¸ì§€ ë°˜ì˜
         }
 
         public void SetAttackOff()
@@ -112,7 +112,7 @@ namespace CustomTIJI.CubicLand
             _attack = 0;
         }
 
-        // TODO: ³²Àº Èú ·®Àº ÀÚ½Ä¿¡°Ô ÀüÀÌ
+        // TODO: ë‚¨ì€ í ëŸ‰ì€ ìì‹ì—ê²Œ ì „ì´
         public int OnHealed(int heal)
         {
             _hp = Mathf.Max(_hp + heal, MaxHP);

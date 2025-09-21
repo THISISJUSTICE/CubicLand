@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace CustomTIJI.CubicLand
 {
@@ -75,7 +75,7 @@ namespace CustomTIJI.CubicLand
         {
             _meshRen.sharedMaterial.SetColor("_Color", _cubeInfo.Status.Color);
 
-            // TODO: ¾Ö´Ï¸ŞÀÌ¼Ç?
+            // TODO: ì• ë‹ˆë©”ì´ì…˜?
             float rateHP = (float)_cubeInfo.CurrentStatus.HP / (float)_cubeInfo.CurrentStatus.MaxHP;
             _meshRen.sharedMaterial.SetFloat("_Range", Mathf.Clamp01(1f - rateHP));
             _meshRen.sharedMaterial.SetFloat("_FadeAlpha", Mathf.Clamp01(1f - rateHP) * 0.5f);
@@ -85,7 +85,7 @@ namespace CustomTIJI.CubicLand
         {
             EffectManager.Instance.MakeCubeDestroyEffect(transform.position, _cubeInfo.Status.Color);
 
-            // TODO: µå·Ó ¾ÆÀÌÅÛ
+            // TODO: ë“œë¡­ ì•„ì´í…œ
 
             ObjectManager.Instance.DestroyObject(gameObject);
         }

@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEditor;
 
 namespace CustomTIJI.CubicLand
@@ -57,7 +57,7 @@ namespace CustomTIJI.CubicLand
             if (!GUILayout.Button("Create Default Plane"))
                 return;
 
-            // TODO: »ı¼º ¿ÀºêÁ§Æ®µéÀº ÇÁ¸®ÆÕÀ¸·Î ÀüÈ¯ÇÏ±â
+            // TODO: ìƒì„± ì˜¤ë¸Œì íŠ¸ë“¤ì€ í”„ë¦¬íŒ¹ìœ¼ë¡œ ì „í™˜í•˜ê¸°
             _plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
             SetPlaneDefaultSetting(_plane);
         }
@@ -81,7 +81,7 @@ namespace CustomTIJI.CubicLand
             if (!CheckPlane())
                 return;
 
-            // TODO: »ı¼º ¿ÀºêÁ§Æ®µéÀº ÇÁ¸®ÆÕÀ¸·Î ÀüÈ¯ÇÏ±â
+            // TODO: ìƒì„± ì˜¤ë¸Œì íŠ¸ë“¤ì€ í”„ë¦¬íŒ¹ìœ¼ë¡œ ì „í™˜í•˜ê¸°
 
             _borders = new GameObject[4];
             for (int i = 0; i < _borders.Length; i++)
@@ -134,7 +134,7 @@ namespace CustomTIJI.CubicLand
 
         private void SetPlaneDefaultSetting(GameObject plane)
         {
-            // TODO: Collider Ãß°¡, CubeInfo Ãß°¡
+            // TODO: Collider ì¶”ê°€, CubeInfo ì¶”ê°€
 
             plane.transform.Reset();
             DeleteChilds(plane);

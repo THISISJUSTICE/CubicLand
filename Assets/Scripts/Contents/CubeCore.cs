@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -137,7 +137,7 @@ namespace CustomTIJI.CubicLand
 
         protected void OnCoreCollision(Collision collision)
         {
-            // TODO: È®ÀÎ
+            // TODO: í™•ì¸
             var core = collision.gameObject.GetComponent<CubeCore<CubeBase>>();
             var obstacle = collision.gameObject.GetComponent<ObstacleCube>();
 
@@ -149,7 +149,7 @@ namespace CustomTIJI.CubicLand
             // TODO: Skill Collision
             // TODO: Skill Golem Collision
 
-            if (core != null) // Golem Collision (´Ù¸¥ °÷¿¡¼­ È£Ãâ, ¸ÕÀú È£ÃâÇÏ¸é ´Ù¸¥ ÂÊ È£ÃâÀº ¹«½Ã)
+            if (core != null) // Golem Collision (ë‹¤ë¥¸ ê³³ì—ì„œ í˜¸ì¶œ, ë¨¼ì € í˜¸ì¶œí•˜ë©´ ë‹¤ë¥¸ ìª½ í˜¸ì¶œì€ ë¬´ì‹œ)
             {
 
             }

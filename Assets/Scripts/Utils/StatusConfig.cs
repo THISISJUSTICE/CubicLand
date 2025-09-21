@@ -1,8 +1,8 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace CustomTIJI.CubicLand
 {
-    // TODO: µ¥ÀÌÅÍ ¿¡¼ÂÀ¸·Î º¯°æ
+    // TODO: ë°ì´í„° ì—ì…‹ìœ¼ë¡œ ë³€ê²½
     public class StatusConfig
     {
         public const int INIT_MOVE_SPEED = 10;

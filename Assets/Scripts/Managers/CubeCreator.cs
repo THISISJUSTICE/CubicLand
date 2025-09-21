@@ -1,4 +1,4 @@
-using Cysharp.Threading.Tasks;
+ï»¿using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -91,7 +91,7 @@ namespace CustomTIJI.CubicLand
 
         public GolemCore CreatePlayer(GolemInfo golemInfo)
         {
-            // TODO: ÀÚ½Ä µ¥ÀÌÅÍ´Â ·ÎÄÃ µ¥ÀÌÅÍ º£ÀÌ½º¿¡¼­ ÆÄ½Ì
+            // TODO: ìì‹ ë°ì´í„°ëŠ” ë¡œì»¬ ë°ì´í„° ë² ì´ìŠ¤ì—ì„œ íŒŒì‹±
 
             GameObject player = CreateGolem(golemInfo, "Player", Vector3.one);
             ObjectManager.Instance.AddComponent<PlayerController>(player);
@@ -149,7 +149,7 @@ namespace CustomTIJI.CubicLand
             AddRandomGolemCube(golemInfo);
         }
 
-        // TODO: Summon ÇÔ¼ö´Â »ı¼º ½Ã ¾Ö´Ï¸ŞÀÌ¼Ç È¿°ú Ãß°¡
+        // TODO: Summon í•¨ìˆ˜ëŠ” ìƒì„± ì‹œ ì• ë‹ˆë©”ì´ì…˜ íš¨ê³¼ ì¶”ê°€
         public SkillGolemCore SummonSkillGolemCore(GolemController owner, GolemInfo golemInfo, string skillName, Vector3 pos)
         {
             GameObject core = ObjectManager.Instance.InstanitateObject(_skillGolemCore, instMat: true);
@@ -209,7 +209,7 @@ namespace CustomTIJI.CubicLand
             return core;
         }
 
-        // TODO: ±â·ÏµÈ ÀÚ½Ä Á¤º¸°¡ ÀÖ´Â °æ¿ì ±â·ÏµÈ °ÍÀ» ±âÁØÀ¸·Î Àû¿ëÇÏµµ·Ï ¼öÁ¤
+        // TODO: ê¸°ë¡ëœ ìì‹ ì •ë³´ê°€ ìˆëŠ” ê²½ìš° ê¸°ë¡ëœ ê²ƒì„ ê¸°ì¤€ìœ¼ë¡œ ì ìš©í•˜ë„ë¡ ìˆ˜ì •
         private void MakeChildCube(ref GolemInfo golemInfo, CubeInfo pCubeInfo, GolemCube pGolemCube, GolemCore core)
         {
             if (!golemInfo.ChildMap.ContainsKey(pCubeInfo.ShapePosition) || golemInfo.ChildMap[pCubeInfo.ShapePosition].Count <= 0)

@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -25,7 +25,7 @@ namespace CustomTIJI
         {
             EnumPopupAttribute dvEnum = (EnumPopupAttribute)attribute;
 
-            // ¿©±â¼­ Å¸ÀÔ °Ë»ç
+            // ì—¬ê¸°ì„œ íƒ€ìž… ê²€ì‚¬
             if (property.propertyType != SerializedPropertyType.String
                 || (dvEnum.EnumType == null || !dvEnum.EnumType.IsEnum))
             {

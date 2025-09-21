@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 
 namespace CustomTIJI.CubicLand
@@ -36,7 +36,7 @@ namespace CustomTIJI.CubicLand
                 return;
             }
 
-            // Golem Collision ½Ã Core ÂÊ¿¡¼­ Ãæµ¹ È£Ãâ
+            // Golem Collision ì‹œ Core ìª½ì—ì„œ ì¶©ëŒ í˜¸ì¶œ
             var core = collision.gameObject.GetComponent<CubeCore<CubeBase>>();
             if (core != null)
                 return;
@@ -45,7 +45,7 @@ namespace CustomTIJI.CubicLand
             var cube = collision.gameObject.GetComponent<CubeBase>();
             if (cube != null)
             {
-                // Ãæ°İ·® °è»ê
+                // ì¶©ê²©ëŸ‰ ê³„ì‚°
                 this.WaitFrameAct(1, () => OnDamaged(_rb.mass, collision.impulse, cube.CubeInfo));
             }
 

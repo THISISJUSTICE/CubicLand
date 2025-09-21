@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 
 namespace CustomTIJI.CubicLand
@@ -8,13 +8,13 @@ namespace CustomTIJI.CubicLand
         #region Variables
         [SerializeField] private PlayerBackFollower _playerfollower;
         [SerializeField] private PlayerViewFollower _playerViewfollower;
-        // TODO: SO º¯¼ö¸¦ ÅëÇØ ¸Ê °ü·Ã Á¤º¸ ÇÁ¸®¼Â º¸À¯
+        // TODO: SO ë³€ìˆ˜ë¥¼ í†µí•´ ë§µ ê´€ë ¨ ì •ë³´ í”„ë¦¬ì…‹ ë³´ìœ 
         #endregion
 
         #region Unity Functions
         private void Start()
         {
-            // TODO: ·ÎÄÃ µ¥ÀÌÅÍ º£ÀÌ½º µ¥ÀÌÅÍ°¡ ÀÖÀ¸¸é ÀÌ¸¦ ¹İÈ¯
+            // TODO: ë¡œì»¬ ë°ì´í„° ë² ì´ìŠ¤ ë°ì´í„°ê°€ ìˆìœ¼ë©´ ì´ë¥¼ ë°˜í™˜
             Status status = new Status(1, 1, 50);
 
             GolemInfo playerInfo = new GolemInfo(status, moveSpeedPoint: 40);
@@ -33,7 +33,7 @@ namespace CustomTIJI.CubicLand
         #endregion
 
         #region Coroutines
-        // TODO: Àå¾Ö¹° »ı¼º ¹æ½Ä Áß ÇÏ³ª
+        // TODO: ì¥ì• ë¬¼ ìƒì„± ë°©ì‹ ì¤‘ í•˜ë‚˜
         private IEnumerator TempFall()
         {
             Status status = new Status(1, 1, 1);

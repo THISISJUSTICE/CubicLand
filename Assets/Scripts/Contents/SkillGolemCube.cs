@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 namespace CustomTIJI.CubicLand
@@ -69,9 +69,9 @@ namespace CustomTIJI.CubicLand
             _core = null;
             transform.SetParent(null);
 
-            // TODO: SKill Cube·Î ´ëÃ¼
+            // TODO: SKill Cubeë¡œ ëŒ€ì²´
 
-            OnCubeDestroied(); // ÀÓ½Ã
+            OnCubeDestroied(); // ì„ì‹œ
         }
 
         public void OnChildDestroied(SkillGolemCube child)
@@ -111,7 +111,7 @@ namespace CustomTIJI.CubicLand
 
             _trail.enabled = false;
 
-            // TODO: ÆÄ±« ÀÌÆåÆ®
+            // TODO: íŒŒê´´ ì´í™íŠ¸
 
             ObjectManager.Instance.DestroyObject(gameObject);
         }

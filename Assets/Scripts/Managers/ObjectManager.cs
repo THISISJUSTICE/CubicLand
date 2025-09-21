@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 namespace CustomTIJI.CubicLand
@@ -129,7 +129,7 @@ namespace CustomTIJI.CubicLand
 
         public void DestroyObject(GameObject go)
         {
-            if (CurrentMemorySize < PerfomanceConfigs.MemoryLimit) // ¸Þ¸ð¸® ¿©À¯°¡ ÀÖ´Â °æ¿ì Ç®¸µ
+            if (CurrentMemorySize < PerfomanceConfigs.MemoryLimit) // ë©”ëª¨ë¦¬ ì—¬ìœ ê°€ ìžˆëŠ” ê²½ìš° í’€ë§
             {
                 if (_componentDic.ContainsKey(go))
                 {

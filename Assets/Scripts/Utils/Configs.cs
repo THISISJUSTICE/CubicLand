@@ -1,4 +1,4 @@
-namespace CustomTIJI.CubicLand
+ï»¿namespace CustomTIJI.CubicLand
 {
     public static class Configs
     {
@@ -16,7 +16,7 @@ namespace CustomTIJI.CubicLand
 
         public static float INIT_CUBE_MASS { get; private set; }
 
-        // TODO: ¸Ê Á¤º¸ Å¬·¡½º¿¡¼­ ¸Ê ¸¶´Ù ÀÔ·Â
+        // TODO: ë§µ ì •ë³´ í´ëž˜ìŠ¤ì—ì„œ ë§µ ë§ˆë‹¤ ìž…ë ¥
         public const float MAP_HEIGHT = 0.5f;
         public static float CubeBottomHeight { get => MAP_HEIGHT + CUBE_BASE_LENGHT / 2f; }
 

@@ -1,10 +1,10 @@
-namespace CustomTIJI.CubicLand
+ï»¿namespace CustomTIJI.CubicLand
 {
     [System.Serializable]
     public struct UserInfo
     {
-        public string ID; // Æ¯¼ö¹®ÀÚ X
-        public string Password; // ÇØ½¬ ÄÚµå
+        public string ID; // íŠ¹ìˆ˜ë¬¸ì X
+        public string Password; // í•´ì‰¬ ì½”ë“œ
         public string Email;
         public string NickName;
     }

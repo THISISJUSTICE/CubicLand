@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 namespace CustomTIJI.CubicLand
@@ -9,17 +9,17 @@ namespace CustomTIJI.CubicLand
         #region Data Variables
         [SerializeField] private Status _status;
         [SerializeField] private int _moveSpeedPoint;
-        private HashSet<Vector3Int> _shape;// (0,0,0)Àº Core (R:x+1, L:x-1, U:y+1, D:y-1, F:z+1, B:z-1)
+        private HashSet<Vector3Int> _shape;// (0,0,0)ì€ Core (R:x+1, L:x-1, U:y+1, D:y-1, F:z+1, B:z-1)
 
-        // TODO: Dictionary¸¦ List<KeyValuePair<TKey, TValue>>·Î º¯È¯
-        // TODO: HashSetÀº List·Î º¯È¯
+        // TODO: Dictionaryë¥¼ List<KeyValuePair<TKey, TValue>>ë¡œ ë³€í™˜
+        // TODO: HashSetì€ Listë¡œ ë³€í™˜
         private Dictionary<Vector3Int, HashSet<Vector3Int>> _childMap;
         private Dictionary<Vector3Int, Vector3Int> _parentMap;
 
-        // TODO: °¢ ÆÄÃ÷ Å¥ºê º° ÇöÀç Ã¼·Â ÀúÀå
+        // TODO: ê° íŒŒì¸  íë¸Œ ë³„ í˜„ì¬ ì²´ë ¥ ì €ì¥
         // private Dictionary<Vector3Int, DVCurrentStatus> _everyStatuses;
 
-        // TODO: º¸À¯ ½ºÅ³ ¹× ½ºÅ³ ·¹º§
+        // TODO: ë³´ìœ  ìŠ¤í‚¬ ë° ìŠ¤í‚¬ ë ˆë²¨
         #endregion
 
         #region Properties

@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -53,7 +53,7 @@ namespace CustomTIJI.CubicLand
 
             if (moveDirections.Count - 1 != convertDirections.Count)
             {
-                // TODO: ´õ ÀÛÀº ¸®½ºÆ®¸¦ À§ÁÖ·Î ±¸Çö
+                // TODO: ë” ì‘ì€ ë¦¬ìŠ¤íŠ¸ë¥¼ ìœ„ì£¼ë¡œ êµ¬í˜„
             }
             _moveDirections = moveDirections;
             _convertDirections = convertDirections;
@@ -87,13 +87,13 @@ namespace CustomTIJI.CubicLand
             }
 
             _skillGolem.StartCoroutine(ShootCor());
-            // TODO: Áö¼Ó ½Ã°£µ¿¾È¸¸ À¯Áö ÀÌÈÄ ÆÄ±«?
+            // TODO: ì§€ì† ì‹œê°„ë™ì•ˆë§Œ ìœ ì§€ ì´í›„ íŒŒê´´?
         }
 
         public override void Cancel()
         {
-            // TODO: Core°¡ ÆÄ±«µÉ ½Ã Ãë¼Ò
-            // TODO: Á÷Á¢ °ø°İ ¹ŞÀ¸¸é Ãë¼Ò
+            // TODO: Coreê°€ íŒŒê´´ë  ì‹œ ì·¨ì†Œ
+            // TODO: ì§ì ‘ ê³µê²© ë°›ìœ¼ë©´ ì·¨ì†Œ
         }
         #endregion
 
@@ -143,10 +143,10 @@ namespace CustomTIJI.CubicLand
 
         private void AddChild(List<Vector3Int> childs)
         {
-            // TODO: SkillGolemÀÇ ºÎ¸ğ°¡ ÆÄ±«µÉ ½Ã Á¦ÀÚ¸®¿¡¼­ Á¤Áö
+            // TODO: SkillGolemì˜ ë¶€ëª¨ê°€ íŒŒê´´ë  ì‹œ ì œìë¦¬ì—ì„œ ì •ì§€
 
-            // TODO: ÆÄÆ¼Å¬ »ı¼º È¿°ú
-            // TODO: ½ºÅ³ Å¥ºê ÆÄ±« ÀÌÆåÆ®´Â ÀÚ¿¬ ¼Ò¸ê, Å¸°İ Àû¿ë 
+            // TODO: íŒŒí‹°í´ ìƒì„± íš¨ê³¼
+            // TODO: ìŠ¤í‚¬ íë¸Œ íŒŒê´´ ì´í™íŠ¸ëŠ” ìì—° ì†Œë©¸, íƒ€ê²© ì ìš© 
 
             CubeCreator.Instance.SummonSkillGolemChilds(_skillGolem, childs.ToArray());
         }
@@ -170,7 +170,7 @@ namespace CustomTIJI.CubicLand
             int shapeCount = Mathf.FloorToInt((float)_maxGolemInfo.Shape.Count * rate);
             if (_golemInfoLevel.Shape.Count != shapeCount)
             {
-                // TODO: Å¥ºê »ı¼º ½Ã°£º¸´Ù Á» ´õ ºü¸£°Ô
+                // TODO: íë¸Œ ìƒì„± ì‹œê°„ë³´ë‹¤ ì¢€ ë” ë¹ ë¥´ê²Œ
                 _skillGolem.StartCoroutine(MoveSkillCore(0.02f));
 
                 int addChildCount = shapeCount - _golemInfoLevel.Shape.Count;
@@ -202,8 +202,8 @@ namespace CustomTIJI.CubicLand
         #region Coroutines
         private IEnumerator ChargeCor()
         {
-            // TODO: Â÷Áö ¾Ö´Ï¸ŞÀÌ¼Ç
-            // TODO: »ı¼º ½Ã ¾à°£ÀÇ Áö¿¬
+            // TODO: ì°¨ì§€ ì• ë‹ˆë©”ì´ì…˜
+            // TODO: ìƒì„± ì‹œ ì•½ê°„ì˜ ì§€ì—°
             CreateCore();
 
             float time = 0f;
@@ -219,7 +219,7 @@ namespace CustomTIJI.CubicLand
 
         private IEnumerator MoveSkillCore(float moveTime)
         {
-            _isCreatingCube = true; // TODO: Á¦°Å
+            _isCreatingCube = true; // TODO: ì œê±°
 
             Vector3 startPos = _skillGolem.transform.position;
             Vector3 moveDir = CalculateCorePosition() - startPos;
@@ -241,7 +241,7 @@ namespace CustomTIJI.CubicLand
 
             _skillGolem.transform.position = startPos + moveDir * moveDist;
 
-            _isCreatingCube = false; // TODO: Á¦°Å
+            _isCreatingCube = false; // TODO: ì œê±°
             yield break;
         }
 

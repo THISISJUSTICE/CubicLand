@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -37,7 +37,7 @@ namespace CustomTIJI.CubicLand
             base.Awake();
             _playerActKeys = new KeyCode[PlayerActKeyLength].ToList();
 
-            // TODO: ÀúÀåµÈ µ¥ÀÌÅÍ¸¦ ÅëÇØ ½ºÅ³ µ¥ÀÌÅÍ ºÒ·¯¿À±â
+            // TODO: ì €ì¥ëœ ë°ì´í„°ë¥¼ í†µí•´ ìŠ¤í‚¬ ë°ì´í„° ë¶ˆëŸ¬ì˜¤ê¸°
 
             GolemInfo golemInfo = new GolemInfo(new Status(0, 0, 5), moveSpeedPoint: 20);
             for (int i = 0; i < 10; i++)
@@ -72,9 +72,9 @@ namespace CustomTIJI.CubicLand
         private void SetInitActKey()
         {
 
-            // TODO: ÀÓ½Ã Å° ¼¼ÆÃ
-            // TODO: µ¥ÀÌÅÍ¸¦ ÅëÇØ Å°¸¦ ¹Ş¾Æ¿Àµµ·Ï º¯°æ
-            // TODO: Window¿¡¼­¸¸ Àû¿ë
+            // TODO: ì„ì‹œ í‚¤ ì„¸íŒ…
+            // TODO: ë°ì´í„°ë¥¼ í†µí•´ í‚¤ë¥¼ ë°›ì•„ì˜¤ë„ë¡ ë³€ê²½
+            // TODO: Windowì—ì„œë§Œ ì ìš©
             _playerActKeys[(int)PlayerActKey.MOVE_FRONT] = KeyCode.W;
             _playerActKeys[(int)PlayerActKey.MOVE_RIGHT] = KeyCode.D;
             _playerActKeys[(int)PlayerActKey.MOVE_LEFT] = KeyCode.A;
@@ -138,7 +138,7 @@ namespace CustomTIJI.CubicLand
 
         private void KeyDownSkill(GolemSkill skill)
         {
-            // TODO: ÄğÅ¸ÀÓ Áß¿£ return
+            // TODO: ì¿¨íƒ€ì„ ì¤‘ì—” return
             if (_move.Acting || _usingSkill != null)
                 return;
 

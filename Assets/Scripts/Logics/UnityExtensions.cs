@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using UnityEngine;
 using CustomTIJI.CubicLand;
@@ -258,22 +258,22 @@ namespace CustomTIJI
             int startIndex = str.IndexOf('(');
             if (startIndex == -1)
             {
-                Debug.LogError($"Àß¸øµÈ Çü½ÄÀÇ ¹®ÀÚ¿­ÀÔ´Ï´Ù.");
+                Debug.LogError($"ì˜ëª»ëœ í˜•ì‹ì˜ ë¬¸ìì—´ì…ë‹ˆë‹¤.");
                 return Vector3.zero;
             }
 
             string vectorPart = str.Substring(startIndex).Trim('(', ')');
 
-            // ½°Ç¥(,) ±âÁØÀ¸·Î ºĞ¸®
+            // ì‰¼í‘œ(,) ê¸°ì¤€ìœ¼ë¡œ ë¶„ë¦¬
             string[] parts = vectorPart.Split(',');
 
             if (parts.Length != 3)
             {
-                Debug.LogError($"Vector3´Â 3°³ÀÇ ¿ä¼Ò°¡ ÇÊ¿äÇÕ´Ï´Ù.");
+                Debug.LogError($"Vector3ëŠ” 3ê°œì˜ ìš”ì†Œê°€ í•„ìš”í•©ë‹ˆë‹¤.");
                 return Vector3.zero;
             }
 
-            // ½Ç¼öÇü º¯È¯
+            // ì‹¤ìˆ˜í˜• ë³€í™˜
             float x = float.Parse(parts[0].Trim());
             float y = float.Parse(parts[1].Trim());
             float z = float.Parse(parts[2].Trim());

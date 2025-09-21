@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 namespace CustomTIJI.CubicLand
 {
@@ -36,7 +36,7 @@ namespace CustomTIJI.CubicLand
 
         protected override void OnCubeDestroied()
         {
-            // TODO: ÆÄ±« ÀÌÆåÆ®
+            // TODO: íŒŒê´´ ì´í™íŠ¸
 
             ObjectManager.Instance.DestroyObject(gameObject);
         }

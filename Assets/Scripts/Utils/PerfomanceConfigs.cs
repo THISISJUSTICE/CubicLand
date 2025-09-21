@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using UnityEngine;
 
 namespace CustomTIJI.CubicLand
@@ -33,8 +33,8 @@ namespace CustomTIJI.CubicLand
         {
             get
             {
-                // ±â±âÀÇ Frame¿¡ ¸Â°Ô Á¶Á¤
-                // 2ÀÇ ¹è¼ö·Î
+                // ê¸°ê¸°ì˜ Frameì— ë§ê²Œ ì¡°ì •
+                // 2ì˜ ë°°ìˆ˜ë¡œ
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR
                 return 30 * 2;
 #else
@@ -75,8 +75,8 @@ namespace CustomTIJI.CubicLand
                 }
             }
 
-            // TODO: Material º° ¿ë·® Á¤ÀÇ ÇÏ°Å³ª Æò±Õ°ªÀ¸·Î
-            const long estMaterialMemory = 3 * Configs.KB; // ÃßÁ¤Ä¡
+            // TODO: Material ë³„ ìš©ëŸ‰ ì •ì˜ í•˜ê±°ë‚˜ í‰ê· ê°’ìœ¼ë¡œ
+            const long estMaterialMemory = 3 * Configs.KB; // ì¶”ì •ì¹˜
 
             return sharedMaterials.Count * estMaterialMemory;
         }
@@ -96,13 +96,13 @@ namespace CustomTIJI.CubicLand
             foreach (var component in go.GetComponents<Component>())
             {
                 if (component is Transform)
-                    memorySize += 32; // ÃßÁ¤Ä¡
+                    memorySize += 32; // ì¶”ì •ì¹˜
                 else if (component is MonoBehaviour script)
                 {
-                    memorySize += 64; // ÃßÁ¤Ä¡
+                    memorySize += 64; // ì¶”ì •ì¹˜
                 }
                 else if (component is Collider || component is Renderer)
-                    memorySize += 128; // ÃßÁ¤Ä¡
+                    memorySize += 128; // ì¶”ì •ì¹˜
                 else
                     memorySize += 16;
             }
