@@ -18,8 +18,6 @@ namespace CustomTIJI.CubicLand
         private Transform _obstacleParent;
         private Transform _monsterParent;
 
-        private Dictionary<string, UnityEngine.Object> _cubes;
-
         private bool _isLoaded = false;
         public bool IsLoaded => _isLoaded;
 
