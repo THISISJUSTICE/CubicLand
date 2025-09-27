@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using CustomTIJI.CubicLand;
 #if UNITY_EDITOR
 using UnityEditor;
 using System.Reflection;
