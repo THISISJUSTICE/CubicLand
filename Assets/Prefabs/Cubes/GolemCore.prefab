@@ -11,10 +11,10 @@ GameObject:
   - component: {fileID: 1972471567476518914}
   - component: {fileID: 8083419350197018859}
   - component: {fileID: 6717501315592015518}
-  - component: {fileID: 4284302319157034892}
   - component: {fileID: 779628117942678819}
   - component: {fileID: 8818923863776672717}
   - component: {fileID: 626357440147848136}
+  - component: {fileID: 9200267880003071831}
   m_Layer: 7
   m_Name: GolemCore
   m_TagString: Cube
@@ -90,32 +90,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &4284302319157034892
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 584223288029311799}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 65f7b39440099374499b7661da8cd749, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _cubeInfo:
-    Status:
-      Point_HP: 0
-      Point_Armor: 0
-      Point_Attack: 0
-      CurrentStatus:
-        _hp: 0
-        _armor: 0
-        _attack: 0
-        _pointHP: 0
-    AttackMode: 0
-  _parent: {fileID: 0}
-  _childs: []
-  _core: {fileID: 0}
 --- !u!65 &779628117942678819
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -149,7 +123,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 269cb687d6c3c1c448fe9602927b026c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _golemInfo:
+    _status:
+      Point_HP: 0
+      Point_Armor: 0
+      Point_Attack: 0
+      _color: {r: 1, g: 1, b: 1, a: 1}
+    _moveSpeedPoint: 0
   _golemCube: {fileID: 0}
+  _curGolemInfo:
+    _status:
+      Point_HP: 0
+      Point_Armor: 0
+      Point_Attack: 0
+      _color: {r: 1, g: 1, b: 1, a: 1}
+    _moveSpeedPoint: 0
 --- !u!54 &626357440147848136
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -177,3 +165,32 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &9200267880003071831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 584223288029311799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a0b93a9ace21e5542a2ec1a524a29550, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _cubeInfo:
+    Status:
+      Point_HP: 0
+      Point_Armor: 0
+      Point_Attack: 0
+      _color: {r: 0, g: 0, b: 0, a: 0}
+    AttackMode: 0
+    CurrentStatus:
+      _hp: 0
+      _armor: 0
+      _attack: 0
+      _pointHP: 0
+    _isCore: 0
+    _shapePosition: {x: 0, y: 0, z: 0}
+  _parent: {fileID: 0}
+  _childs: []
+  _core: {fileID: 0}
