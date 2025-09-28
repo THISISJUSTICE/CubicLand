@@ -87,7 +87,7 @@ namespace CustomTIJI.CubicLand
 
             // TODO: 드롭 아이템
 
-            ObjectManager.Instance.DestroyObject(gameObject);
+            ObjectManager.Instance.DestroyGameObject(gameObject);
         }
         #endregion
     }

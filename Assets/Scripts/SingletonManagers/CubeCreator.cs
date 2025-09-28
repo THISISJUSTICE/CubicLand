@@ -15,33 +15,8 @@ namespace CustomTIJI.CubicLand
         private GameObject _skillGolemCore;
         private GameObject _skillGolemCube;
 
-        private Transform _obstacleParent;
-        private Transform _monsterParent;
-
         private bool _isLoaded = false;
         public bool IsLoaded => _isLoaded;
-
-        protected override void Awake()
-        {
-            base.Awake();
-
-            SceneManager.sceneLoaded += OnSceneLoaded;
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-        }
-
-        private void Start()
-        {
-            _obstacleParent = new GameObject("Obstacle Parent").transform;
-            _obstacleParent.SetParent(transform);
-            _monsterParent = new GameObject("Monster Parent").transform;
-            _monsterParent.SetParent(transform);
-        }
 
         public async UniTask Initialize()
         {
@@ -55,46 +30,12 @@ namespace CustomTIJI.CubicLand
             _isLoaded = true;
         }
 
-        private void OnSceneLoaded(Scene scene, LoadSceneMode sceneMode)
-        {
-            List<GameObject> cubes = new List<GameObject>();
-
-            if (_obstacleParent != null)
-            {
-                foreach (Transform child in _obstacleParent.transform)
-                {
-                    child.gameObject.SetActive(false);
-                    cubes.Add(child.gameObject);
-                }
-            }
-
-            if (_monsterParent != null)
-            {
-                foreach (Transform child in _monsterParent.GetComponentsInChildren<Transform>())
-                {
-                    if (child == _monsterParent)
-                        continue;
-
-                    child.gameObject.SetActive(false);
-                    cubes.Add(child.gameObject);
-                }
-            }
-
-            for (int i = 0; i < cubes.Count; i++)
-            {
-                ObjectManager.Instance.DestroyObject(cubes[i]);
-            }
-
-        }
-
         public GolemCore CreatePlayer(GolemInfo golemInfo)
         {
             // TODO: 자식 데이터는 로컬 데이터 베이스에서 파싱
 
-            GameObject player = CreateGolem(golemInfo, "Player", Vector3.one);
-            ObjectManager.Instance.AddComponent<PlayerController>(player);
-
-            player.transform.SetParent(transform);
+            GameObjectInstance player = CreateGolem(golemInfo, "Player", Vector3.one);
+            player.AddComponent<PlayerController>();
 
             return player.GetComponent<GolemCore>();
         }
@@ -104,9 +45,8 @@ namespace CustomTIJI.CubicLand
             for (int i = 0; i < addRandomCubeCount; i++)
                 AddRandomGolemCube(golemInfo);
 
-            GameObject monster = CreateGolem(golemInfo, "Monster", new Vector3(5f, Configs.CubeBottomHeight, 5f));
-            ObjectManager.Instance.AddComponent<GolemController>(monster);
-            monster.transform.SetParent(_monsterParent);
+            GameObjectInstance monster = CreateGolem(golemInfo, "Monster", new Vector3(5f, Configs.CubeBottomHeight, 5f));
+            monster.AddComponent<GolemController>();
 
             return monster.GetComponent<GolemCore>();
         }
@@ -114,10 +54,9 @@ namespace CustomTIJI.CubicLand
         public ObstacleCube CreateObstacleCube(Status status)
         {
             CubeInfo cubeInfo = new CubeInfo(status, false, Vector3Int.zero);
-            GameObject cube = ObjectManager.Instance.InstanitateObject(_obstacleCube, instMat: true);
+            GameObjectInstance cube = ObjectManager.Instance.InstanitateGameObject(_obstacleCube, useInstanceMaterial: true);
             ObstacleCube obstacle = cube.GetComponent<ObstacleCube>();
             obstacle.SetCubeInfo(cubeInfo);
-            obstacle.transform.SetParent(_obstacleParent.transform);
 
             return obstacle;
         }
@@ -150,10 +89,10 @@ namespace CustomTIJI.CubicLand
         // TODO: Summon 함수는 생성 시 애니메이션 효과 추가
         public SkillGolemCore SummonSkillGolemCore(GolemController owner, GolemInfo golemInfo, string skillName, Vector3 pos)
         {
-            GameObject core = ObjectManager.Instance.InstanitateObject(_skillGolemCore, instMat: true);
-            core.name = skillName;
-            core.transform.position = pos;
-            core.transform.rotation = owner.PlayerViewRotation;
+            GameObjectInstance core = ObjectManager.Instance.InstanitateGameObject(_skillGolemCore, useInstanceMaterial: true);
+            core.Name = skillName;
+            core.Position = pos;
+            core.Rotation = owner.PlayerViewRotation;
 
             CubeInfo cubeInfo = new CubeInfo(golemInfo.Status, true, Vector3Int.zero);
             SkillGolemCore golemCore = core.GetComponent<SkillGolemCore>();
@@ -171,7 +110,7 @@ namespace CustomTIJI.CubicLand
 
             for (int i = 0; i < childs.Length; i++)
             {
-                GameObject cube = ObjectManager.Instance.InstanitateObject(_skillGolemCube, instMat: true);
+                GameObjectInstance cube = ObjectManager.Instance.InstanitateGameObject(_skillGolemCube, useInstanceMaterial: true);
                 Vector3Int parentPos = golemCore.GolemInfo.ParentMap[childs[i]];
                 SkillGolemCube parentCube = golemCore.FindCube(parentPos);
                 Status status = parentCube.CubeInfo.Status.GetChildStatus();
@@ -189,12 +128,12 @@ namespace CustomTIJI.CubicLand
             return childCubes;
         }
 
-        private GameObject CreateGolem(GolemInfo golemInfo, string golemName, Vector3 pos)
+        private GameObjectInstance CreateGolem(GolemInfo golemInfo, string golemName, Vector3 pos)
         {
-            GameObject core = ObjectManager.Instance.InstanitateObject(_golemCore, instMat: true);
-            core.name = golemName;
+            GameObjectInstance core = ObjectManager.Instance.InstanitateGameObject(_golemCore, transform, useInstanceMaterial: true);
+            core.Name = golemName;
             pos.y += (float)golemInfo.GetDirectionSize(Enums.Direction3D.Down) * Configs.CUBE_BASE_LENGHT;
-            core.transform.position = pos;
+            core.Position = pos;
 
             CubeInfo cubeInfo = new CubeInfo(golemInfo.Status, true, Vector3Int.zero);
             GolemCube golemCube = core.GetComponent<GolemCube>();
@@ -217,7 +156,7 @@ namespace CustomTIJI.CubicLand
 
             foreach (var shapePos in golemInfo.ChildMap[pCubeInfo.ShapePosition])
             {
-                GameObject cube = ObjectManager.Instance.InstanitateObject(_golemCube, instMat: true);
+                GameObjectInstance cube = ObjectManager.Instance.InstanitateGameObject(_golemCube, useInstanceMaterial: true);
 
                 CubeInfo cubeInfo = new CubeInfo(status, false, shapePos);
                 GolemCube golemCube = cube.GetComponent<GolemCube>();

@@ -5,191 +5,199 @@ namespace CustomTIJI.CubicLand
 {
     public class ObjectManager : SingletonMonoBehaviour<ObjectManager>
     {
-        #region Variables
-        private Dictionary<GameObject, Stack<GameObject>> _objects;
-        private Dictionary<GameObject, GameObject> _instKeys;
-        private Dictionary<GameObject, List<Component>> _componentDic;
-        private Dictionary<GameObject, long> _memorySizes;
+        [SerializeField] private int _maxSizeInWindow = 1000;
+        [SerializeField] private int _maxSizeInMobile = 100;
 
-        private GameObject _emptyObject;
-        #endregion
-
-        #region Properties
-        private long CurrentMemorySize
+        private int MaxSize
         {
             get
             {
-                long memorySize = 0;
-
-                foreach (var memory in _memorySizes)
-                {
-                    memorySize += _objects[memory.Key].Count * memory.Value;
-                }
-
-                return memorySize;
+#if UNITY_EDITOR || UNITY_STANDALONE_WIN
+                return _maxSizeInWindow;
+#else
+                return _maxSizeInMobile;
+#endif
             }
         }
-        #endregion
 
-        #region Unity Functions
+        private readonly Dictionary<GameObject, Stack<GameObjectInstance>> _instancePools = new Dictionary<GameObject, Stack<GameObjectInstance>>();
+        private readonly Dictionary<GameObjectInstance, GameObject> _instanceOrigins = new Dictionary<GameObjectInstance, GameObject>();
+        private readonly Dictionary<GameObjectInstance, GameObject> _instanceBases = new Dictionary<GameObjectInstance, GameObject>();
+        private readonly Dictionary<GameObject, GameObjectInstance> _instances = new Dictionary<GameObject, GameObjectInstance>();
+        private readonly Dictionary<GameObjectInstance, List<Component>> _instanceComponents = new Dictionary<GameObjectInstance, List<Component>>();
+
+        private GameObject _emptyObject;
+
         protected override void Awake()
         {
             base.Awake();
-
-            _objects = new Dictionary<GameObject, Stack<GameObject>>();
-            _instKeys = new Dictionary<GameObject, GameObject>();
-            _componentDic = new Dictionary<GameObject, List<Component>>();
-            _memorySizes = new Dictionary<GameObject, long>();
 
             _emptyObject = new GameObject("Empty");
             _emptyObject.transform.SetParent(transform);
             _emptyObject.transform.Reset();
             _emptyObject.SetActive(false);
         }
-        #endregion
 
-        #region Public Functions
-        public GameObject InstanitateObject(GameObject prefab, bool instMat = false)
+        public GameObjectInstance InstanitateGameObject(GameObject prefab, Transform parent = null, bool useInstanceMaterial = false)
         {
             if (prefab == null)
                 return null;
 
-            if (!_objects.ContainsKey(prefab))
-                AddKey(prefab, instMat);
+            if (!_instancePools.ContainsKey(prefab))
+                _instancePools.Add(prefab, new Stack<GameObjectInstance>());
 
-            GameObject res;
+            GameObjectInstance res;
 
-            if (_objects[prefab].Count > 0)
+            if (_instancePools[prefab].Count > 0)
             {
-                res = _objects[prefab].Pop();
-                res.SetActive(true);
+                res = _instancePools[prefab].Pop();
+                _instanceBases[res].SetActive(true);
             }
             else
             {
-                res = Instantiate(prefab);
-                _instKeys[res] = prefab;
+                GameObject go = Instantiate(prefab);
+                res = new GameObjectInstance(go);
 
-                if (instMat)
-                {
-                    Renderer baseRen = res.GetComponent<Renderer>();
+                _instanceOrigins.Add(res, prefab);
+                _instanceBases.Add(res, go);
+                _instances.Add(go, res);
 
-                    if (baseRen != null)
-                    {
-                        switch (baseRen)
-                        {
-                            case TrailRenderer trail:
-                                if (trail.sharedMaterial != null)
-                                    trail.sharedMaterial = Instantiate(trail.sharedMaterial);
-                                break;
-                            case LineRenderer line:
-                                if (line.sharedMaterial != null)
-                                    line.sharedMaterial = Instantiate(line.sharedMaterial);
-                                break;
-                            case ParticleSystemRenderer particle:
-                                {
-                                    var sharedMats = particle.sharedMaterials;
-                                    var newMats = new Material[sharedMats.Length];
-
-                                    for (int i = 0; i < sharedMats.Length; i++)
-                                        newMats[i] = sharedMats[i] != null ? Instantiate(sharedMats[i]) : null;
-
-                                    particle.sharedMaterials = newMats;
-                                }
-                                break;
-                            default:
-                                {
-                                    var sharedMats = baseRen.sharedMaterials;
-                                    var newMats = new Material[sharedMats.Length];
-
-                                    for (int i = 0; i < sharedMats.Length; i++)
-                                        newMats[i] = sharedMats[i] != null ? Object.Instantiate(sharedMats[i]) : null;
-
-                                    baseRen.sharedMaterials = newMats;
-                                }
-                                break;
-                        }
-                    }
-                }
+                if (useInstanceMaterial)
+                    InstantiateMaterial(go);
             }
 
-            res.transform.Reset();
+            if(parent == null)
+                parent = transform;
+
+            _instanceBases[res].transform.SetParent(parent);
+            _instanceBases[res].transform.Reset();
 
             return res;
         }
 
-        public GameObject GetEmptyObject(string objectName = "")
+        public static GameObjectInstance InstantiateEmptyObject(string objectName = "empty", Transform parent = null)
         {
-            GameObject res = InstanitateObject(_emptyObject);
+            GameObjectInstance res = Instance.InstanitateGameObject(Instance._emptyObject, parent);
 
             if (!string.IsNullOrEmpty(objectName))
-                res.name = objectName;
+                res.Name = objectName;
 
             return res;
         }
 
-        public void DestroyObject(GameObject go)
+        public void DestroyGameObject(GameObjectInstance instance)
         {
-            if (CurrentMemorySize < PerfomanceConfigs.MemoryLimit) // 메모리 여유가 있는 경우 풀링
-            {
-                if (_componentDic.ContainsKey(go))
-                {
-                    foreach (var component in _componentDic[go])
-                    {
-                        Destroy(component);
-                    }
-                    _componentDic[go].Clear();
-                }
+            GameObject origin = _instanceOrigins[instance];
 
-                _objects[_instKeys[go]].Push(go);
-                go.SetActive(false);
-                go.transform.SetParent(gameObject.transform);
+            if (_instancePools[origin].Count < MaxSize)
+            {
+                ReleaseComponentInstance(instance);
+
+                _instancePools[origin].Push(instance);
+
+                GameObject baseGo = _instanceBases[instance];
+                baseGo.SetActive(false);
+                baseGo.transform.SetParent(transform);
             }
             else
             {
-                RemoveObject(go);
+                RemoveGameObject(instance);
             }
         }
 
-        public void DeleteObject(GameObject prefab)
+        public void DestroyGameObject(GameObject go)
         {
-            while (_objects[prefab].Count > 0)
-            {
-                GameObject obj = _objects[prefab].Pop();
-                DestroyObject(obj);
-            }
-
-            _objects.Remove(prefab);
-            _memorySizes.Remove(prefab);
+            if (_instances.TryGetValue(go, out GameObjectInstance instance))
+                DestroyGameObject(instance);
+            else
+                Destroy(go);
         }
 
-        public T AddComponent<T>(GameObject go) where T : Component
+        public T AddComponent<T>(GameObjectInstance instance) where T : Component
         {
-            if (!_componentDic.ContainsKey(go))
-                _componentDic[go] = new List<Component>();
+            if (!_instanceComponents.ContainsKey(instance))
+                _instanceComponents.Add(instance, new List<Component>());
 
-            T component = go.AddComponent<T>();
-            if (component != null)
-                _componentDic[go].Add(component);
+            T component = _instanceBases[instance].AddComponent<T>();
+            _instanceComponents[instance].Add(component);
 
             return component;
         }
-        #endregion
 
-        #region Utils
-        private void AddKey(GameObject prefab, bool instMat)
+        public void Clear(GameObject prefab)
         {
-            _objects[prefab] = new Stack<GameObject>();
-            _memorySizes[prefab] = PerfomanceConfigs.EstimateGameObjectMemory(prefab, instMat);
-        }
-
-        private void RemoveObject(GameObject go)
-        {
-            if (_instKeys.ContainsKey(go))
+            while (_instancePools[prefab].Count > 0)
             {
-                _instKeys.Remove(go);
+                GameObjectInstance instance = _instancePools[prefab].Pop();
+                RemoveGameObject(instance);
             }
-            GameObject.Destroy(go);
+
+            _instancePools.Remove(prefab);
         }
-        #endregion
+
+        private void InstantiateMaterial(GameObject go)
+        {
+            Renderer renderer = go.GetComponent<Renderer>();
+
+            if (renderer == null)
+                return;
+
+            Material[] sharedMaterials = renderer.sharedMaterials;
+            Material[] materialInstances = new Material[sharedMaterials.Length];
+
+            for (int i = 0; i < sharedMaterials.Length; i++)
+            {
+                if (sharedMaterials[i] == null)
+                    materialInstances = null;
+                else
+                    materialInstances[i] = Instantiate(sharedMaterials[i]);
+            }
+
+            renderer.sharedMaterials = materialInstances;
+        }
+
+        private void RemoveGameObject(GameObjectInstance instance)
+        {
+            if (!_instanceBases.ContainsKey(instance))
+                return;
+
+            ReleaseComponentInstance(instance);
+            ReleaseMaterialInstance(instance);
+
+            GameObject go = _instanceBases[instance];
+            _instanceBases.Remove(instance);
+            _instances.Remove(go);
+
+            if (_instanceOrigins.ContainsKey(instance))
+                _instanceOrigins.Remove(instance);
+
+            Destroy(go);
+        }
+
+        private void ReleaseComponentInstance(GameObjectInstance instance)
+        {
+            if (_instanceComponents.ContainsKey(instance))
+            {
+                foreach (Component component in _instanceComponents[instance])
+                    Destroy(component);
+
+                _instanceComponents.Clear();
+            }
+        }
+
+        private void ReleaseMaterialInstance(GameObjectInstance instance)
+        {
+            Renderer renderer = _instanceBases[instance].GetComponent<Renderer>();
+
+            if (renderer == null)
+                return;
+
+            Material[] sharedMaterials = renderer.sharedMaterials;
+            foreach (Material material in sharedMaterials)
+            {
+                if (material != null)
+                    Resources.UnloadAsset(material);
+            }
+        }
     }
 }

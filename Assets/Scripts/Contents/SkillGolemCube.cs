@@ -113,7 +113,7 @@ namespace CustomTIJI.CubicLand
 
             // TODO: 파괴 이펙트
 
-            ObjectManager.Instance.DestroyObject(gameObject);
+            ObjectManager.Instance.DestroyGameObject(gameObject);
         }
         #endregion
     }

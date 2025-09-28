@@ -57,7 +57,7 @@ namespace CustomTIJI.CubicLand
             obstacle.transform.position = transform.position;
             obstacle.transform.rotation = transform.rotation;
             obstacle.NormalizeTransform();
-            ObjectManager.Instance.DestroyObject(gameObject);
+            ObjectManager.Instance.DestroyGameObject(gameObject);
         }
 
         public void OnChildDestroied(GolemCube child)

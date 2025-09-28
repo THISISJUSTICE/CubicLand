@@ -41,12 +41,11 @@ namespace CustomTIJI.CubicLand
             }
 
             GameObject effect = (GameObject)_effects[effectName];
-            var instance = ObjectManager.Instance.InstanitateObject(effect, instMat: true);
-            instance.transform.position = position;
-            instance.transform.SetParent(transform);
+            GameObjectInstance instance = ObjectManager.Instance.InstanitateGameObject(effect, useInstanceMaterial: true);
+            instance.Position = position;
             var particle = instance.GetComponent<ParticleSystem>();
             Helper.WaitTimeAct(particle.main.startLifetime.constantMax,
-                () => ObjectManager.Instance.DestroyObject(instance));
+                () => instance.Destroy());
 
             return effect;
         }
