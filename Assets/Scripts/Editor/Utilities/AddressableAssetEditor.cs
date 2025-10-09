@@ -21,7 +21,7 @@ namespace CustomTIJI
         private readonly EditorOption[] _editorOptions = { new DefaultAssetOption() };
 
 
-        [MenuItem("Custom Editor Utils/Addressable Asset Editor")]
+        [MenuItem("CustomTIJI/Addressable Asset Editor")]
         public static void ShowWindow()
         {
             GetWindow<AddressableAssetEditor>("Addressable Asset Editor").Show();

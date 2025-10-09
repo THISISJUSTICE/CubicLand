@@ -13,7 +13,7 @@ namespace CustomTIJI
     {
         private const string SINGLETON_PATH = "Assets/Prefabs/InScene/Singletons";
 
-        [MenuItem("Custom Editor Utils/Singleton/Create Singletons")]
+        [MenuItem("CustomTIJI/Singleton/Create Singletons")]
         public static void CreateSingletons()
         {
             if (!Directory.Exists(SINGLETON_PATH))
@@ -34,7 +34,7 @@ namespace CustomTIJI
             AssetDatabase.SaveAssets();
         }
 
-        [MenuItem("Custom Editor Utils/Singleton/Load Singletons to Scene")]
+        [MenuItem("CustomTIJI/Singleton/Load Singletons to Scene")]
         public static void LoadSingletons()
         {
             SceneSelector.LoadScene("Assets/Scenes/Intro.unity");

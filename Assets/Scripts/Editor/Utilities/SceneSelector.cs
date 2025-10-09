@@ -12,7 +12,7 @@ namespace CustomTIJI
         private int _hoveredIndex = -1;
         private int _selectedIndex = -1;
 
-        [MenuItem("Custom Editor Utils/Scene Selector")]
+        [MenuItem("CustomTIJI/Scene Selector")]
         public static void ShowWindow()
         {
             GetWindow<SceneSelector>("Scene Selector");

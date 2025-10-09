@@ -11,15 +11,12 @@ namespace CustomTIJI
 {
     public class DelegatesViewer : EditorWindow
     {
-        #region GUI Variables
         private Vector2 _scrollPosition;
         private bool[] _delFolds;
         private bool[] _ueFolds;
         private Dictionary<Delegate, bool> _delTargetFolds;
         private Dictionary<UnityEventBase, bool> _ueTargetFolds;
-        #endregion
 
-        #region Variables
         private bool _loaded = false;
 
         private MonoBehaviour[] _activeScripts;
@@ -30,10 +27,7 @@ namespace CustomTIJI
         private Dictionary<UnityEventBase, List<MonoBehaviour>> _eventTracks;
         private Dictionary<UnityEventBase, string> _eventKeyTitles;
 
-        #endregion
-
-        #region Editor Functions
-        [MenuItem("Custom Editor Utils/Delegates Viewer")]
+        [MenuItem("CustomTIJI/Delegates Viewer")]
         public static void OpenWindow()
         {
             DelegatesViewer window = (DelegatesViewer)EditorWindow.GetWindow(typeof(DelegatesViewer));
@@ -77,9 +71,7 @@ namespace CustomTIJI
 
             EditorGUILayout.EndScrollView();
         }
-        #endregion
 
-        #region GUI Functions
         private void DrawDelegates()
         {
             DrawList(ref _delegates, ref _delegateTracks, ref _delFolds, ref _delTargetFolds);
@@ -177,7 +169,6 @@ namespace CustomTIJI
                 index++;
             }
         }
-        #endregion
 
         #region Utils
         private void Refresh()

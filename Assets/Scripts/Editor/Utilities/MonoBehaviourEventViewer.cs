@@ -10,7 +10,6 @@ namespace CustomTIJI
 {
     public class MonoBehaviourEventViewer : EditorWindow
     {
-        #region Variables
         private Vector2 _scrollPos;
         private bool[] _foldoutMethods;
         private bool[] _foldoutScripts;
@@ -30,9 +29,8 @@ namespace CustomTIJI
         "OnCollisionEnter", "OnCollisionExit", "OnTriggerEnter", "OnTriggerExit",
         "OnMouseDown", "OnMouseUp", "OnMouseDrag", "OnMouseEnter", "OnMouseExit"
     };
-        #endregion
 
-        [MenuItem("Custom Editor Utils/MonoBehaviour Event Viewer")]
+        [MenuItem("CustomTIJI/MonoBehaviour Event Viewer")]
         public static void ShowWindow()
         {
             GetWindow<MonoBehaviourEventViewer>("MonoBehaviour Event Viewer");

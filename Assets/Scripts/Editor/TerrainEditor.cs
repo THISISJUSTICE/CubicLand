@@ -7,7 +7,6 @@ namespace CustomTIJI.CubicLand
 {
     public class TerrainEditor : EditorWindow
     {
-        #region Variables
         private int BorderRange { get => 3; }
         private float MaxRaiseHeight { get => 0.5f; }
 
@@ -18,10 +17,8 @@ namespace CustomTIJI.CubicLand
         private int _maxRandCount = 0;
 
         private HashSet<int> _noDuplRandoms = new HashSet<int>();
-        #endregion
 
-        #region Editor Functions
-        [MenuItem("Custom Ingame Utils/Terrain Editor")]
+        [MenuItem("CubicLand/Terrain Editor")]
         public static void ShowWindow()
         {
             GetWindow<TerrainEditor>("Terrain Editor");
@@ -62,9 +59,7 @@ namespace CustomTIJI.CubicLand
             GUILayout.Space(15);
             RaiseTerrainRandomly();
         }
-        #endregion
 
-        #region GUI Functions
         private void SetCopyTerrain()
         {
             if (!GUILayout.Button("Copy Terrain"))
@@ -187,7 +182,6 @@ namespace CustomTIJI.CubicLand
                 int z = rand % terrainRange + BorderRange;
             }
         }
-        #endregion
 
         #region Utils
         private bool CheckTerrain()

@@ -5,25 +5,15 @@ namespace CustomTIJI
 {
     public class MeshMeasurer : EditorWindow
     {
-        #region Variables
         private GameObject _meshObject;
 
-        #region GUI Variables
         private int _selectedTab = 0;
         private string[] _tabLabels = new string[] { "Mesh Size" };
-        #endregion
-        #endregion
 
-        #region Editor Functions
-        [MenuItem("Custom Editor Utils/Mesh Measurer")]
+        [MenuItem("CustomTIJI/Mesh Measurer")]
         public static void ShowWindow()
         {
             GetWindow<MeshMeasurer>("Mesh Measurer");
-        }
-
-        private void OnEnable()
-        {
-
         }
 
         private void OnGUI()
@@ -41,9 +31,7 @@ namespace CustomTIJI
                     break;
             }
         }
-        #endregion
 
-        #region GUI Functions
         private void LogMeshBounds()
         {
             if (!GUILayout.Button("Log Mesh Size"))
@@ -59,9 +47,7 @@ namespace CustomTIJI
             meshSize.z *= _meshObject.transform.localScale.z;
             Debug.Log($"{_meshObject.name}'s size{meshSize}");
         }
-        #endregion
 
-        #region Utils
         private bool CheckMeshObject(out MeshFilter meshFilter)
         {
             if (_meshObject == null)
@@ -80,6 +66,5 @@ namespace CustomTIJI
 
             return true;
         }
-        #endregion
     }
 }

@@ -8,7 +8,6 @@ namespace CustomTIJI
 {
     public class AssetOpener : EditorWindow
     {
-        #region Variables
         private const string MAIN_PATH = "Assets";
 
         private Vector2 _scrollPosition;
@@ -17,14 +16,13 @@ namespace CustomTIJI
         private UnityEngine.Object _fileObject;
 
         private HashSet<string> _filePaths = new HashSet<string>();
-        #endregion
 
-        #region GUI Functions
-        [MenuItem("Custom Editor Utils/Asset Opener")]
+        [MenuItem("CustomTIJI/Asset Opener")]
         private static void ShowWindow()
         {
             GetWindow<AssetOpener>("Asset Opener");
         }
+
         private void OnGUI()
         {
             _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUILayout.Width(position.width), GUILayout.Height(position.height));
@@ -95,10 +93,6 @@ namespace CustomTIJI
                 _filePaths.Remove(deletePath);
         }
 
-
-        #endregion
-
-        #region Utils
         private string GetPathToOpenFolder()
         {
             string filePath = EditorUtility.OpenFilePanel("", MAIN_PATH, "");
@@ -136,6 +130,5 @@ namespace CustomTIJI
 
             return false;
         }
-        #endregion
     }
 }

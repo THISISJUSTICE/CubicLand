@@ -6,7 +6,6 @@ namespace CustomTIJI
 {
     public class Calculator : EditorWindow
     {
-        #region Types
         private abstract class BaseCalculator
         {
             protected Calculator _calculator;
@@ -105,22 +104,15 @@ namespace CustomTIJI
                 EditorGUILayout.LabelField(resolRate);
             }
         }
-        #endregion
 
-
-        #region Variables
         private BaseCalculator[] _calculators;
 
-        #region GUI Variables
         private int _selectedTab = 0;
         private string[] _tabLabels = new string[] { "Vector3" };
 
         private Action[] _guiActions;
-        #endregion
-        #endregion
 
-        #region Editor Functions
-        [MenuItem("Custom Editor Utils/Calculator")]
+        [MenuItem("CustomTIJI/Calculator")]
         public static void ShowWindow()
         {
             GetWindow<Calculator>("Calculator");
@@ -150,13 +142,7 @@ namespace CustomTIJI
         {
             SelectTabTemplate(ref _selectedTab, ref _tabLabels, _guiActions);
         }
-        #endregion
 
-        #region GUI Functions
-
-        #endregion
-
-        #region Utils
         public void SelectTabTemplate(ref int selectedTab, ref string[] tabLables, Action[] callbacks)
         {
             selectedTab = GUILayout.Toolbar(selectedTab, tabLables);
@@ -217,6 +203,5 @@ namespace CustomTIJI
             resolution.y = EditorGUI.IntField(rect, resolution.y);
             GUILayout.EndHorizontal();
         }
-        #endregion
     }
 }

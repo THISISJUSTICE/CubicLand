@@ -5,7 +5,6 @@ namespace CustomTIJI.CubicLand
 {
     public class MapEditor : EditorWindow
     {
-        #region Variables
         private const string PLANE_MATERIAL_PATH = "Assets/Resource/Materials/MapPlaneMaterial.mat";
         private const string BORDER_MATERIAL_PATH = "Assets/Resource/Materials/MapBorderMaterial.mat";
         private const float UNITY_PLANE_RATIO = 5f;
@@ -15,10 +14,8 @@ namespace CustomTIJI.CubicLand
 
         private int _planeSize = 1;
         private int _borderHeight = 1;
-        #endregion
 
-        #region Editor Functions
-        [MenuItem("Custom Ingame Utils/Map Editor")]
+        [MenuItem("CubicLand/Map Editor")]
         public static void ShowWindow()
         {
             GetWindow<MapEditor>("Map Editor");
@@ -49,9 +46,7 @@ namespace CustomTIJI.CubicLand
             GUILayout.Space(5f);
             CreateBorderButton();
         }
-        #endregion
 
-        #region GUI Functions
         private void CreateDefaultPlaneButton()
         {
             if (!GUILayout.Button("Create Default Plane"))
@@ -118,7 +113,6 @@ namespace CustomTIJI.CubicLand
             _borders[3].transform.localEulerAngles = new Vector3(90f, 180f, 0f);
             _borders[3].transform.localPosition = new Vector3(0f, UNITY_PLANE_RATIO * scale.z, UNITY_PLANE_RATIO);
         }
-        #endregion
 
         #region Utils
         private bool CheckPlane()
