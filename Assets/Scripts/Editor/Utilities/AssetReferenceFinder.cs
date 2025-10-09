@@ -1,4 +1,4 @@
-﻿using UnityEditor;
+using UnityEditor;
 using UnityEngine;
 using System.Collections.Generic;
 using System.IO;
@@ -6,14 +6,12 @@ using System.Linq;
 using System;
 using System.Threading.Tasks;
 using System.Threading;
-
 using Object = UnityEngine.Object;
 
 namespace CustomTIJI
 {
     public class AssetReferenceFinder : EditorWindow
     {
-        #region Types
         private class TaskValueList<T>
         {
             private readonly System.Object _lock;
@@ -62,9 +60,7 @@ namespace CustomTIJI
                 return _flag >= _endFlag;
             }
         }
-        #endregion
 
-        #region Variables
         private const string MAIN_PATH = "Assets";
         private const float FOLD_OFFSET_X = 20f;
 
@@ -87,11 +83,9 @@ namespace CustomTIJI
         private int _timeLimit = 60;
 
         private TaskValueList<string> _tvl;
-        private int ProcessCount { get => System.Environment.ProcessorCount; }
-        #endregion
+        private int ProcessCount { get => Environment.ProcessorCount; }
 
-        #region Editor Functions
-        [MenuItem("Custom Editor Utils/Find Asset References")]
+        [MenuItem("CustomTIJI/Find Asset References")]
         public static void ShowWindow()
         {
             GetWindow<AssetReferenceFinder>("Find Asset References");
@@ -164,7 +158,6 @@ namespace CustomTIJI
 
             EditorGUILayout.EndScrollView();
         }
-        #endregion
 
         #region GUI Functions
         private void DrawSetFolderPath()
@@ -289,47 +282,43 @@ namespace CustomTIJI
             if (!GUILayout.Button("Find References"))
                 return;
 
-            if (_targetAsset != null)
-            {
-                string assetPath = AssetDatabase.GetAssetPath(_targetAsset);
-                string guid = AssetDatabase.AssetPathToGUID(assetPath);
-
-                FindFilesReferencingGUID(guid, (referencingFiles) =>
-                {
-                    if (referencingFiles.Count > 0)
-                    {
-                        string text = $"{Path.GetFileName(assetPath)} References: \n";
-                        referencingFiles.Sort();
-
-                        foreach (string file in referencingFiles)
-                        {
-                            text += $"{file}\n";
-                        }
-                        text = text.TrimEnd('\n');
-                        Debug.Log(text);
-
-                        if (_saveTxt)
-                        {
-                            if (Directory.Exists(_txtPath))
-                                File.WriteAllText(Path.Combine(_txtPath, "ReferencingFiles.txt"), text);
-                            else
-                            {
-                                Debug.Log($"Not Exist Path: {_txtPath}");
-                            }
-                        }
-
-                        ReferenceFilesViewer.OpenWindow(referencingFiles);
-                    }
-                    else
-                    {
-                        Debug.Log("No references found.");
-                    }
-                });
-            }
-            else
+            if (_targetAsset == null)
             {
                 Debug.LogError("Target Asset is Null");
+                return;
             }
+
+            string assetPath = AssetDatabase.GetAssetPath(_targetAsset);
+            string guid = AssetDatabase.AssetPathToGUID(assetPath);
+
+            List<string> referencingFiles = FindFilesReferencingGUID(guid);
+            if (referencingFiles == null || referencingFiles.Count == 0)
+            {
+                Debug.Log($"No references of {_targetAsset.name} found.");
+                return;
+            }
+
+            string text = $"{Path.GetFileName(assetPath)} References: \n";
+            referencingFiles.Sort();
+
+            foreach (string file in referencingFiles)
+            {
+                text += $"{file}\n";
+            }
+            text = text.TrimEnd('\n');
+            Debug.Log(text);
+
+            if (_saveTxt)
+            {
+                if (Directory.Exists(_txtPath))
+                    File.WriteAllText(Path.Combine(_txtPath, "ReferencingFiles.txt"), text);
+                else
+                {
+                    Debug.Log($"Not Exist Path: {_txtPath}");
+                }
+            }
+
+            ReferenceViewer.OpenWindow(_targetAsset, referencingFiles);
         }
 
         private void GUIFoldTitle(string title)
@@ -365,7 +354,7 @@ namespace CustomTIJI
         #endregion
 
         #region Utils
-        private void FindFilesReferencingGUID(string guid, Action<List<string>> callback)
+        private List<string> FindFilesReferencingGUID(string guid)
         {
             List<string> checkPaths = new List<string>();
 
@@ -383,7 +372,9 @@ namespace CustomTIJI
             if (checkPaths.Count > ProcessCount)
             {
                 List<string>[] findedFiles = new List<string>[ProcessCount];
-                _tvl = new TaskValueList<string>(findedFiles.Length, callback);
+                List<string> referencingFiles = new List<string>();
+
+                _tvl = new TaskValueList<string>(findedFiles.Length, (list) => referencingFiles.AddRange(list));
 
                 for (int i = 0; i < findedFiles.Length; i++)
                     findedFiles[i] = new List<string>();
@@ -403,12 +394,12 @@ namespace CustomTIJI
                             int index = i;
                             Task.Run(() =>
                             {
-                                var files = FindFiles(findedFiles[index], guid, cts.Token);
+                                List<string> files = FindFiles(findedFiles[index], guid, cts.Token);
                                 _tvl.AddList(files);
                             });
                         }
 
-                        var files = FindFiles(findedFiles[0], guid, cts.Token);
+                        List<string> files = FindFiles(findedFiles[0], guid, cts.Token);
                         _tvl.AddList(files);
                     }
                     catch (OperationCanceledException)
@@ -420,22 +411,23 @@ namespace CustomTIJI
                         Debug.LogError($"Find failed: {ex.Message}");
                     }
                 }
+
+                return referencingFiles;
             }
             else
             {
                 DateTime startTime = DateTime.Now;
-                var referencingFiles = FindFiles(checkPaths, guid);
+                List<string> referencingFiles = FindFiles(checkPaths, guid);
 
                 Debug.Log($"Searching Time: {(DateTime.Now - startTime).TotalSeconds}");
-                if (callback != null)
-                    callback(referencingFiles);
+
+                return referencingFiles;
             }
         }
 
         private List<string> FindFiles(List<string> paths, string guid, CancellationToken? token = null)
         {
             List<string> findedFiles = new List<string>();
-            int count = 0;
             CancellationToken ct;
             if (token != null)
                 ct = (CancellationToken)token;
@@ -443,16 +435,11 @@ namespace CustomTIJI
             foreach (string path in paths)
             {
                 if (token != null && ct.IsCancellationRequested)
-                {
                     ct.ThrowIfCancellationRequested();
-                }
 
                 string fileContent = File.ReadAllText(path);
                 if (fileContent.Contains(guid))
-                {
                     findedFiles.Add(path);
-                }
-                count++;
             }
 
             return findedFiles;
