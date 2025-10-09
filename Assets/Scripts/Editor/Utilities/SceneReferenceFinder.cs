@@ -18,8 +18,8 @@ namespace CustomTIJI
 
         private static UnityEngine.Object _target;
 
-        [MenuItem(GAMEOBJECT_MENU + MENU_NAME, true),
-            MenuItem(ASSETS_MENU + MENU_NAME, true)]
+        [MenuItem(GAMEOBJECT_MENU + MENU_NAME, true)]
+        [MenuItem(ASSETS_MENU + MENU_NAME, true)]
         private static bool ValidateMenu()
         {
             _target = Selection.activeObject;
@@ -31,11 +31,20 @@ namespace CustomTIJI
         }
 
         [MenuItem(ASSETS_MENU + MENU_NAME, false, INDEX)]
-        private static void FindInAssets()
+        [MenuItem(GAMEOBJECT_MENU + MENU_NAME, false, INDEX)]
+        private static void Find()
         {
             if (_target == null)
                 return;
 
+            if (AssetDatabase.Contains(_target))
+                FindInAssets();
+            else
+                FindInGameObject();
+        }
+
+        private static void FindInAssets()
+        {
             string path = AssetDatabase.GetAssetPath(_target);
             FindReferences((component, property) =>
             {
@@ -62,10 +71,9 @@ namespace CustomTIJI
             });
         }
 
-        [MenuItem(GAMEOBJECT_MENU + MENU_NAME, false, INDEX)]
         private static void FindInGameObject()
         {
-            if (_target == null || _target is not GameObject go)
+            if (_target is not GameObject go)
                 return;
 
             Component[] components = go.GetComponents<Component>();

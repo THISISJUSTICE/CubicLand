@@ -14,7 +14,7 @@ namespace CustomTIJI
     {
         private class TaskValueList<T>
         {
-            private readonly System.Object _lock;
+            private readonly object _lock = new object();
 
             private List<T> _list;
             private Action<List<T>> _callback;
@@ -25,7 +25,6 @@ namespace CustomTIJI
 
             public TaskValueList(int endflag, Action<List<T>> callback)
             {
-                _lock = new System.Object();
                 _startTime = DateTime.Now;
                 _list = new List<T>();
                 _flag = 0;
@@ -63,6 +62,7 @@ namespace CustomTIJI
 
         private const string MAIN_PATH = "Assets";
         private const float FOLD_OFFSET_X = 20f;
+        private const string MENU_NAME = "Asset References Finder";
 
         private Vector2 _scrollPosition;
         private Vector2 _findOptScroll;
@@ -85,10 +85,22 @@ namespace CustomTIJI
         private TaskValueList<string> _tvl;
         private int ProcessCount { get => Environment.ProcessorCount; }
 
-        [MenuItem("CustomTIJI/Find Asset References")]
+        [MenuItem("Assets/CustomTIJI/Find References in Project")]
+        public static void FindInWindow()
+        {
+            AssetReferenceFinder window = GetWindow<AssetReferenceFinder>(MENU_NAME);
+            
+            UnityEngine.Object obj = Selection.activeObject;
+            if(obj != null && AssetDatabase.Contains(obj))
+                window._targetAsset = obj;
+
+            window.Show();
+        }
+
+        [MenuItem("CustomTIJI/" + MENU_NAME)]
         public static void ShowWindow()
         {
-            GetWindow<AssetReferenceFinder>("Find Asset References");
+            GetWindow<AssetReferenceFinder>(MENU_NAME).Show();
         }
 
         private void OnEnable()
