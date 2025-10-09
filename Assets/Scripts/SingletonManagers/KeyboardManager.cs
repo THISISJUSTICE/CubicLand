@@ -7,7 +7,6 @@ namespace CustomTIJI.CubicLand
 {
     public class KeyboardManager : SingletonMonoBehaviour<KeyboardManager>
     {
-        #region Types
         private class KeyLock
         {
             private KeyCode _lockKey;
@@ -34,9 +33,7 @@ namespace CustomTIJI.CubicLand
                 }
             }
         }
-        #endregion
 
-        #region Variables
         private const float MAX_KEYING_TIME = 20f;
 
         private readonly HashSet<KeyCode> _systemKeyCodes = new HashSet<KeyCode> {
@@ -44,7 +41,7 @@ namespace CustomTIJI.CubicLand
         KeyCode.F1, KeyCode.F2, KeyCode.F3, KeyCode.F4,
         KeyCode.F5, KeyCode.F6, KeyCode.F7, KeyCode.F8,
         KeyCode.F9, KeyCode.F10, KeyCode.F11, KeyCode.F12,
-    };
+        };
 
         private readonly HashSet<KeyCode> _userKeyCodes = new HashSet<KeyCode> {
         KeyCode.A, KeyCode.B, KeyCode.C, KeyCode.D, KeyCode.E,
@@ -63,7 +60,7 @@ namespace CustomTIJI.CubicLand
         KeyCode.LeftBracket, KeyCode.RightBracket,
         KeyCode.Minus, KeyCode.Equals,
         KeyCode.RightArrow, KeyCode.LeftArrow, KeyCode.UpArrow, KeyCode.DownArrow,
-    };
+        };
 
         private Dictionary<KeyCode, float> _keyingDic = new Dictionary<KeyCode, float>();
         private Dictionary<KeyCode, (Action, Action<float>)> _keyTriggerDic = new Dictionary<KeyCode, (Action, Action<float>)>();
@@ -76,9 +73,7 @@ namespace CustomTIJI.CubicLand
         private bool _keyChanged = false;
 
         public bool keyBlocked = false;
-        #endregion
 
-        #region Unity Functions
         private void Update()
         {
             if (_usingKey.Count <= 0 || keyBlocked)
@@ -131,9 +126,7 @@ namespace CustomTIJI.CubicLand
                 }
             }
         }
-        #endregion
 
-        #region Public Functions
         public void SetKeyDownUp(KeyCode keyCode, Action actionDown, Action<float> actionUp)
         {
             if (!CheckSetKey(keyCode))
@@ -273,9 +266,7 @@ namespace CustomTIJI.CubicLand
             _keyLockFinder.Remove(keyLock);
             keyLock = null;
         }
-        #endregion
 
-        #region Utils
         private bool CheckSetKey(KeyCode keyCode)
         {
             if (_usingKey.Contains(keyCode))
@@ -335,6 +326,5 @@ namespace CustomTIJI.CubicLand
 
             return true;
         }
-        #endregion
     }
 }

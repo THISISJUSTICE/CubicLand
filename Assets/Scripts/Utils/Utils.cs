@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine;
 using CustomTIJI.CubicLand;
+using Cysharp.Threading.Tasks;
 using Enums = CustomTIJI.CubicLand.Enums;
 
 namespace CustomTIJI
@@ -274,6 +275,19 @@ namespace CustomTIJI
             }
 
             return Mathf.Clamp(value, 0f, loadingValue);
+        }
+
+        public static async void WaitTimeAct(float waitTime, Action callback)
+        {
+            await UniTask.WaitForSeconds(waitTime);
+            callback?.Invoke();
+        }
+
+        public static async void WaitFrameAct(int frame, Action callback)
+        {
+            for (int i = 0; i < frame; i++)
+                await UniTask.NextFrame();
+            callback?.Invoke();
         }
     }
 }

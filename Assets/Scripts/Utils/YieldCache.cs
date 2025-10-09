@@ -4,25 +4,24 @@ namespace CustomTIJI
 {
     public class YieldCache
     {
-        private LimitedDictionary<float, WaitForSeconds> _waitforSeconds
-            = new LimitedDictionary<float, WaitForSeconds>(200);
+        private readonly LimitedDictionary<float, WaitForSeconds> _waitforSeconds;
 
         public readonly WaitForFixedUpdate WaitForFixedUpdate = new WaitForFixedUpdate();
 
-        public YieldCache()
+        public YieldCache(int count)
         {
-
+            _waitforSeconds = new LimitedDictionary<float, WaitForSeconds>(count);
         }
 
         public WaitForSeconds GetWaitForSeconds(float time)
         {
-            if (_waitforSeconds.TryGetValue(time, out var waitForSeconds))
+            if (_waitforSeconds.TryGetValue(time, out WaitForSeconds waitForSeconds))
             {
                 return waitForSeconds;
             }
 
             waitForSeconds = new WaitForSeconds(time);
-            _waitforSeconds[time] = waitForSeconds;
+            _waitforSeconds.Add(time, waitForSeconds);
 
             return waitForSeconds;
         }

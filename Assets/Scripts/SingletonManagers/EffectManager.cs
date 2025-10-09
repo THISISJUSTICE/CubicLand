@@ -44,7 +44,7 @@ namespace CustomTIJI.CubicLand
             GameObjectInstance instance = ObjectManager.Instance.InstanitateGameObject(effect, useInstanceMaterial: true);
             instance.Position = position;
             var particle = instance.GetComponent<ParticleSystem>();
-            Helper.WaitTimeAct(particle.main.startLifetime.constantMax,
+            this.WaitTimeAct(particle.main.startLifetime.constantMax,
                 () => instance.Destroy());
 
             return effect;
