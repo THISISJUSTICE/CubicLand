@@ -27,13 +27,13 @@ namespace CustomTIJI
         public static Vector3[] GetDirections(this Transform tf)
         {
             return new Vector3[] {
-        tf.right,
-        -tf.right,
-        tf.up,
-        -tf.up,
-        tf.forward,
-        -tf.forward
-    };
+                tf.right,
+                -tf.right,
+                tf.up,
+                -tf.up,
+                tf.forward,
+                -tf.forward
+            };
         }
         #endregion
 
