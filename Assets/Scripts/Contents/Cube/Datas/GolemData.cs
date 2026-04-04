@@ -44,7 +44,7 @@ namespace CustomTIJI.CubicLand.Cube
         {
             Dictionary<Vector3Int, CubeData> cubeDatas = new Dictionary<Vector3Int, CubeData>();
             foreach (KeyValuePair<Vector3Int, CubeData> cubeData in CubeDatas)
-                cubeDatas[cubeData.Key] = cubeData.Value;
+                cubeDatas[cubeData.Key] = cubeData.Value.Copy();
 
             Dictionary<Vector3Int, List<Vector3Int>> childs = new Dictionary<Vector3Int, List<Vector3Int>>();
             if (Childs != null)

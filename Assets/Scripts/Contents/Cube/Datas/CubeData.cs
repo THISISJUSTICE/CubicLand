@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace CustomTIJI.CubicLand.Cube
 {
-    public struct CubeData
+    public class CubeData
     {
         public StatusPoint StatusPoint { get; private set; }
         public StatusValue StatusValue { get; private set; }
