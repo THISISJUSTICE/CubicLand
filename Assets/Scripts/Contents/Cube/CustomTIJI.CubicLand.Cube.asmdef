@@ -3,8 +3,7 @@
     "rootNamespace": "CustomTIJI.CubicLand.Cube",
     "references": [
         "GUID:81880666b545d40419f7291db544c83a",
-        "GUID:196b9ba46fdb2eb43ab3eb08f42d225c",
-        "GUID:c6fc0d65ca36db0489d3982c8eabae72"
+        "GUID:196b9ba46fdb2eb43ab3eb08f42d225c"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
