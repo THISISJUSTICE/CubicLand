@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace CustomTIJI
 {
-    public static partial class Utils
+    public static class Utils
     {
         #region Math
         public static int GetGCD(int a, int b)

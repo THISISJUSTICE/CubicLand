@@ -38,27 +38,27 @@ namespace CustomTIJI
         #endregion
 
         #region Vector
-        public static Vector3 Abs(this Vector3 vector)
+        public static void Abs(this Vector3 vector)
         {
-            return new Vector3(
+            vector = new Vector3(
                 Mathf.Abs(vector.x),
                 Mathf.Abs(vector.y),
                 Mathf.Abs(vector.z)
             );
         }
 
-        public static Vector3 Clamp(this Vector3 vector, float min, float max)
+        public static void Clamp(this Vector3 vector, float min, float max)
         {
-            return new Vector3(
+            vector = new Vector3(
                 Mathf.Clamp(vector.x, min, max),
                 Mathf.Clamp(vector.y, min, max),
                 Mathf.Clamp(vector.z, min, max)
             );
         }
 
-        public static Vector3Int Abs(this Vector3Int vector)
+        public static void Abs(this Vector3Int vector)
         {
-            return new Vector3Int(
+            vector = new Vector3Int(
                 Mathf.RoundToInt(Mathf.Abs(vector.x)),
                 Mathf.RoundToInt(Mathf.Abs(vector.y)),
                 Mathf.RoundToInt(Mathf.Abs(vector.z))
@@ -67,9 +67,9 @@ namespace CustomTIJI
         #endregion
 
         #region Color
-        public static Color Clamp(this Color color, Color min, Color max)
+        public static void Clamp(this Color color, Color min, Color max)
         {
-            return new Color(
+            color = new Color(
                 Mathf.Clamp(color.r, min.r, max.r),
                 Mathf.Clamp(color.g, min.g, max.g),
                 Mathf.Clamp(color.b, min.b, max.b),
