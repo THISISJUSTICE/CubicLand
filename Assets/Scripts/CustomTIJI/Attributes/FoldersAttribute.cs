@@ -25,7 +25,7 @@ namespace CustomTIJI
     {
 #if UNITY_EDITOR
         [CustomPropertyDrawer(typeof(FoldersAttribute))]
-        internal class FoldersAttributeEditor : PropertyDrawer
+        internal class FoldersAttributeDrawer : PropertyDrawer
         {
             private enum TargetListType { Array, List, ETC };
 

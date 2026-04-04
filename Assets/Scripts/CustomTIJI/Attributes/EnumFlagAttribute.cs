@@ -21,7 +21,7 @@ namespace CustomTIJI
     {
 #if UNITY_EDITOR
         [CustomPropertyDrawer(typeof(EnumFlagAttribute))]
-        internal class EnumFlagAttributeEditor : PropertyDrawer
+        internal class EnumFlagAttributeDrawer : PropertyDrawer
         {
             public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
             {
