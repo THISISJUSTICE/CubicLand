@@ -1,12 +1,11 @@
-using UnityEngine;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace CustomTIJI.CubicLand.Cube
 {
     public class GolemData
     {
-        public StatusPoint StatusPoint { get; private set; }
         public int MoveSpeedPoint { get; private set; }
 
         private readonly Dictionary<Vector3Int, CubeData> _cubeDatas; // (0,0,0)Àº Core (R:x+1, L:x-1, U:y+1, D:y-1, F:z+1, B:z-1)
@@ -17,19 +16,18 @@ namespace CustomTIJI.CubicLand.Cube
         public IReadOnlyDictionary<Vector3Int, List<Vector3Int>> Childs => _childs;
         public IReadOnlyDictionary<Vector3Int, Vector3Int> Parents => _parents;
 
-        public GolemData(StatusPoint statusPoint = new StatusPoint(), int moveSpeedPoint = 0,
-            Dictionary<Vector3Int, CubeData> cubeDatas = null, 
+        public GolemData(int moveSpeedPoint = 0,
+            Dictionary<Vector3Int, CubeData> cubeDatas = null,
             Dictionary<Vector3Int, List<Vector3Int>> childs = null,
             Dictionary<Vector3Int, Vector3Int> parents = null)
         {
-            StatusPoint = statusPoint;
             MoveSpeedPoint = moveSpeedPoint;
 
             if (cubeDatas != null)
                 _cubeDatas = cubeDatas;
             else
                 _cubeDatas = new Dictionary<Vector3Int, CubeData>()
-                { { Vector3Int.zero, new CubeData(statusPoint, Vector3Int.zero, true, Color.white) } };
+                { { Vector3Int.zero, new CubeData(new StatusPoint(), Vector3Int.zero, true, Color.white) } };
 
             if (childs != null)
                 _childs = childs;
@@ -42,36 +40,42 @@ namespace CustomTIJI.CubicLand.Cube
                 _parents = new Dictionary<Vector3Int, Vector3Int>();
         }
 
-        public static GolemData Copy(GolemData golemData)
+        public GolemData Copy()
         {
             Dictionary<Vector3Int, CubeData> cubeDatas = new Dictionary<Vector3Int, CubeData>();
-            foreach (KeyValuePair<Vector3Int, CubeData> cubeData in golemData.CubeDatas)
+            foreach (KeyValuePair<Vector3Int, CubeData> cubeData in CubeDatas)
                 cubeDatas[cubeData.Key] = cubeData.Value;
 
             Dictionary<Vector3Int, List<Vector3Int>> childs = new Dictionary<Vector3Int, List<Vector3Int>>();
-            if (golemData.Childs != null)
+            if (Childs != null)
             {
-                foreach (KeyValuePair<Vector3Int, List<Vector3Int>> data in golemData.Childs)
-                    childs.Add(data.Key, data.Value);
+                foreach (KeyValuePair<Vector3Int, List<Vector3Int>> data in Childs)
+                {
+                    List<Vector3Int> list = new List<Vector3Int>();
+                    foreach (Vector3Int position in data.Value)
+                        list.Add(position);
+
+                    childs.Add(data.Key, list);
+                }
             }
 
             Dictionary<Vector3Int, Vector3Int> parents = new Dictionary<Vector3Int, Vector3Int>();
-            if (golemData.Parents != null)
+            if (Parents != null)
             {
-                foreach (KeyValuePair<Vector3Int, Vector3Int> data in golemData.Parents)
+                foreach (KeyValuePair<Vector3Int, Vector3Int> data in Parents)
                     parents.Add(data.Key, data.Value);
             }
 
-            return new GolemData(golemData.StatusPoint, golemData.MoveSpeedPoint, cubeDatas, childs, parents);
+            return new GolemData(MoveSpeedPoint, cubeDatas, childs, parents);
         }
 
         public int GetDirectionEdge(Enums.Direction3D direction)
-        { 
+        {
             return FindEdge((int)direction / 2, (int)direction % 2 == 0);
         }
 
         public List<CubeData> FindEdgeCubes(Enums.Direction3D direction)
-        { 
+        {
             return FindEdgeCubes((int)direction / 2, GetDirectionEdge(direction));
         }
 
@@ -126,7 +130,7 @@ namespace CustomTIJI.CubicLand.Cube
                 _parents.Clear();
                 return;
             }
-            
+
             _cubeDatas.Remove(position);
             _parents.Remove(position);
 
@@ -135,7 +139,7 @@ namespace CustomTIJI.CubicLand.Cube
                 foreach (Vector3Int child in _childs[position])
                     RemoveCube(child);
                 _childs.Remove(position);
-            }  
+            }
         }
 
         private int FindEdge(int vectorIndex, bool isMax)

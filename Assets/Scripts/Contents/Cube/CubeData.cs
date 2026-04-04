@@ -22,9 +22,9 @@ namespace CustomTIJI.CubicLand.Cube
             Color = color;
         }
 
-        public CubeData Copy(CubeData cubeData)
+        public CubeData Copy()
         {
-            return new CubeData(cubeData.StatusPoint, cubeData.ShapePoisition, cubeData.IsCore, cubeData.Color);
+            return new CubeData(StatusPoint, ShapePoisition, IsCore, Color);
         }
 
         public CubeData MakeChildData(Vector3Int shapePosition)
