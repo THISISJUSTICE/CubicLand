@@ -51,7 +51,7 @@ namespace CustomTIJI.CubicLand
 
             if (_instancePools[prefab].Count < _maxSize)
             {
-                ReleaseComponentInstance(handle);
+                ReleaseComponents(handle);
 
                 _instancePools[prefab].Push(handle);
 
@@ -96,7 +96,7 @@ namespace CustomTIJI.CubicLand
             Object.DontDestroyOnLoad(_parent.gameObject);
         }
 
-        private void ReleaseComponentInstance(PooledObjectHandle handle)
+        private void ReleaseComponents(PooledObjectHandle handle)
         {
             if (_instanceComponents.ContainsKey(handle))
             {
@@ -104,6 +104,13 @@ namespace CustomTIJI.CubicLand
                     Object.Destroy(component);
 
                 _instanceComponents.Clear();
+            }
+
+            MonoBehaviour[] components = handle.GameObject.GetComponents<MonoBehaviour>();
+            foreach (MonoBehaviour component in components)
+            {
+                if (component is IPoolReleasable poolReleasable)
+                    poolReleasable.OnPoolReleased();
             }
         }
     }
