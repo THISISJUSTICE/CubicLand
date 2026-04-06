@@ -6,20 +6,20 @@ namespace CustomTIJI.CubicLand.Cube
     [RequireComponent(typeof(MeshRenderer), typeof(BoxCollider))]
     public class CubeObject : MonoBehaviour
     {
+        private BoxCollider _collider;
         private MeshRenderer _meshRenderer;
         private ICubeTrait _cubeTrait;
 
         public event Action<CubeObject> onCubeDestoried;
 
         public CubeData CubeData { get; private set; }
-        public BoxCollider Collider { get; private set; }
         public float Mass { get; private set; }
 
         private void Awake()
         {
             _meshRenderer = GetComponent<MeshRenderer>();
-            Collider = GetComponent<BoxCollider>();
-            Collider.size = Vector3.one * (CubeConfig.CUBE_BASE_LENGHT - Physics.defaultContactOffset * 4f);
+            _collider = GetComponent<BoxCollider>();
+            _collider.size = Vector3.one * (CubeConfig.CUBE_BASE_LENGHT - Physics.defaultContactOffset * 4f);
         }
 
         public void Initialize(CubeData cubeData, ICubeTrait cubeTrait)

@@ -11,9 +11,9 @@ namespace CustomTIJI.CubicLand.Cube
 
         private readonly Dictionary<Vector3Int, CubeObject> _cubes = new Dictionary<Vector3Int, CubeObject>();
 
-        public Rigidbody Rigidbody { get; private set; }
+        internal Rigidbody Rigidbody { get; private set; }
         public GolemData GolemData { get; private set; }
-        public Vector3 MoveVelocity { get; set; }
+        public Vector3 MoveVelocity { get; internal set; }
 
         private void Awake()
         {

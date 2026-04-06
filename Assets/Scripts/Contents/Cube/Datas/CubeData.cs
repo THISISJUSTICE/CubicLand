@@ -39,7 +39,7 @@ namespace CustomTIJI.CubicLand.Cube
             StatusValue.EnhanceStatus(statusPoint);
         }
 
-        public void OnDamaged(float selfMass, Vector3 impulse, CubeData collider)
+        internal void OnDamaged(float selfMass, Vector3 impulse, CubeData collider)
         {
             int damage = Mathf.RoundToInt((float)collider.StatusValue.HP / collider.StatusValue.MaxHP
                 * collider.StatusValue.Armor
@@ -48,7 +48,7 @@ namespace CustomTIJI.CubicLand.Cube
             StatusValue.OnDamaged(damage, selfMass, impulse);
         }
 
-        public void OnDamaged(float selfMass, Vector3 impulse)
+        internal void OnDamaged(float selfMass, Vector3 impulse)
         {
             StatusValue.OnDamaged(1, selfMass, impulse);
         }
