@@ -80,7 +80,7 @@ namespace CustomTIJI.CubicLand.Cube
                 impulse.magnitude / selfMass * CubeConfig.IMPULSE_DAMAGE_RATE);
 
             // 방어 스텟에 따른 데미지 감소
-            damage *= Mathf.Exp(-Armor / CubeConfig.Status.DAMAGE_ARMOR_RATE);
+            damage *= Mathf.Exp(-Armor / CubeConfig.DAMAGE_ARMOR_RATE);
 
             // 최소 데미지 제한
             damage = Mathf.Max(damage, 1f);

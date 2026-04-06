@@ -1,10 +1,16 @@
+using UnityEngine;
+
 namespace CustomTIJI.CubicLand.Cube
 {
     public static class CubeConfig
     {
+        public static readonly Vector3Int CORE_POSITION = Vector3Int.zero;
+
         public const float CUBE_BASE_LENGHT = 1f;
 
         public const float ONE_CUBE_MASS = 10f;
+
+        public const float MASS_RATE = 0.2f;
 
         public const float IMPULSE_DAMAGE_RATE = 0.3f;
 
@@ -13,6 +19,13 @@ namespace CustomTIJI.CubicLand.Cube
         public const float COLOR_CHILD_RATE = 1.1f;
 
         public const float DAMAGE_IMPULSE_RATE = 6f;
+
+        public const float RESTITUTION = 0.5f;
+
+        public const float WEIGHT_EXPONENT = 0.2f;
+        public const float SPEED_EXPONENT = 0.3f;
+
+        public const float DAMAGE_ARMOR_RATE = 50f;
 
         public static class Status
         {
@@ -27,8 +40,6 @@ namespace CustomTIJI.CubicLand.Cube
 
             public const int INIT_ATTACK = 5;
             public const int ADD_ATTACK = 1;
-
-            public const float DAMAGE_ARMOR_RATE = 50f;
         }
     }
 }
