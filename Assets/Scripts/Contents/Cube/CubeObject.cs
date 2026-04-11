@@ -38,9 +38,9 @@ namespace CustomTIJI.CubicLand.Cube
         public void OnDamaged(float selfMass, Vector3 impulse, CubeData collider)
         {
             if (collider != null)
-                CubeData.OnDamaged(selfMass, impulse, collider);
+                CubeData.ApplyDamage(selfMass, impulse, collider);
             else
-                CubeData.OnDamaged(selfMass, impulse);
+                CubeData.ApplyDamage(selfMass, impulse);
 
             UpdateCubeObject();
 

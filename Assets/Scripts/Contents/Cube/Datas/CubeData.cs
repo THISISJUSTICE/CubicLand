@@ -33,24 +33,45 @@ namespace CustomTIJI.CubicLand.Cube
             return new CubeData(StatusPoint.MakeChildStatus(), shapePosition, color);
         }
 
-        public void EnhanceStatus(StatusPoint statusPoint)
+        internal void EnhanceStatus(StatusPoint statusPoint)
         {
             StatusPoint = statusPoint;
             StatusValue.EnhanceStatus(statusPoint);
         }
 
-        internal void OnDamaged(float selfMass, Vector3 impulse, CubeData collider)
+        internal void ApplyDamage(float selfMass, Vector3 impulse, CubeData collider)
         {
             int damage = Mathf.RoundToInt((float)collider.StatusValue.HP / collider.StatusValue.MaxHP
                 * collider.StatusValue.Armor
                 + (collider.IsAttackMode ? collider.StatusValue.Attack : 0f));
 
-            StatusValue.OnDamaged(damage, selfMass, impulse);
+            ApplyDamage(damage, selfMass, impulse);
         }
 
-        internal void OnDamaged(float selfMass, Vector3 impulse)
+        internal void ApplyDamage(float selfMass, Vector3 impulse)
         {
-            StatusValue.OnDamaged(1, selfMass, impulse);
+            ApplyDamage(1, selfMass, impulse);
+        }
+
+        private void ApplyDamage(int rawDamage, float selfMass, Vector3 impulse)
+        {
+            // 충격량에 따라 데미지 비율 변경
+            float damage = Mathf.Round(rawDamage *
+                Mathf.Clamp01(impulse.magnitude / CubeConfig.DAMAGE_SCALING_FACTOR));
+
+            // 물리 충격량에 따른 추가 데미지 반영
+            // 기본 데미지의 2배를 넘지 못하도록 제한
+            damage += Mathf.Min(rawDamage * 2f,
+                impulse.magnitude / selfMass * CubeConfig.ADDITIONAL_DAMAGE_IMPULSE_DIVISOR);
+
+            // 방어 스텟에 따른 데미지 감소
+            damage *= Mathf.Exp(-StatusValue.Armor / CubeConfig.ARMOR_EXPONENTIAL_SCALE);
+
+            // 최소 데미지 제한
+            damage = Mathf.Max(damage, 1f);
+
+            // 데미지 반영
+            StatusValue.ApplyDamage(Mathf.RoundToInt(damage));
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace CustomTIJI.CubicLand.Cube
 {
@@ -68,38 +68,14 @@ namespace CustomTIJI.CubicLand.Cube
             HP = Mathf.Min(MaxHP, previousHP + MaxHP - previousMaxHP);
         }
 
-        internal void OnDamaged(int rawDamage, float selfMass, Vector3 impulse)
+        internal void ApplyDamage(int damage)
         {
-            // 충격량에 따라 데미지 비율 변경
-            float damage = Mathf.Round(rawDamage * 
-                Mathf.Clamp01(impulse.magnitude / CubeConfig.DAMAGE_IMPULSE_RATE));
-
-            // 물리 충격량에 따른 추가 데미지 반영
-            // 기본 데미지의 2배를 넘지 못하도록 제한
-            damage += Mathf.Min(rawDamage * 2f, 
-                impulse.magnitude / selfMass * CubeConfig.IMPULSE_DAMAGE_RATE);
-
-            // 방어 스텟에 따른 데미지 감소
-            damage *= Mathf.Exp(-Armor / CubeConfig.DAMAGE_ARMOR_RATE);
-
-            // 최소 데미지 제한
-            damage = Mathf.Max(damage, 1f);
-
-            // 데미지 반영
-            HP = Mathf.Max(HP - Mathf.RoundToInt(damage), 0);
+            HP = Mathf.Max(HP - damage, 0);
         }
 
-        internal int OnHealed(int heal)
+        internal void Heal(int heal)
         {
-            if (HP + heal < MaxHP)
-            {
-                HP += heal;
-                return 0;
-            }
-
-            int rest = heal - (MaxHP - HP);
-            HP = MaxHP;
-            return rest;
+            HP = Mathf.Min(MaxHP, HP + heal);
         }
     }
 }
