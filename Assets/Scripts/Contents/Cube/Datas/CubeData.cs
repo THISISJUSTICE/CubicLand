@@ -22,7 +22,9 @@ namespace CustomTIJI.CubicLand.Cube
 
         public CubeData Copy()
         {
-            return new CubeData(StatusPoint, ShapePoisition, Color);
+            CubeData clone = new CubeData(StatusPoint, ShapePoisition, Color);
+            clone.StatusValue = StatusValue;
+            return clone;
         }
 
         public CubeData MakeChildData(Vector3Int shapePosition)
