@@ -11,19 +11,30 @@ namespace CustomTIJI.CubicLand.Cube
         public int HP
         {
             get => _hp;
-            set => _hp = Mathf.Max(value, 0);
+            set => SetHP(value);
         }
 
         public int Armor
         {
             get => _armor;
-            set => _armor = Mathf.Max(value, 0);
+            set => SetArmor(value);
         }
 
         public int Attack
         {
             get => _attack;
-            set => _attack = Mathf.Max(value, 0);
+            set => SetAttack(value);
+        }
+
+        public void SetHP(int value) => _hp = Mathf.Max(value, 0);
+        public void SetArmor(int value) => _armor = Mathf.Max(value, 0);
+        public void SetAttack(int value) => _attack = Mathf.Max(value, 0);
+
+        public StatusPoint(int hp, int armor, int attack)
+        { 
+            _hp = hp;
+            _armor = armor;
+            _attack = attack;
         }
 
         public void Initialize()
