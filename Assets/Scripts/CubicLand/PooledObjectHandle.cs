@@ -29,8 +29,13 @@ namespace CustomTIJI.CubicLand
         }
 
         public void DestoryPool()
-        { 
+        {
             _pool.DestoryPool(_prefab);
+        }
+
+        public void RegisterPoolReleasable(IPoolReleasable poolReleasable)
+        {
+            _pool.RegisterPoolReleasable(this, poolReleasable);
         }
     }
 }

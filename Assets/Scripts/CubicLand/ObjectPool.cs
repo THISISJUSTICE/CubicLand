@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace CustomTIJI.CubicLand
 {
@@ -11,9 +11,10 @@ namespace CustomTIJI.CubicLand
 
         private readonly Dictionary<GameObject, Stack<PooledObjectHandle>> _instancePools = new Dictionary<GameObject, Stack<PooledObjectHandle>>();
         private readonly Dictionary<PooledObjectHandle, List<Component>> _instanceComponents = new Dictionary<PooledObjectHandle, List<Component>>();
+        private readonly Dictionary<PooledObjectHandle, List<IPoolReleasable>> _poolReleasables = new Dictionary<PooledObjectHandle, List<IPoolReleasable>>();
 
         public ObjectPool(int maxSize)
-        { 
+        {
             _maxSize = maxSize;
         }
 
@@ -69,6 +70,12 @@ namespace CustomTIJI.CubicLand
             while (_instancePools[prefab].Count > 0)
             {
                 PooledObjectHandle handle = _instancePools[prefab].Pop();
+
+                if (_instanceComponents.ContainsKey(handle))
+                    _instanceComponents.Remove(handle);
+                if (_poolReleasables.ContainsKey(handle))
+                    _poolReleasables.Remove(handle);
+
                 Object.Destroy(handle.GameObject);
             }
 
@@ -84,6 +91,14 @@ namespace CustomTIJI.CubicLand
             _instanceComponents[handle].Add(component);
 
             return component;
+        }
+
+        public void RegisterPoolReleasable(PooledObjectHandle handle, IPoolReleasable poolReleasable)
+        {
+            if (!_poolReleasables.ContainsKey(handle))
+                _poolReleasables[handle] = new List<IPoolReleasable>();
+
+            _poolReleasables[handle].Add(poolReleasable);
         }
 
         private void CreateParent()
@@ -106,10 +121,9 @@ namespace CustomTIJI.CubicLand
                 _instanceComponents.Clear();
             }
 
-            MonoBehaviour[] components = handle.GameObject.GetComponents<MonoBehaviour>();
-            foreach (MonoBehaviour component in components)
+            if (_poolReleasables.ContainsKey(handle))
             {
-                if (component is IPoolReleasable poolReleasable)
+                foreach (IPoolReleasable poolReleasable in _poolReleasables[handle])
                     poolReleasable.OnPoolReleased();
             }
         }

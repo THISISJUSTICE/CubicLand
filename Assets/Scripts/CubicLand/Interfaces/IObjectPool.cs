@@ -8,5 +8,6 @@ namespace CustomTIJI.CubicLand
         public void Destroy(PooledObjectHandle handle);
         public void DestoryPool(GameObject prefab);
         public T AddComponent<T>(PooledObjectHandle handle) where T : Component;
+        public void RegisterPoolReleasable(PooledObjectHandle handle, IPoolReleasable poolReleasable);
     }
 }
