@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace CustomTIJI
 {
@@ -63,6 +63,24 @@ namespace CustomTIJI
                 Mathf.RoundToInt(Mathf.Abs(vector.y)),
                 Mathf.RoundToInt(Mathf.Abs(vector.z))
             );
+        }
+        #endregion
+
+        #region Rigidbody
+        public static void FreezePosition(this Rigidbody rigidbody, bool on)
+        {
+            if (on)
+                rigidbody.constraints |= RigidbodyConstraints.FreezePosition;
+            else
+                rigidbody.constraints &= ~RigidbodyConstraints.FreezePosition;
+        }
+
+        public static void FreezeRotation(this Rigidbody rigidbody, bool on)
+        {
+            if (on)
+                rigidbody.constraints |= RigidbodyConstraints.FreezeRotation;
+            else
+                rigidbody.constraints &= ~RigidbodyConstraints.FreezeRotation;
         }
         #endregion
 
