@@ -1,16 +1,23 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace CustomTIJI
 {
     public class YieldCache
     {
-        private readonly LimitedDictionary<float, WaitForSeconds> _waitforSeconds;
+        private readonly LimitedDictionary<float, WaitForSeconds> _waitforSeconds = new LimitedDictionary<float, WaitForSeconds>(1000);
+        private static YieldCache _instance;
 
         public static readonly WaitForFixedUpdate WaitForFixedUpdate = new WaitForFixedUpdate();
 
-        public YieldCache(int count)
+        public static YieldCache Instance
         {
-            _waitforSeconds = new LimitedDictionary<float, WaitForSeconds>(count);
+            get
+            { 
+                if(_instance == null)
+                    _instance = new YieldCache();
+
+                return _instance;
+            }
         }
 
         public WaitForSeconds GetWaitForSeconds(float time)
