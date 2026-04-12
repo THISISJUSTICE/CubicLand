@@ -75,12 +75,26 @@ namespace CustomTIJI
                 rigidbody.constraints &= ~RigidbodyConstraints.FreezePosition;
         }
 
+        public static void FreezePositionXZ(this Rigidbody rigidbody, bool on)
+        {
+            if (on)
+                rigidbody.constraints |= RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ;
+            else
+                rigidbody.constraints &= ~(RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionZ);
+        }
+
         public static void FreezeRotation(this Rigidbody rigidbody, bool on)
         {
             if (on)
                 rigidbody.constraints |= RigidbodyConstraints.FreezeRotation;
             else
                 rigidbody.constraints &= ~RigidbodyConstraints.FreezeRotation;
+        }
+
+        public static void ClearVelocity(this Rigidbody rigidbody)
+        {
+            rigidbody.linearVelocity = Vector3.zero;
+            rigidbody.angularVelocity = Vector3.zero;
         }
         #endregion
 
