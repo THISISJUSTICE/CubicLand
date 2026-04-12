@@ -13,8 +13,7 @@ namespace CustomTIJI.CubicLand.Cube
         public CubeData(StatusPoint statusPoint, Vector3Int shapePosition, Color color)
         {
             StatusPoint = statusPoint;
-            StatusValue = new StatusValue();
-            StatusValue.Initialize(statusPoint);
+            StatusValue = new StatusValue(statusPoint);
             ShapePoisition = shapePosition;
             IsAttackMode = false;
             Color = color;

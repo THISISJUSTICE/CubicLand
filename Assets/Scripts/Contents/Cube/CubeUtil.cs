@@ -1,15 +1,13 @@
+using System.Collections;
+using UnityEngine;
+
 namespace CustomTIJI.CubicLand.Cube
 {
     public static class CubeUtil
     {
         public static float CalculateBasicCubeObjectMass()
         {
-            StatusPoint statusPoint = new StatusPoint();
-            statusPoint.Initialize();
-            StatusValue statusValue = new StatusValue();
-            statusValue.Initialize(statusPoint);
-
-            return CalcualteCubeObjectMass(statusValue);
+            return CalcualteCubeObjectMass(new StatusValue(new StatusPoint()));
         }
 
         public static float CalcualteCubeObjectMass(StatusValue statusValue)

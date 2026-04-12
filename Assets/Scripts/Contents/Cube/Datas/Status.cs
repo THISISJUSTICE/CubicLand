@@ -62,7 +62,7 @@ namespace CustomTIJI.CubicLand.Cube
         public int Armor { get; private set; }
         public int Attack { get; private set; }
 
-        internal void Initialize(StatusPoint statusPoint)
+        internal StatusValue(StatusPoint statusPoint)
         {
             MaxHP = CubeConfig.Status.INIT_HP + statusPoint.HP * CubeConfig.Status.ADD_HP;
             HP = MaxHP;
@@ -74,7 +74,7 @@ namespace CustomTIJI.CubicLand.Cube
         {
             int previousMaxHP = MaxHP;
             int previousHP = HP;
-            Initialize(statusPoint);
+            this = new StatusValue(statusPoint);
 
             HP = Mathf.Min(MaxHP, previousHP + MaxHP - previousMaxHP);
         }
