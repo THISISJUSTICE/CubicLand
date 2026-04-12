@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
@@ -109,6 +109,12 @@ namespace CustomTIJI
             for (int i = 0; i < frame; i++)
                 await UniTask.NextFrame();
             callback?.Invoke();
+        }
+
+        public static float CalculateForceForDistance(float mass, float distance)
+        {
+            float v = Mathf.Sqrt(2f * distance);
+            return v * mass;
         }
     }
 }
