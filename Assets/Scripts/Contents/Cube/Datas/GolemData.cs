@@ -6,12 +6,11 @@ namespace CustomTIJI.CubicLand.Cube
 {
     public class GolemData
     {
-        public int MoveSpeedPoint { get; set; }
-
         private readonly Dictionary<Vector3Int, CubeData> _cubeDatas; // (0,0,0)은 Core (R:x+1, L:x-1, U:y+1, D:y-1, F:z+1, B:z-1)
         private readonly Dictionary<Vector3Int, List<Vector3Int>> _children;
         private readonly Dictionary<Vector3Int, Vector3Int> _parents;
 
+        public int MoveSpeedPoint { get; set; }
         public int MoveSpeed => CubeConfig.Status.INIT_MOVE_SPEED + MoveSpeedPoint * CubeConfig.Status.ADD_MOVE_SPEED;
         public IReadOnlyDictionary<Vector3Int, CubeData> CubeDatas => _cubeDatas;
         public IReadOnlyDictionary<Vector3Int, List<Vector3Int>> Children => _children;
@@ -53,9 +52,7 @@ namespace CustomTIJI.CubicLand.Cube
                 foreach (KeyValuePair<Vector3Int, List<Vector3Int>> data in Children)
                 {
                     List<Vector3Int> list = new List<Vector3Int>();
-                    foreach (Vector3Int position in data.Value)
-                        list.Add(position);
-
+                    list.AddRange(data.Value);
                     children.Add(data.Key, list);
                 }
             }
@@ -95,7 +92,15 @@ namespace CustomTIJI.CubicLand.Cube
             return list;
         }
 
-        public bool AddCube(Vector3Int parentPosition, Enums.Direction3D direction)
+        public List<CubeData> FindChildren(Vector3Int parentPosition)
+        {
+            List<CubeData> list = new List<CubeData>();
+            FindChildren(parentPosition, list);
+
+            return list;
+        }
+
+        internal bool AddCube(Vector3Int parentPosition, Enums.Direction3D direction)
         {
             if (!_cubeDatas.ContainsKey(parentPosition))
             {
@@ -117,38 +122,6 @@ namespace CustomTIJI.CubicLand.Cube
             _parents[position] = parentPosition;
 
             return true;
-        }
-
-        public void RemoveCube(Vector3Int position)
-        {
-            if (!_cubeDatas.ContainsKey(position))
-                return;
-
-            if (position == CubeConfig.CORE_POSITION)
-            {
-                _cubeDatas.Clear();
-                _children.Clear();
-                _parents.Clear();
-                return;
-            }
-
-            _cubeDatas.Remove(position);
-            _parents.Remove(position);
-
-            if (_children.ContainsKey(position))
-            {
-                foreach (Vector3Int child in _children[position])
-                    RemoveCube(child);
-                _children.Remove(position);
-            }
-        }
-
-        public List<CubeData> FindChildren(Vector3Int parentPosition)
-        {
-            List<CubeData> list = new List<CubeData>();
-            FindChildren(parentPosition, list);
-
-            return list;
         }
 
         private int FindEdge(int vectorIndex, bool isMax)
