@@ -13,5 +13,12 @@ namespace CustomTIJI.CubicLand
                 return _instance;
             }
         }
+
+        public YieldCache YieldCache { get; private set; }
+
+        private GlobalRoot()
+        {
+            YieldCache = new YieldCache(1000);
+        }
     }
 }

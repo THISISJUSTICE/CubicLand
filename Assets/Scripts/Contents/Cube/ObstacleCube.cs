@@ -55,7 +55,7 @@ namespace CustomTIJI.CubicLand.Cube
 
             float waitTime = CubeUtil.CalculateKnockbackTime(_rigidbody.linearVelocity, Cube.Mass);
             if (waitTime > 0f)
-                yield return YieldCache.Instance.GetWaitForSeconds(waitTime);
+                yield return GlobalRoot.Instance.YieldCache.GetWaitForSeconds(waitTime);
 
             _rigidbody.ClearVelocity();
             NormalizeTransform();

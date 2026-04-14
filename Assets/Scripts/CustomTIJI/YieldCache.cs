@@ -4,20 +4,12 @@ namespace CustomTIJI
 {
     public class YieldCache
     {
-        private readonly LimitedDictionary<float, WaitForSeconds> _waitforSeconds = new LimitedDictionary<float, WaitForSeconds>(1000);
-        private static YieldCache _instance;
-
+        private readonly LimitedDictionary<float, WaitForSeconds> _waitforSeconds;
         public static readonly WaitForFixedUpdate WaitForFixedUpdate = new WaitForFixedUpdate();
 
-        public static YieldCache Instance
+        public YieldCache(int count)
         {
-            get
-            { 
-                if(_instance == null)
-                    _instance = new YieldCache();
-
-                return _instance;
-            }
+            _waitforSeconds = new LimitedDictionary<float, WaitForSeconds>(count);
         }
 
         public WaitForSeconds GetWaitForSeconds(float time)
