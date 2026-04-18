@@ -70,6 +70,11 @@ namespace CustomTIJI.CubicLand.Cube
             Attack = CubeConfig.Status.INIT_ATTACK + statusPoint.Attack * CubeConfig.Status.ADD_ATTACK;
         }
 
+        public bool IsFullHP()
+        { 
+            return HP == MaxHP;
+        }
+
         internal void EnhanceStatus(StatusPoint statusPoint)
         {
             int previousMaxHP = MaxHP;
