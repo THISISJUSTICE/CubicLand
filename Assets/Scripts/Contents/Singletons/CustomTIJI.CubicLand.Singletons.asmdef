@@ -1,6 +1,6 @@
 {
     "name": "CustomTIJI.CubicLand.Singletons",
-    "rootNamespace": "",
+    "rootNamespace": "CustomTIJI.CubicLand.Singletons",
     "references": [
         "GUID:81880666b545d40419f7291db544c83a",
         "GUID:c6fc0d65ca36db0489d3982c8eabae72",
