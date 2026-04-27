@@ -26,7 +26,7 @@ namespace CustomTIJI.CubicLand.Cube
             _cubeCollisionResolver.OnCollision(gameObject, collision);
         }
 
-        public void Initialize(ICubeCollisionResolver cubeCollisionResolver)
+        internal void Initialize(ICubeCollisionResolver cubeCollisionResolver)
         {
             _cubeCollisionResolver = cubeCollisionResolver;
         }

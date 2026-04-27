@@ -14,6 +14,7 @@ namespace CustomTIJI.CubicLand.Cube
 
         public CubeData CubeData { get; private set; }
         public float Mass { get; private set; }
+        public Collider Collider => _collider;
 
         private void Awake()
         {
@@ -22,7 +23,7 @@ namespace CustomTIJI.CubicLand.Cube
             _collider.size = Vector3.one * (CubeConfig.CUBE_BASE_LENGHT - Physics.defaultContactOffset * 4f);
         }
 
-        public void Initialize(CubeData cubeData, ICubeTrait cubeTrait)
+        internal void Initialize(CubeData cubeData, ICubeTrait cubeTrait)
         {
             _cubeTrait = cubeTrait;
             _cubeTrait.SetMeshRenderer(_meshRenderer);
