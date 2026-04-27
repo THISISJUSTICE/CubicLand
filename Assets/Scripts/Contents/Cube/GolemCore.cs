@@ -164,7 +164,7 @@ namespace CustomTIJI.CubicLand.Cube
                 if (!_cubes.TryGetValue(child.ShapePoisition, out CubeObject childCube))
                     continue;
 
-                _orphanedCubeHandler.HandleOrphanedCube(childCube);
+                _orphanedCubeHandler?.HandleOrphanedCube(childCube);
                 childCube.onCubeDestoried -= OnParentCubeDestoried;
                 _cubes.Remove(child.ShapePoisition);
                 childCube.CubeData.StatusValue.ApplyDamage(childCube.CubeData.StatusValue.MaxHP);
