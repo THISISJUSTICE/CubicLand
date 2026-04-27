@@ -39,7 +39,20 @@ namespace CustomTIJI.CubicLand.Cube
         internal void EnhanceStatus(StatusPoint statusPoint)
         {
             StatusPoint = statusPoint;
-            StatusValue.EnhanceStatus(statusPoint);
+            if (StatusValue.HP > 0)
+                StatusValue.EnhanceStatus(statusPoint);
+            else
+                StatusValue = new StatusValue(statusPoint);
+        }
+
+        internal void EnhanceChildStatus(CubeData parent)
+        {
+            StatusPoint = parent.StatusPoint.MakeChildStatus();
+            StatusValue.EnhanceStatus(StatusPoint);
+
+            Color color = parent.Color * CubeConfig.COLOR_CHILD_RATE;
+            color.Clamp(color, Color.white);
+            Color = color;
         }
 
         internal void ApplyDamage(float selfMass, Vector3 impulse, CubeData collider)
