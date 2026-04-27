@@ -9,19 +9,21 @@ namespace CustomTIJI.CubicLand.Cube
         public Vector3Int ShapePoisition { get; private set; }
         public bool IsAttackMode { get; internal set; }
         public Color Color { get; private set; }
+        public bool IsBreaked { get; internal set; }
 
-        public CubeData(StatusPoint statusPoint, Vector3Int shapePosition, Color color)
+        public CubeData(StatusPoint statusPoint, Vector3Int shapePosition, Color color, bool isBreaked = false)
         {
             StatusPoint = statusPoint;
             StatusValue = new StatusValue(statusPoint);
             ShapePoisition = shapePosition;
             IsAttackMode = false;
             Color = color;
+            IsBreaked = isBreaked;
         }
 
         public CubeData Copy()
         {
-            CubeData clone = new CubeData(StatusPoint, ShapePoisition, Color);
+            CubeData clone = new CubeData(StatusPoint, ShapePoisition, Color, IsBreaked);
             clone.StatusValue = StatusValue;
             return clone;
         }
@@ -31,7 +33,7 @@ namespace CustomTIJI.CubicLand.Cube
             Color color = Color * CubeConfig.COLOR_CHILD_RATE;
             color.Clamp(color, Color.white);
 
-            return new CubeData(StatusPoint.MakeChildStatus(), shapePosition, color);
+            return new CubeData(StatusPoint.MakeChildStatus(), shapePosition, color, IsBreaked);
         }
 
         internal void EnhanceStatus(StatusPoint statusPoint)
