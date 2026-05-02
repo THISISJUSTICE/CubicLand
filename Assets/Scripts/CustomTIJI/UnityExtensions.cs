@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using UnityEngine;
 
 namespace CustomTIJI
@@ -192,5 +194,17 @@ namespace CustomTIJI
             return $"{len:F2}{sizes[order]}";
         }
         #endregion
+
+        public static void WaitFixedTimeAct(this MonoBehaviour mb, Action action)
+        {
+            if (mb != null && mb.enabled && mb.gameObject.activeInHierarchy)
+                mb.StartCoroutine(StartWaitFixedTimeAct(action));
+        }
+
+        private static IEnumerator StartWaitFixedTimeAct(Action action)
+        {
+            yield return YieldCache.WaitForFixedUpdate;
+            action?.Invoke();
+        }
     }
 }
