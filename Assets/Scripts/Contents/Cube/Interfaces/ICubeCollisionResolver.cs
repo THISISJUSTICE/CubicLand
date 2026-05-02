@@ -4,6 +4,6 @@ namespace CustomTIJI.CubicLand.Cube
 {
     public interface ICubeCollisionResolver
     {
-        public void OnCollision(GameObject gameObject, Collision collision);
+        public void OnCollision(GameObject gameObject, ICubeMotionAdjuster motionAdjuster, Collision collision, bool onlyCubeCollision);
     }
 }
