@@ -10,6 +10,7 @@ namespace CustomTIJI.CubicLand.Cube
         private ICubeCollisionResolver _cubeCollisionResolver;
         private IOrphanedCubeHandler _orphanedCubeHandler;
         private ICubeFactory _cubeFactory;
+        private ICubeMotionAdjuster _motionAdjuster;
 
         private readonly Dictionary<Vector3Int, CubeObject> _cubes = new Dictionary<Vector3Int, CubeObject>();
         private readonly List<Vector3Int> _breakedCubePositions = new List<Vector3Int>();
@@ -22,7 +23,6 @@ namespace CustomTIJI.CubicLand.Cube
 
         internal Rigidbody Rigidbody { get; private set; }
         public GolemData GolemData { get; private set; }
-        public Vector3 MoveVelocity { get; internal set; }
 
         private void Awake()
         {
@@ -45,11 +45,13 @@ namespace CustomTIJI.CubicLand.Cube
             UpdateGolemMass();
         }
 
-        internal void Initialize(GolemData golemData, IList<CubeObject> cubes, ICubeCollisionResolver cubeCollisionResolver, IOrphanedCubeHandler orphanedCubeHandler, ICubeFactory cubeFactory)
+        internal void Initialize(GolemData golemData, IList<CubeObject> cubes, 
+            ICubeCollisionResolver cubeCollisionResolver, IOrphanedCubeHandler orphanedCubeHandler, ICubeFactory cubeFactory, ICubeMotionAdjuster motionAdjuster)
         {
             _cubeCollisionResolver = cubeCollisionResolver;
             _orphanedCubeHandler = orphanedCubeHandler;
             _cubeFactory = cubeFactory;
+            _motionAdjuster = motionAdjuster;
             Initialize(golemData, cubes);
         }
 
