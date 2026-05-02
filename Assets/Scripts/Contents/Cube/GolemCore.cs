@@ -15,6 +15,7 @@ namespace CustomTIJI.CubicLand.Cube
         private readonly List<Vector3Int> _breakedCubePositions = new List<Vector3Int>();
 
         private bool _isAttackMode;
+        private bool _isDamaged;
 
         public event Action onDamaged;
         public event Action<CubeObject> onHealed;
@@ -29,12 +30,18 @@ namespace CustomTIJI.CubicLand.Cube
             _cubes[CubeConfig.CORE_POSITION] = GetComponent<CubeObject>();
         }
 
+        private void OnEnable()
+        {
+            _isDamaged = false;
+        }
+
         private void OnCollisionEnter(Collision collision)
         {
             if (collision == null)
                 return;
 
-            _cubeCollisionResolver.OnCollision(gameObject, collision);
+            foreach (ContactPoint contact in collision.contacts)
+                _cubeCollisionResolver.OnCollision(contact.thisCollider.gameObject, _motionAdjuster, collision, true);
             UpdateGolemMass();
         }
 
@@ -64,6 +71,7 @@ namespace CustomTIJI.CubicLand.Cube
                 _cubes[cube.CubeData.ShapePoisition] = cube;
                 cube.Initialize(golemData.CubeDatas[cube.CubeData.ShapePoisition]);
                 cube.onCubeDestoried += OnParentCubeDestoried;
+                cube.onCubeDestoried += RaiseOnDamaged;
             }
 
             UpdateGolemMass();
@@ -112,17 +120,6 @@ namespace CustomTIJI.CubicLand.Cube
                 cube.CubeData.IsAttackMode = _isAttackMode;
         }
 
-        public CubeObject FindCollisionCube(Collision collision)
-        {
-            foreach (CubeObject cube in _cubes.Values)
-            {
-                if (cube.Collider == collision.collider)
-                    return cube;
-            }
-
-            return null;
-        }
-
         public void OnHealed(int heal)
         {
             if (!_cubes.TryGetValue(CubeConfig.CORE_POSITION, out CubeObject cube))
@@ -146,15 +143,22 @@ namespace CustomTIJI.CubicLand.Cube
             UpdateGolemMass();
         }
 
-        internal void RaiseOnDamaged()
-        { 
-            onDamaged?.Invoke();
+        private void RaiseOnDamaged(CubeObject cube)
+        {
+            if (!_isDamaged)
+            {
+                onDamaged?.Invoke();
+                _isDamaged = true;
+
+                this.WaitFixedTimeAct(() => _isDamaged = false);
+            }
         }
 
         private void OnParentCubeDestoried(CubeObject cube)
         {
             _cubes.Remove(cube.CubeData.ShapePoisition);
             cube.onCubeDestoried -= OnParentCubeDestoried;
+            cube.onCubeDestoried -= RaiseOnDamaged;
             cube.CubeData.IsBreaked = true;
             _breakedCubePositions.Add(cube.CubeData.ShapePoisition);
 
@@ -166,6 +170,7 @@ namespace CustomTIJI.CubicLand.Cube
 
                 _orphanedCubeHandler?.HandleOrphanedCube(childCube);
                 childCube.onCubeDestoried -= OnParentCubeDestoried;
+                childCube.onCubeDestoried -= RaiseOnDamaged;
                 _cubes.Remove(child.ShapePoisition);
                 childCube.CubeData.StatusValue.ApplyDamage(childCube.CubeData.StatusValue.MaxHP);
                 childCube.CubeData.IsBreaked = true;
