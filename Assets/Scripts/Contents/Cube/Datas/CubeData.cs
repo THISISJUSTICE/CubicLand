@@ -57,9 +57,11 @@ namespace CustomTIJI.CubicLand.Cube
 
         internal void ApplyDamage(float selfMass, Vector3 impulse, CubeData collider)
         {
-            int damage = Mathf.RoundToInt((float)collider.StatusValue.HP / collider.StatusValue.MaxHP
-                * collider.StatusValue.Armor
-                + (collider.IsAttackMode ? collider.StatusValue.Attack : 0f));
+            int damage = 1;
+            if (collider != null)
+                damage = Mathf.RoundToInt((float)collider.StatusValue.HP / collider.StatusValue.MaxHP
+                   * collider.StatusValue.Armor
+                   + (collider.IsAttackMode ? collider.StatusValue.Attack : 0f));
 
             ApplyDamage(damage, selfMass, impulse);
         }
@@ -84,6 +86,7 @@ namespace CustomTIJI.CubicLand.Cube
             damage *= Mathf.Exp(-StatusValue.Armor / CubeConfig.ARMOR_EXPONENTIAL_SCALE);
 
             // 최소 데미지 제한
+            // TODO: 최소 데미지 제한을 0으로 해도 문제 없는지 확인 필요
             damage = Mathf.Max(damage, 1f);
 
             // 데미지 반영
