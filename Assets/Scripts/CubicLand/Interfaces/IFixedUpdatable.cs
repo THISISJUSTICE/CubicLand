@@ -1,6 +1,6 @@
 namespace CustomTIJI.CubicLand
 {
-    public interface IFixedUpdate
+    public interface IFixedUpdatable
     {
         public void FixedUpdate();
     }

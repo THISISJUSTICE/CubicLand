@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace CustomTIJI.CubicLand.Singletons
 {
-    public class CubeCollisionResolver : ICubeCollisionResolver, IHitNotifier, IFixedUpdate
+    public class CubeCollisionResolver : ICubeCollisionResolver, IHitNotifier, IFixedUpdatable
     {
         private readonly HashSet<(GameObject, GameObject)> _hitPairs = new HashSet<(GameObject, GameObject)>();
 
