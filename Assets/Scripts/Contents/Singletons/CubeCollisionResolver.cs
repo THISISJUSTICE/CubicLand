@@ -28,16 +28,13 @@ namespace CustomTIJI.CubicLand.Singletons
             Vector3 impulse = -collision.impulse;
             CubeObject collisionCube = collision.gameObject.GetComponent<CubeObject>();
 
-            if (collisionCube == null)
+            if (collisionCube == null && !onlyCubeCollision)
             {
-                if (!onlyCubeCollision)
+                _defferedCollisionAction += () =>
                 {
-                    _defferedCollisionAction += () =>
-                    {
-                        cubeObject.OnDamaged(cubeObject.Mass, impulse, null);
-                        motionAdjuster.ApplyKnockback(impulse);
-                    };
-                }
+                    cubeObject.OnDamaged(cubeObject.Mass, impulse, null);
+                    motionAdjuster.ApplyKnockback(impulse);
+                };
             }
             else
             {
