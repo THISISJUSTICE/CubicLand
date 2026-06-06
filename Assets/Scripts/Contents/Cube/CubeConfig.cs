@@ -24,9 +24,18 @@ namespace CustomTIJI.CubicLand.Cube
         public const float WEIGHT_EXPONENT = 0.2f;
         public const float SPEED_EXPONENT = 0.3f;
 
-        public const float KNOCKBACK_DISTANCE_THRESHOLD = 0.7f;
         public const float KNOCKBACK_DECELERATION = 2f;
-        public const float MAX_KNOCKBACK_TIME = 5f;
+        public const float MAX_KNOCKBACK_TIME = 1f;
+        public const float MAX_KNOCKBACK_DISTANCE = 5f;
+        public const float MIN_KNOCKBACK_DISTANCE = 0.7f;
+
+        public const float GOLEM_INIT_MOVE_TIME = 0.5f;
+        public const float GOLEM_MAX_MOVE_TIME = 1f;
+        public const float GOLEM_MIN_MOVE_TIME = 0.1f;
+
+        public const float GOLEM_ROTATE_FRICTION = 1.03f;
+        public const float GOLEM_JUMP_CHARGE_TIME = 0.01f;
+        public const float GOLEM_SIZE_UP_TIME = 0.1f;
 
         public static class Status
         {
