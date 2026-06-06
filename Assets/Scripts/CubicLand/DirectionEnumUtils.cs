@@ -7,6 +7,15 @@ namespace CustomTIJI.CubicLand
     {
         private static readonly int _directionLength = Enum.GetValues(typeof(Enums.Direction)).Length;
         private static readonly int _direction3DLength = Enum.GetValues(typeof(Enums.Direction3D)).Length;
+        private static readonly Vector3[] _directions = new Vector3[] 
+        { 
+            Vector3.right, 
+            Vector3.left, 
+            Vector3.up, 
+            Vector3.down, 
+            Vector3.forward, 
+            Vector3.back 
+        };
 
         public static int DirectionLength => _directionLength;
         public static int Direction3DLength => _direction3DLength;
@@ -63,23 +72,15 @@ namespace CustomTIJI.CubicLand
             }
         }
 
-        public static Enums.Direction3D ConvertDirection(Vector3[] dirs, Vector3 dir)
+        public static Enums.Direction3D ConvertDirection(Vector3[] directions, Vector3 direction)
         {
-            Utils.GetClosestAxisVector(dirs, dir, out int index);
+            Utils.GetClosestAxisVector(directions, direction, out int index);
             return (Enums.Direction3D)index;
         }
 
-        public static Enums.Direction3D ConvertDirection(Vector3 dir)
+        public static Enums.Direction3D ConvertDirection(Vector3 direction)
         {
-            Vector3[] dirs = new Vector3[] {
-                Vector3.right,
-                Vector3.left,
-                Vector3.up,
-                Vector3.down,
-                Vector3.forward,
-                Vector3.back
-            };
-            return ConvertDirection(dirs, dir);
+            return ConvertDirection(_directions, direction);
         }
     }
 }
