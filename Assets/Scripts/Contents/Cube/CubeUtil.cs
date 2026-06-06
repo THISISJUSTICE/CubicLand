@@ -18,10 +18,20 @@ namespace CustomTIJI.CubicLand.Cube
 
         public static Vector3 GetValidKnockbackImpulse(Vector3 impulse, float mass)
         {
-            float minForce = Utils.CalculateForceForDistance(mass, CubeConfig.KNOCKBACK_DISTANCE_THRESHOLD);
-            float force = Utils.ConvertXZVector2(impulse).magnitude;
-            if (force < minForce)
-                return Vector3.up * impulse.y;
+            float minForce = Utils.CalculateForceForDistance(mass, CubeConfig.MIN_KNOCKBACK_DISTANCE);
+            float maxForce = Utils.CalculateForceForDistance(mass, CubeConfig.MAX_KNOCKBACK_DISTANCE);
+            Vector2 impulseXZ = Utils.ConvertXZVector2(impulse);
+            float xzForce = impulseXZ.magnitude;
+
+            if (xzForce < minForce)
+                impulse = Vector3.up * impulse.y;
+            else if (xzForce > maxForce)
+            {
+                impulseXZ = impulseXZ.normalized * maxForce;
+                impulse = new Vector3(impulseXZ.x, impulse.y, impulseXZ.y);
+            }
+
+            impulse.y = Mathf.Min(impulse.y, CubeConfig.MAX_KNOCKBACK_DISTANCE);
 
             return impulse;
         }
@@ -45,6 +55,12 @@ namespace CustomTIJI.CubicLand.Cube
             return Mathf.Max(deltaX, deltaY, deltaZ);
         }
 
+        public static float CalculateLiftForce(Rigidbody rigidbody, float height)
+        {
+            float v = Mathf.Sqrt(Mathf.Abs(2f * Physics.gravity.y * height));
+            return v * rigidbody.mass;
+        }
+
         #region Normalize
         public static Vector3 GetNormalizedPosition(Vector3 position)
         {
@@ -66,7 +82,7 @@ namespace CustomTIJI.CubicLand.Cube
 
         public static void StartNormalize(Rigidbody rigidbody, MonoBehaviour actor)
         {
-            if (actor != null && actor.gameObject.activeInHierarchy)
+            if (actor != null && actor.IsEnable())
             {
                 actor.StartCoroutine(NormalizePosition(rigidbody));
                 actor.StartCoroutine(NormalizeRotation(rigidbody));
@@ -82,15 +98,10 @@ namespace CustomTIJI.CubicLand.Cube
 
             while (time < duration)
             {
-                float ratio = time / duration;
-                Vector3 position = Vector3.Lerp(start, end, ratio);
-
-                rigidbody.MovePosition(position);
+                rigidbody.MovePosition(Vector3.Lerp(start, end, time / duration));
                 time += Time.fixedDeltaTime;
                 yield return YieldCache.WaitForFixedUpdate;
             }
-
-            rigidbody.MovePosition(end);
         }
 
         public static IEnumerator NormalizeRotation(Rigidbody rigidbody)
@@ -104,15 +115,10 @@ namespace CustomTIJI.CubicLand.Cube
 
             while (time < duration)
             {
-                float ratio = time / duration;
-                Quaternion rotation = Quaternion.Lerp(start, end, ratio);
-
-                rigidbody.MoveRotation(rotation);
+                rigidbody.MoveRotation(Quaternion.Lerp(start, end, time / duration));
                 time += Time.fixedDeltaTime;
                 yield return YieldCache.WaitForFixedUpdate;
             }
-
-            rigidbody.MoveRotation(end);
         }
         #endregion
     }
