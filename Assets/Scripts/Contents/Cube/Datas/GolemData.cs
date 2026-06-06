@@ -6,12 +6,17 @@ namespace CustomTIJI.CubicLand.Cube
 {
     public class GolemData
     {
-        /*TODO: 저장 대상*/private readonly Dictionary<Vector3Int, CubeData> _cubeDatas; // (0,0,0)은 Core (R:x+1, L:x-1, U:y+1, D:y-1, F:z+1, B:z-1)
-        /*TODO: 저장 대상*/private readonly Dictionary<Vector3Int, List<Vector3Int>> _children;
+        /*TODO: 저장 대상*/
+        private readonly Dictionary<Vector3Int, CubeData> _cubeDatas; // (0,0,0)은 Core (R:x+1, L:x-1, U:y+1, D:y-1, F:z+1, B:z-1)
+        /*TODO: 저장 대상*/
+        private readonly Dictionary<Vector3Int, List<Vector3Int>> _children;
         private readonly Dictionary<Vector3Int, Vector3Int> _parents;
         private readonly Dictionary<Vector3Int, int> _childDepths;
 
-        /*TODO: 저장 대상*/public int MoveSpeedPoint { get; set; }
+        private readonly List<Vector3Int> _availables = new List<Vector3Int>();
+
+        /*TODO: 저장 대상*/
+        public int MoveSpeedPoint { get; set; }
         public int MoveSpeed => CubeConfig.Status.INIT_MOVE_SPEED + MoveSpeedPoint * CubeConfig.Status.ADD_MOVE_SPEED;
         public IReadOnlyDictionary<Vector3Int, CubeData> CubeDatas => _cubeDatas;
         public IReadOnlyDictionary<Vector3Int, List<Vector3Int>> Children => _children;
@@ -71,14 +76,47 @@ namespace CustomTIJI.CubicLand.Cube
             return new GolemData(MoveSpeedPoint, cubeDatas, children);
         }
 
-        public int GetDirectionEdge(Enums.Direction3D direction)
+        public int GetDirectionLength(Enums.Direction3D direction)
         {
-            return FindEdge((int)direction / 2, (int)direction % 2 == 0);
+            int vectorIndex = (int)direction / 2;
+            bool isMax = (int)direction % 2 == 0;
+
+            SetAvailables();
+
+            int result = 0;
+
+            foreach (Vector3Int position in _availables)
+            {
+                if (!_cubeDatas.TryGetValue(position, out CubeData data))
+                    continue;
+
+                if (isMax)
+                    result = Mathf.Max(result, data.ShapePoisition[vectorIndex]);
+                else
+                    result = Mathf.Min(result, data.ShapePoisition[vectorIndex]);
+            }
+
+            return result;
         }
 
         public List<CubeData> FindEdgeCubes(Enums.Direction3D direction)
         {
-            return FindEdgeCubes((int)direction / 2, GetDirectionEdge(direction));
+            int vectorIndex = (int)direction / 2;
+            int edge = GetDirectionLength(direction);
+
+            SetAvailables();
+            List<CubeData> results = new List<CubeData>();
+
+            foreach (Vector3Int position in _availables)
+            {
+                if (!_cubeDatas.TryGetValue(position, out CubeData data))
+                    continue;
+
+                if (data.ShapePoisition[vectorIndex] == edge)
+                    results.Add(data);
+            }
+
+            return results;
         }
 
         public List<Vector3Int> GetAddablePositions(Vector3Int parentPosition)
@@ -130,32 +168,14 @@ namespace CustomTIJI.CubicLand.Cube
             return true;
         }
 
-        private int FindEdge(int vectorIndex, bool isMax)
+        private void SetAvailables()
         {
-            int result = 0;
-
+            _availables.Clear();
             foreach (CubeData data in _cubeDatas.Values)
             {
-                if (isMax)
-                    result = Mathf.Max(result, data.ShapePoisition[vectorIndex]);
-                else
-                    result = Mathf.Min(result, data.ShapePoisition[vectorIndex]);
+                if (!data.IsBreaked)
+                    _availables.Add(data.ShapePoisition);
             }
-
-            return result;
-        }
-
-        private List<CubeData> FindEdgeCubes(int vectorIndex, int edge)
-        {
-            List<CubeData> result = new List<CubeData>();
-
-            foreach (CubeData data in _cubeDatas.Values)
-            {
-                if (data.ShapePoisition[vectorIndex] == edge)
-                    result.Add(data);
-            }
-
-            return result;
         }
 
         private void FindChildren(Vector3Int parentPosition, List<CubeData> list)
@@ -176,7 +196,7 @@ namespace CustomTIJI.CubicLand.Cube
             queue.Enqueue(CubeConfig.CORE_POSITION);
 
             while (queue.Count > 0)
-            { 
+            {
                 Vector3Int parent = queue.Dequeue();
                 int nextDepth = _childDepths[parent] + 1;
 
