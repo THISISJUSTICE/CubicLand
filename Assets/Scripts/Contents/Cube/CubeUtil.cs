@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace CustomTIJI.CubicLand.Cube
 {
-    public static class CubeUtil
+    internal static class CubeUtil
     {
         public static float CalculateBasicCubeObjectMass()
         {
