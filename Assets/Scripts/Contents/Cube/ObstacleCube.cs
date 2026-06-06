@@ -18,6 +18,11 @@ namespace CustomTIJI.CubicLand.Cube
             _rigidbody = GetComponent<Rigidbody>();
         }
 
+        private void OnEnable()
+        {
+            _rigidbody.FreezePositionXZ(true);
+        }
+
         private void OnCollisionEnter(Collision collision)
         {
             if (collision == null)
@@ -50,7 +55,7 @@ namespace CustomTIJI.CubicLand.Cube
         }
 
         private IEnumerator HandleKnockback()
-        { 
+        {
             yield return null;
 
             float waitTime = CubeUtil.CalculateKnockbackTime(_rigidbody.linearVelocity, Cube.Mass);
