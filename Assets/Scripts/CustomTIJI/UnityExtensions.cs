@@ -98,6 +98,11 @@ namespace CustomTIJI
             rigidbody.linearVelocity = Vector3.zero;
             rigidbody.angularVelocity = Vector3.zero;
         }
+
+        public static bool IsUnderGravity(this Rigidbody rigidbody)
+        {
+            return Mathf.Abs(rigidbody.linearVelocity.y) > 0.01f;
+        }
         #endregion
 
         #region Color
@@ -197,7 +202,7 @@ namespace CustomTIJI
 
         public static void WaitFixedTimeAct(this MonoBehaviour mb, Action action)
         {
-            if (mb != null && mb.enabled && mb.gameObject.activeInHierarchy)
+            if (mb != null && mb.IsEnable())
                 mb.StartCoroutine(StartWaitFixedTimeAct(action));
         }
 
@@ -205,6 +210,11 @@ namespace CustomTIJI
         {
             yield return YieldCache.WaitForFixedUpdate;
             action?.Invoke();
+        }
+
+        public static bool IsEnable(this MonoBehaviour mb)
+        {
+            return mb.enabled && mb.gameObject.activeInHierarchy;
         }
     }
 }
