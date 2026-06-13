@@ -80,42 +80,30 @@ namespace CustomTIJI.CubicLand.Cube
             return Quaternion.Euler(eulerAngles);
         }
 
-        public static void StartNormalize(Rigidbody rigidbody, MonoBehaviour actor)
+        public static void StartNormalizePose(Rigidbody rigidbody, MonoBehaviour actor)
         {
             if (actor != null && actor.IsEnable())
-            {
-                actor.StartCoroutine(NormalizePosition(rigidbody));
-                actor.StartCoroutine(NormalizeRotation(rigidbody));
-            }
+                actor.StartCoroutine(NormalizePoseCoroutine(rigidbody));
         }
 
-        public static IEnumerator NormalizePosition(Rigidbody rigidbody)
+        public static IEnumerator NormalizePoseCoroutine(Rigidbody rigidbody)
         {
-            Vector3 start = rigidbody.position;
-            Vector3 end = GetNormalizedPosition(start);
-            float duration = Vector3.Distance(start, end) / CubeConfig.MAX_CUBE_NOMALIZE_DISTANCE * CubeConfig.MAX_CUBE_NOMALIZE_TIME;
-            float time = 0f;
+            Vector3 startPosition = rigidbody.position;
+            Vector3 endPosition = GetNormalizedPosition(startPosition);
+            float moveDuration = Vector3.Distance(startPosition, endPosition) / CubeConfig.MAX_CUBE_NOMALIZE_DISTANCE * CubeConfig.MAX_CUBE_NOMALIZE_TIME;
 
-            while (time < duration)
-            {
-                rigidbody.MovePosition(Vector3.Lerp(start, end, time / duration));
-                time += Time.fixedDeltaTime;
-                yield return YieldCache.WaitForFixedUpdate;
-            }
-        }
-
-        public static IEnumerator NormalizeRotation(Rigidbody rigidbody)
-        {
             const float maxCubeNormalizeAngle = 45f;
+            Quaternion startRotation = rigidbody.rotation;
+            Quaternion endRotation = GetNormalizedRotation(startRotation);
+            float rotateDuration = GetMaxAxisAngleDifference(startRotation, endRotation) / maxCubeNormalizeAngle * CubeConfig.MAX_CUBE_NOMALIZE_TIME;
 
-            Quaternion start = rigidbody.rotation;
-            Quaternion end = GetNormalizedRotation(start);
-            float duration = GetMaxAxisAngleDifference(start, end) / maxCubeNormalizeAngle * CubeConfig.MAX_CUBE_NOMALIZE_TIME;
+            float duration = Mathf.Max(moveDuration, rotateDuration);
             float time = 0f;
 
             while (time < duration)
             {
-                rigidbody.MoveRotation(Quaternion.Lerp(start, end, time / duration));
+                rigidbody.MovePosition(Vector3.Lerp(startPosition, endPosition, time / moveDuration));
+                rigidbody.MoveRotation(Quaternion.Lerp(startRotation, endRotation, time / rotateDuration));
                 time += Time.fixedDeltaTime;
                 yield return YieldCache.WaitForFixedUpdate;
             }
