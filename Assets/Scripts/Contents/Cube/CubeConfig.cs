@@ -15,7 +15,7 @@ namespace CustomTIJI.CubicLand.Cube
         public const float ARMOR_EXPONENTIAL_SCALE = 50f;
 
         public const float MAX_CUBE_NOMALIZE_TIME = 0.2f;
-        public static readonly float MAX_CUBE_NOMALIZE_DISTANCE = Mathf.Sqrt(CUBE_BASE_LENGHT * CUBE_BASE_LENGHT * 2f);
+        public static readonly float MAX_CUBE_NOMALIZE_DISTANCE = Mathf.Sqrt(CUBE_BASE_LENGHT * 2f);
 
         public const float COLOR_CHILD_RATE = 1.1f;
 
