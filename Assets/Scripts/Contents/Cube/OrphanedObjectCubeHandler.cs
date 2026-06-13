@@ -15,7 +15,7 @@ namespace CustomTIJI.CubicLand.Cube
             ObstacleCube obstacleCube = _cubeFactory.CreateCube(cube.CubeData.Copy()).GetComponent<ObstacleCube>();
             obstacleCube.transform.position = cube.transform.position;
             obstacleCube.transform.rotation = cube.transform.rotation;
-            obstacleCube.NormalizeTransform();
+            obstacleCube.NormalizePose();
 
             _cubeFactory.DestoryCube(cube);
         }

@@ -10,7 +10,6 @@ namespace CustomTIJI.CubicLand.Cube
         private Rigidbody _rigidbody;
 
         public CubeObject Cube { get; private set; }
-        public Vector3 MoveVelocity => _rigidbody.linearVelocity;
 
         private void Awake()
         {
@@ -48,22 +47,22 @@ namespace CustomTIJI.CubicLand.Cube
             StartCoroutine(HandleKnockback());
         }
 
-        public void NormalizeTransform()
+        public void NormalizePose()
         {
             _rigidbody.FreezePositionXZ(true);
-            CubeUtil.StartNormalize(_rigidbody, this);
+            CubeUtil.StartNormalizePose(_rigidbody, this);
         }
 
         private IEnumerator HandleKnockback()
         {
-            yield return null;
+            yield return YieldCache.WaitForFixedUpdate;
 
             float waitTime = CubeUtil.CalculateKnockbackTime(_rigidbody.linearVelocity, Cube.Mass);
             if (waitTime > 0f)
                 yield return GlobalRoot.Instance.YieldCache.GetWaitForSeconds(waitTime);
 
             _rigidbody.ClearVelocity();
-            NormalizeTransform();
+            NormalizePose();
         }
     }
 }
