@@ -1,18 +1,7 @@
-using System.Collections;
 using UnityEngine;
 
 namespace CustomTIJI.CubicLand.Cube
 {
-    public interface IGolemMotionMotor
-    {
-        public IEnumerator MoveRollGolem(Enums.Direction direction);
-        public IEnumerator MoveJumpGolem(Enums.Direction direction);
-        public IEnumerator MoveGolem(Enums.Direction direction);
-        public IEnumerator RotateGolem(Enums.Direction direction);
-        public IEnumerator ChargeJumpReadyGolem();
-        public IEnumerator ChargeJumpActionGolem();
-    }
-
     public interface IGolemGeometryProvider
     {
         public CubeObject RotateAxisCube { get; }

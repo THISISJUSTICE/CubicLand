@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace CustomTIJI.CubicLand.Cube
 {
-    public partial class GolemMotionMotor : IOnEnablable, IGolemMotionMotor, IGolemGeometryProvider
+    internal class GolemMotionMotor : IOnEnablable, IGolemGeometryProvider
     {
         private readonly IGolemObject _golemObject;
         private GolemMoveDirection _moveDirection;
@@ -47,7 +47,7 @@ namespace CustomTIJI.CubicLand.Cube
         internal GolemMotionMotor(IGolemObject golemObject)
         {
             _golemObject = golemObject;
-            _golemObject.SetUnityRoutine(this);
+            _golemObject.AddUnityRoutine(this);
 
             OnEnable();
         }
@@ -58,7 +58,12 @@ namespace CustomTIJI.CubicLand.Cube
             UpdateGeometryData();
         }
 
-        public IEnumerator MoveRollGolem(Enums.Direction direction)
+        public List<CubeData> FindEdgeCubeDatas(Enums.Direction3D direction)
+        {
+            return _golemObject.GolemData.FindEdgeCubes(ConvertObjectDirection(direction));
+        }
+
+        public IEnumerator MoveWithRoll(Enums.Direction direction, float duration)
         {
             Vector3 moveDirection = _moveDirection.GetDirection(direction).normalized;
             float halfLine = CubeConfig.CUBE_BASE_LENGHT / 2f;
@@ -76,8 +81,6 @@ namespace CustomTIJI.CubicLand.Cube
 
             Quaternion startRotation = Transform.rotation;
             Quaternion targetRotation = Quaternion.FromToRotation(moveDirection, _moveDirection.Down) * startRotation;
-
-            float duration = CalculateMoveTime();
             float time = 0f;
 
             bool once = true;
@@ -109,20 +112,19 @@ namespace CustomTIJI.CubicLand.Cube
         /// <summary>
         /// 바닥에 붙었을 때만 정상 동작함
         /// </summary>
-        public IEnumerator MoveJumpGolem(Enums.Direction direction)
+        public IEnumerator MoveWithJump(Enums.Direction direction, float duration)
         {
-            yield return MoveJumpGolemCoroutine(direction, CubeConfig.CUBE_BASE_LENGHT * 0.5f);
+            yield return MoveWithJumpCoroutine(direction, duration, CubeConfig.CUBE_BASE_LENGHT * 0.5f);
         }
 
-        public IEnumerator MoveGolem(Enums.Direction direction)
+        public IEnumerator Move(Enums.Direction direction, float duration)
         {
-            yield return MoveJumpGolemCoroutine(direction, 0f);
+            yield return MoveWithJumpCoroutine(direction, duration, 0f);
         }
 
-        public IEnumerator RotateGolem(Enums.Direction direction)
+        public IEnumerator Rotate(Enums.Direction direction, float duration)
         {
-            int bottomCount = FindEdgeCubeDatas(Enums.Direction3D.Down).Count;
-            float moveTime = Mathf.Clamp(CalculateMoveTime() * 0.9f, CubeConfig.GOLEM_MIN_MOVE_TIME, CubeConfig.GOLEM_MAX_MOVE_TIME);
+            
             RotateAxisCube = _golemObject.FindCube(FindRotateAxis(direction));
 
             Quaternion startRotation = Transform.rotation;
@@ -135,8 +137,7 @@ namespace CustomTIJI.CubicLand.Cube
             Quaternion startViewRotation = ViewRotation;
             Quaternion targetViewRotation = startViewRotation * moveRotation;
 
-            float duration = Mathf.Max(moveTime, moveTime * (CubeConfig.GOLEM_ROTATE_FRICTION * (bottomCount - 1)));
-            duration = Mathf.Clamp(duration, CubeConfig.GOLEM_MIN_MOVE_TIME, CubeConfig.GOLEM_MAX_MOVE_TIME);
+            
             float time = 0f;
 
             bool once = true;
@@ -165,7 +166,7 @@ namespace CustomTIJI.CubicLand.Cube
             ViewRotation = _moveDirection.GetRotation();
         }
 
-        public IEnumerator ChargeJumpReadyGolem()
+        public IEnumerator ChargeJump()
         {
             if (_chargedHeight > 0f)
                 yield break;
@@ -178,7 +179,7 @@ namespace CustomTIJI.CubicLand.Cube
             float maxHeight = CubeConfig.CUBE_BASE_LENGHT / 2f + (GolemHeight - 1) * CubeConfig.CUBE_BASE_LENGHT;
             Vector3 previousScale = Transform.localScale;
 
-            float duration = GolemHeight * CubeConfig.GOLEM_JUMP_CHARGE_TIME * GolemHeight;
+            float duration = GolemHeight * CubeConfig.GOLEM_JUMP_CHARGE_TIME;
             float time = 0f;
 
             while (time < duration)
@@ -196,7 +197,7 @@ namespace CustomTIJI.CubicLand.Cube
             }
         }
 
-        public IEnumerator ChargeJumpActionGolem()
+        public IEnumerator ReleaseJump()
         {
             if (_chargedHeight > 0f && !_golemObject.Rigidbody.IsUnderGravity())
             {
@@ -204,18 +205,15 @@ namespace CustomTIJI.CubicLand.Cube
                 _chargedHeight = 0f;
             }
 
-            yield return RestoreGolemScale();
+            yield return RestoreScale();
         }
 
-        private IEnumerator MoveJumpGolemCoroutine(Enums.Direction direction, float moveHeight)
+        private IEnumerator MoveWithJumpCoroutine(Enums.Direction direction, float duration, float moveHeight)
         {
             Vector3 moveDirection = _moveDirection.GetDirection(direction).normalized;
             Vector3 startPosition = Transform.position;
 
             float targetHeight = startPosition.y + moveHeight;
-            float velocity = CubeUtil.CalculateLiftForce(_golemObject.Rigidbody, CubeConfig.CUBE_BASE_LENGHT * 0.5f) / _golemObject.Rigidbody.mass;
-
-            float duration = velocity / Mathf.Abs(Physics.gravity.y) * 1.2f;
             float time = 0f;
 
             while (time < duration)
@@ -238,7 +236,7 @@ namespace CustomTIJI.CubicLand.Cube
             _golemObject.Rigidbody.MovePosition(CubeUtil.GetNormalizedPosition(Transform.position));
         }
 
-        private IEnumerator RestoreGolemScale()
+        private IEnumerator RestoreScale()
         {
             if (Transform.localScale == Vector3.one)
                 yield break;
@@ -279,11 +277,6 @@ namespace CustomTIJI.CubicLand.Cube
             ViewRotation = _moveDirection.GetRotation();
         }
 
-        private float CalculateMoveTime()
-        {
-            return _golemObject.CalculateMoveTime(CubeConfig.GOLEM_INIT_MOVE_TIME, CubeConfig.GOLEM_MIN_MOVE_TIME, CubeConfig.GOLEM_MAX_MOVE_TIME);
-        }
-
         private Vector3[] GetObjectDirections()
         {
             int index = 0;
@@ -308,11 +301,6 @@ namespace CustomTIJI.CubicLand.Cube
         private int GetGolemLength(Enums.Direction3D direction)
         {
             return _golemObject.GolemData.GetDirectionLength(ConvertObjectDirection(direction));
-        }
-
-        private List<CubeData> FindEdgeCubeDatas(Enums.Direction3D direction)
-        {
-            return _golemObject.GolemData.FindEdgeCubes(ConvertObjectDirection(direction));
         }
 
         private List<Vector3Int> FindAxisCandidates(Enums.Direction3D moveDirection)
