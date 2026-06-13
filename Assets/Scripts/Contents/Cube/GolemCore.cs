@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,11 +13,13 @@ namespace CustomTIJI.CubicLand.Cube
         private ICubeFactory _cubeFactory;
         private ICubeMotionAdjuster _motionAdjuster;
 
-        private IOnEnablable _onEnablable;
-        private IFixedUpdatable _fixedUpdatable;
+        private readonly HashSet<IOnEnablable> _onEnablables = new HashSet<IOnEnablable>();
+        private readonly HashSet<IFixedUpdatable> _fixedUpdatables = new HashSet<IFixedUpdatable>();
 
         private readonly Dictionary<Vector3Int, CubeObject> _cubes = new Dictionary<Vector3Int, CubeObject>();
         private readonly List<Vector3Int> _breakedCubePositions = new List<Vector3Int>();
+
+        private readonly List<object> _tempList = new List<object>();
 
         private Rigidbody _rigidbody;
         private bool _isAttackMode;
@@ -34,12 +37,38 @@ namespace CustomTIJI.CubicLand.Cube
 
         private void OnEnable()
         {
-            _onEnablable?.OnEnable();
+            _tempList.Clear();
+            foreach (IOnEnablable onEnalblable in _onEnablables)
+            {
+                if (onEnalblable == null)
+                {
+                    _tempList.Add(onEnalblable);
+                    continue;
+                }
+
+                onEnalblable.OnEnable();
+            }
+
+            foreach (object dummy in _tempList)
+                _onEnablables.Remove(dummy as IOnEnablable);
         }
 
         private void FixedUpdate()
         {
-            _fixedUpdatable?.FixedUpdate();
+            _tempList.Clear();
+            foreach (IFixedUpdatable fixedUpdatable in _fixedUpdatables)
+            {
+                if (fixedUpdatable == null)
+                {
+                    _tempList.Add(fixedUpdatable);
+                    continue;
+                }
+
+                fixedUpdatable.FixedUpdate();
+            }
+
+            foreach (object dummy in _tempList)
+                _fixedUpdatables.Remove(dummy as IFixedUpdatable);
         }
 
         private void OnCollisionEnter(Collision collision)
@@ -86,19 +115,29 @@ namespace CustomTIJI.CubicLand.Cube
             UpdateGolemMass();
         }
 
-        void IGolemObject.SetUnityRoutine(IOnEnablable onEnablable)
+        void IGolemObject.AddUnityRoutine(IOnEnablable onEnablable)
         {
-            _onEnablable = onEnablable;
+            _onEnablables.Add(onEnablable);
         }
 
-        void IGolemObject.SetUnityRoutine(IFixedUpdatable fixedUpdatable)
+        void IGolemObject.AddUnityRoutine(IFixedUpdatable fixedUpdatable)
         {
-            _fixedUpdatable = fixedUpdatable;
+            _fixedUpdatables.Add(fixedUpdatable);
         }
 
         void IGolemObject.SetAttackMode(bool attackMode)
         {
             SetAttackMode(attackMode);
+        }
+
+        Coroutine IGolemObject.StartCoroutine(IEnumerator routine)
+        {
+            return StartCoroutine(routine);
+        }
+
+        void IGolemObject.StopCoroutine(Coroutine coroutine)
+        { 
+            StopCoroutine(coroutine);
         }
 
         public float CalculateMoveTime(float initTime, float minTime, float maxTime)

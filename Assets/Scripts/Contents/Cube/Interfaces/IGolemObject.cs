@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace CustomTIJI.CubicLand.Cube
@@ -7,9 +8,11 @@ namespace CustomTIJI.CubicLand.Cube
         internal Rigidbody Rigidbody { get; }
         public GolemData GolemData { get; }
 
-        internal void SetUnityRoutine(IOnEnablable onEnablable);
-        internal void SetUnityRoutine(IFixedUpdatable fixedUpdatable);
+        internal void AddUnityRoutine(IOnEnablable onEnablable);
+        internal void AddUnityRoutine(IFixedUpdatable fixedUpdatable);
         internal void SetAttackMode(bool attackMode);
+        internal Coroutine StartCoroutine(IEnumerator routine);
+        internal void StopCoroutine(Coroutine coroutine);
 
         public float CalculateMoveTime(float initTime, float minTime, float maxTime);
         public CubeObject FindCube(Vector3Int position);
