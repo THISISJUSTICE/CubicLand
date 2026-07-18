@@ -56,11 +56,11 @@ namespace CustomTIJI.CubicLand.Cube
             BuildChildDepths();
         }
 
-        public GolemData Copy()
+        public GolemData Clone()
         {
             Dictionary<Vector3Int, CubeData> cubeDatas = new Dictionary<Vector3Int, CubeData>();
             foreach (KeyValuePair<Vector3Int, CubeData> cubeData in CubeDatas)
-                cubeDatas[cubeData.Key] = cubeData.Value.Copy();
+                cubeDatas[cubeData.Key] = cubeData.Value.Clone();
 
             Dictionary<Vector3Int, List<Vector3Int>> children = new Dictionary<Vector3Int, List<Vector3Int>>();
             if (Children != null)

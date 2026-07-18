@@ -8,6 +8,7 @@ namespace CustomTIJI.CubicLand.Singletons
     public class CubeCollisionResolver : ICubeCollisionResolver, IHitNotifier, IFixedUpdatable
     {
         private readonly HashSet<(GameObject, GameObject)> _hitPairs = new HashSet<(GameObject, GameObject)>();
+        private readonly HashSet<(GameObject, GameObject)> _resolvedCollisions = new HashSet<(GameObject, GameObject)>();
 
         private Action _defferedCollisionAction;
         public event Action<GameObject, Collision> onHit;
@@ -17,18 +18,30 @@ namespace CustomTIJI.CubicLand.Singletons
             _defferedCollisionAction?.Invoke();
             _defferedCollisionAction = null;
             _hitPairs.Clear();
+            _resolvedCollisions.Clear();
         }
 
         public void OnCollision(GameObject gameObject, ICubeMotionAdjuster motionAdjuster, Collision collision, bool onlyCubeCollision)
         {
+            if (gameObject == null || motionAdjuster == null || collision == null)
+                return;
+
             CubeObject cubeObject = gameObject.GetComponent<CubeObject>();
             if (cubeObject == null)
                 return;
 
+            // TODO: 추후 넉백 테스트해보고, relativeVelocity * mass와 비교하여 더 적절한 계산식으로 수립
             Vector3 impulse = -collision.impulse;
             CubeObject collisionCube = collision.gameObject.GetComponent<CubeObject>();
 
-            if (collisionCube == null && !onlyCubeCollision)
+            if (collisionCube == null && onlyCubeCollision)
+                return;
+
+            (GameObject, GameObject) collisionDirection = (gameObject, collision.gameObject);
+            if (!_resolvedCollisions.Add(collisionDirection))
+                return;
+
+            if (collisionCube == null)
             {
                 _defferedCollisionAction += () =>
                 {
@@ -48,11 +61,8 @@ namespace CustomTIJI.CubicLand.Singletons
             _defferedCollisionAction += () =>
             {
                 (GameObject, GameObject) pair = MakePair(gameObject, collision.gameObject);
-                if (!_hitPairs.Contains(pair))
-                {
-                    _hitPairs.Add(pair);
+                if (_hitPairs.Add(pair))
                     onHit?.Invoke(gameObject, collision);
-                }
             };
         }
 

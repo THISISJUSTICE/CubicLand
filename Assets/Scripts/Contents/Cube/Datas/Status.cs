@@ -31,17 +31,14 @@ namespace CustomTIJI.CubicLand.Cube
         public void SetAttack(int value) => _attack = Mathf.Max(value, 0);
 
         public StatusPoint(int hp, int armor, int attack)
-        { 
-            _hp = hp;
-            _armor = armor;
-            _attack = attack;
-        }
-
-        public void Initialize()
         {
-            HP = 0;
-            Armor = 0;
-            Attack = 0;
+            _hp = 0;
+            _armor = 0;
+            _attack = 0;
+
+            HP = hp;
+            Armor = armor;
+            Attack = attack;
         }
 
         public StatusPoint MakeChildStatus()
@@ -55,7 +52,7 @@ namespace CustomTIJI.CubicLand.Cube
         }
     }
 
-    public struct StatusValue
+    public class StatusValue
     {
         public int MaxHP { get; private set; }
         public int HP { get; private set; }
@@ -64,14 +61,19 @@ namespace CustomTIJI.CubicLand.Cube
 
         internal StatusValue(StatusPoint statusPoint)
         {
-            MaxHP = CubeConfig.Status.INIT_HP + statusPoint.HP * CubeConfig.Status.ADD_HP;
-            HP = MaxHP;
-            Armor = CubeConfig.Status.INIT_ARMOR + statusPoint.Armor * CubeConfig.Status.ADD_ARMOR;
-            Attack = CubeConfig.Status.INIT_ATTACK + statusPoint.Attack * CubeConfig.Status.ADD_ATTACK;
+            Initialize(statusPoint);
+        }
+
+        private StatusValue(StatusValue statusValue)
+        {
+            MaxHP = statusValue.MaxHP;
+            HP = statusValue.HP;
+            Armor = statusValue.Armor;
+            Attack = statusValue.Attack;
         }
 
         public bool IsFullHP()
-        { 
+        {
             return HP == MaxHP;
         }
 
@@ -79,7 +81,7 @@ namespace CustomTIJI.CubicLand.Cube
         {
             int previousMaxHP = MaxHP;
             int previousHP = HP;
-            this = new StatusValue(statusPoint);
+            Initialize(statusPoint);
 
             HP = Mathf.Min(MaxHP, previousHP + MaxHP - previousMaxHP);
         }
@@ -89,9 +91,22 @@ namespace CustomTIJI.CubicLand.Cube
             HP = Mathf.Max(HP - damage, 0);
         }
 
-        internal void Heal(int heal)
+        internal int Heal(int heal)
         {
+            int prevHP = HP;
             HP = Mathf.Min(MaxHP, HP + heal);
+
+            return heal - HP + prevHP;
+        }
+
+        internal StatusValue Clone() => new StatusValue(this);
+
+        private void Initialize(StatusPoint statusPoint)
+        {
+            MaxHP = CubeConfig.Status.INIT_HP + statusPoint.HP * CubeConfig.Status.ADD_HP;
+            HP = MaxHP;
+            Armor = CubeConfig.Status.INIT_ARMOR + statusPoint.Armor * CubeConfig.Status.ADD_ARMOR;
+            Attack = CubeConfig.Status.INIT_ATTACK + statusPoint.Attack * CubeConfig.Status.ADD_ATTACK;
         }
     }
 }

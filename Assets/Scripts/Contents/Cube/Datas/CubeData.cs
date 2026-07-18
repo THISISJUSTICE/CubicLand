@@ -21,10 +21,10 @@ namespace CustomTIJI.CubicLand.Cube
             IsBreaked = isBreaked;
         }
 
-        public CubeData Copy()
+        public CubeData Clone()
         {
             CubeData clone = new CubeData(StatusPoint, ShapePoisition, Color, IsBreaked);
-            clone.StatusValue = StatusValue;
+            clone.StatusValue = StatusValue.Clone();
             return clone;
         }
 

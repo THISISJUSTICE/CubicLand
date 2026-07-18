@@ -15,6 +15,7 @@ namespace CustomTIJI.CubicLand.Cube
         public CubeData CubeData { get; private set; }
         public float Mass { get; private set; }
         public Collider Collider => _collider;
+        internal bool IsInitialized => _cubeTrait != null;
 
         private void Awake()
         {

@@ -228,8 +228,7 @@ namespace CustomTIJI.CubicLand.Cube
             StatusValue statusValue = cube.CubeData.StatusValue;
             if (!statusValue.IsFullHP() && heal > 0)
             {
-                cube.CubeData.StatusValue.Heal(heal);
-                heal -= cube.CubeData.StatusValue.HP - statusValue.HP;
+                heal = statusValue.Heal(heal);
                 cube.UpdateCubeObject();
                 onHealed?.Invoke(cube);
 
@@ -313,7 +312,7 @@ namespace CustomTIJI.CubicLand.Cube
 
         private void RecreateBreakedCube(Vector3Int position)
         {
-            if (!GolemData.Parents.TryGetValue(position, out Vector3Int parentPosition)
+            if (GolemData.Parents.TryGetValue(position, out Vector3Int parentPosition)
                 && GolemData.CubeDatas.TryGetValue(parentPosition, out CubeData parent)
                 && parent.IsBreaked)
             {

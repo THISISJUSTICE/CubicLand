@@ -25,57 +25,71 @@ namespace CustomTIJI.CubicLand
 
             CreateParent();
 
-            if (!_instancePools.ContainsKey(prefab))
-                _instancePools.Add(prefab, new Stack<PooledObjectHandle>());
+            if (!_instancePools.TryGetValue(prefab, out Stack<PooledObjectHandle> handleStack))
+            {
+                handleStack = new Stack<PooledObjectHandle>();
+                _instancePools.Add(prefab, handleStack);
+            }
 
             PooledObjectHandle handle;
 
-            if (_instancePools[prefab].Count > 0)
+            if (handleStack.Count > 0)
             {
-                handle = _instancePools[prefab].Pop();
-                handle.GameObject.SetActive(true);
+                handle = handleStack.Pop();
             }
             else
             {
-                GameObject go = Object.Instantiate(prefab);
+                GameObject go = Object.Instantiate(prefab, parent);
                 handle = new PooledObjectHandle(prefab, go, this);
             }
 
+            handle.IsRented = true;
             handle.GameObject.transform.SetParent(parent);
+            handle.GameObject.SetActive(true);
 
             return handle;
         }
 
         public void Destroy(PooledObjectHandle handle)
         {
-            GameObject prefab = handle.Prefab;
+            if (handle == null || !handle.IsRented)
+                return;
 
-            if (_instancePools[prefab].Count < _maxSize)
+            handle.IsRented = false;
+
+            if (!_instancePools.TryGetValue(handle.Prefab, out Stack<PooledObjectHandle> handleStack))
             {
-                ReleaseComponents(handle);
+                RemoveTracking(handle);
+                Object.Destroy(handle.GameObject);
+                return;
+            }
 
-                _instancePools[prefab].Push(handle);
+            if (handleStack.Count < _maxSize)
+            {
+                ReleaseToPool(handle);
+
+                handleStack.Push(handle);
 
                 handle.GameObject.SetActive(false);
                 handle.GameObject.transform.SetParent(_parent);
             }
             else
             {
+                RemoveTracking(handle);
                 Object.Destroy(handle.GameObject);
             }
         }
 
         public void DestoryPool(GameObject prefab)
         {
-            while (_instancePools[prefab].Count > 0)
+            if (!_instancePools.TryGetValue(prefab, out Stack<PooledObjectHandle> handleStack))
+                return;
+
+            while (handleStack.Count > 0)
             {
-                PooledObjectHandle handle = _instancePools[prefab].Pop();
+                PooledObjectHandle handle = handleStack.Pop();
 
-                if (_instanceComponents.ContainsKey(handle))
-                    _instanceComponents.Remove(handle);
-                if (_poolReleasables.ContainsKey(handle))
-                    _poolReleasables.Remove(handle);
-
+                RemoveTracking(handle);
                 Object.Destroy(handle.GameObject);
             }
 
@@ -84,21 +98,28 @@ namespace CustomTIJI.CubicLand
 
         public T AddComponent<T>(PooledObjectHandle handle) where T : Component
         {
-            if (!_instanceComponents.ContainsKey(handle))
-                _instanceComponents.Add(handle, new List<Component>());
+            if (!_instanceComponents.TryGetValue(handle, out List<Component> components))
+            {
+                components = new List<Component>();
+                _instanceComponents.Add(handle, components);
+            }
 
             T component = handle.GameObject.AddComponent<T>();
-            _instanceComponents[handle].Add(component);
+            components.Add(component);
 
             return component;
         }
 
         public void RegisterPoolReleasable(PooledObjectHandle handle, IPoolReleasable poolReleasable)
         {
-            if (!_poolReleasables.ContainsKey(handle))
-                _poolReleasables[handle] = new List<IPoolReleasable>();
+            if (!_poolReleasables.TryGetValue(handle, out List<IPoolReleasable> releasables))
+            {
+                releasables = new List<IPoolReleasable>();
+                _poolReleasables.Add(handle, releasables);
+            }
 
-            _poolReleasables[handle].Add(poolReleasable);
+            if (poolReleasable != null && !releasables.Contains(poolReleasable))
+                releasables.Add(poolReleasable);
         }
 
         private void CreateParent()
@@ -111,21 +132,27 @@ namespace CustomTIJI.CubicLand
             Object.DontDestroyOnLoad(_parent.gameObject);
         }
 
-        private void ReleaseComponents(PooledObjectHandle handle)
+        private void ReleaseToPool(PooledObjectHandle handle)
         {
-            if (_instanceComponents.ContainsKey(handle))
+            if (_instanceComponents.TryGetValue(handle, out List<Component> components))
             {
-                foreach (Component component in _instanceComponents[handle])
+                foreach (Component component in components)
                     Object.Destroy(component);
 
-                _instanceComponents.Clear();
+                components.Clear();
             }
 
-            if (_poolReleasables.ContainsKey(handle))
+            if (_poolReleasables.TryGetValue(handle, out List<IPoolReleasable> releasables))
             {
-                foreach (IPoolReleasable poolReleasable in _poolReleasables[handle])
+                foreach (IPoolReleasable poolReleasable in releasables)
                     poolReleasable.OnPoolReleased();
             }
+        }
+
+        private void RemoveTracking(PooledObjectHandle handle)
+        {
+            _instanceComponents.Remove(handle);
+            _poolReleasables.Remove(handle);
         }
     }
 }

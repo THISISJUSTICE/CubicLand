@@ -11,6 +11,8 @@ namespace CustomTIJI.CubicLand
         private readonly GameObject _gameObject;
         private readonly IObjectPool _pool;
 
+        internal bool IsRented { get; set; }
+
         public PooledObjectHandle(GameObject prefab, GameObject gameObject, IObjectPool pool)
         {
             _prefab = prefab;
