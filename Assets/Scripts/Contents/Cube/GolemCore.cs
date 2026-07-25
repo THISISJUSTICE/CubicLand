@@ -24,8 +24,8 @@ namespace CustomTIJI.CubicLand.Cube
         private Rigidbody _rigidbody;
         private bool _isAttackMode;
 
-        public event Action<CubeObject> OnHealed;
-        internal event Action<CubeObject> OnReleased;
+        public event Action<CubeObject> onHealed;
+        internal event Action<CubeObject> onReleased;
 
         Rigidbody IGolemObject.Rigidbody => _rigidbody;
         public GolemData GolemData { get; private set; }
@@ -264,7 +264,7 @@ namespace CustomTIJI.CubicLand.Cube
             SortBreakedCubeList();
 
             if (cube.CubeData.ShapePoisition == CubeConfig.CORE_POSITION)
-                OnReleased?.Invoke(cube);
+                onReleased?.Invoke(cube);
         }
 
         private int ApplyHeal(int heal, CubeObject cube)
@@ -274,7 +274,7 @@ namespace CustomTIJI.CubicLand.Cube
             {
                 heal = statusValue.Heal(heal);
                 cube.UpdateCubeObject();
-                OnHealed?.Invoke(cube);
+                onHealed?.Invoke(cube);
 
                 if (heal <= 0)
                     return 0;
