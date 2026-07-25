@@ -1,0 +1,11 @@
+namespace CustomTIJI.CubicLand.Cube
+{
+    public class GolemCubeFactory : ObjectCubeFactory
+    {
+        protected override string LoadKey => "GolemCube";
+
+        public GolemCubeFactory(IObjectPool objectPool, IAsyncAssetLoader assetLoader, ICubeSpawnEffect spawnEffect)
+            : base(objectPool, assetLoader, spawnEffect)
+        { }
+    }
+}
