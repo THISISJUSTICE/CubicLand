@@ -25,6 +25,9 @@ namespace CustomTIJI.CubicLand.Cube
 
         public void OnEnable()
         {
+            _coroutine = null;
+            IsJumping = false;
+
             _motionMotor.OnEnable();
 
             _golemObject.SetAttackMode(false);

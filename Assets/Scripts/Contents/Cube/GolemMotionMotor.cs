@@ -47,13 +47,12 @@ namespace CustomTIJI.CubicLand.Cube
         internal GolemMotionMotor(IGolemObject golemObject)
         {
             _golemObject = golemObject;
-            _golemObject.AddUnityRoutine(this);
-
-            OnEnable();
         }
 
         public void OnEnable()
         {
+            _chargedHeight = 0;
+
             _moveDirection = new GolemMoveDirection(Transform.forward, Transform.right, Transform.up);
             UpdateGeometryData();
         }
