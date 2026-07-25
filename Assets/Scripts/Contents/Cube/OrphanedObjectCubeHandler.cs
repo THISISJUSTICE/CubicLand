@@ -12,12 +12,10 @@ namespace CustomTIJI.CubicLand.Cube
         public void HandleOrphanedCube(CubeObject cube)
         {
             cube.CubeData.IsAttackMode = false;
-            ObstacleCube obstacleCube = _cubeFactory.CreateCube(cube.CubeData.Clone()).GetComponent<ObstacleCube>();
+            ObstacleCube obstacleCube = _cubeFactory.CreateCube(cube.CubeData.Clone(), CubeSpawnOptions.IMMEDIATE).GetComponent<ObstacleCube>();
             obstacleCube.transform.position = cube.transform.position;
             obstacleCube.transform.rotation = cube.transform.rotation;
             obstacleCube.NormalizePose();
-
-            _cubeFactory.DestoryCube(cube);
         }
     }
 }
