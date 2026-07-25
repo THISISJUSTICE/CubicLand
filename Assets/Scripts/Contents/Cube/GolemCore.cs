@@ -25,6 +25,7 @@ namespace CustomTIJI.CubicLand.Cube
         private bool _isAttackMode;
 
         public event Action<CubeObject> onHealed;
+        internal event Action<CubeObject> onReleased;
 
         Rigidbody IGolemObject.Rigidbody => _rigidbody;
         public GolemData GolemData { get; private set; }
@@ -37,20 +38,36 @@ namespace CustomTIJI.CubicLand.Cube
 
         private void OnEnable()
         {
-            _tempList.Clear();
-            foreach (IOnEnablable onEnalblable in _onEnablables)
+            if (GolemData != null)
             {
-                if (onEnalblable == null)
+                _tempList.Clear();
+                foreach (IOnEnablable onEnalblable in _onEnablables)
                 {
-                    _tempList.Add(onEnalblable);
-                    continue;
+                    if (onEnalblable == null)
+                    {
+                        _tempList.Add(onEnalblable);
+                        continue;
+                    }
+
+                    onEnalblable.OnEnable();
                 }
 
-                onEnalblable.OnEnable();
+                foreach (object dummy in _tempList)
+                    _onEnablables.Remove(dummy as IOnEnablable);
+            }
+        }
+
+        private void OnDisable()
+        {
+            foreach (CubeObject cube in _cubes.Values)
+            {
+                if (cube != null)
+                    cube.onCubeDestoried -= OnParentCubeDestoried;
             }
 
-            foreach (object dummy in _tempList)
-                _onEnablables.Remove(dummy as IOnEnablable);
+            _cubes.Clear();
+            _breakedCubePositions.Clear();
+            GolemData = null;
         }
 
         private void FixedUpdate()
@@ -81,14 +98,12 @@ namespace CustomTIJI.CubicLand.Cube
             UpdateGolemMass();
         }
 
-        internal void Initialize(GolemData golemData, IList<CubeObject> cubes,
-            ICubeCollisionResolver cubeCollisionResolver, IOrphanedCubeHandler orphanedCubeHandler, ICubeFactory cubeFactory, ICubeMotionAdjuster motionAdjuster)
+        internal void Initialize(ICubeCollisionResolver cubeCollisionResolver, IOrphanedCubeHandler orphanedCubeHandler, ICubeFactory cubeFactory, ICubeMotionAdjuster motionAdjuster)
         {
             _cubeCollisionResolver = cubeCollisionResolver;
             _orphanedCubeHandler = orphanedCubeHandler;
             _cubeFactory = cubeFactory;
             _motionAdjuster = motionAdjuster;
-            Initialize(golemData, cubes);
         }
 
         public void Initialize(GolemData golemData, IList<CubeObject> cubes)
@@ -101,18 +116,21 @@ namespace CustomTIJI.CubicLand.Cube
                 if (cubeData.IsBreaked)
                     _breakedCubePositions.Add(cubeData.ShapePoisition);
             }
-            SortBreakedCubeList();
 
+            SortBreakedCubeList();
             _cubes.Clear();
+
             foreach (CubeObject cube in cubes)
             {
-                _cubes[cube.CubeData.ShapePoisition] = cube;
+                _cubes.Add(cube.CubeData.ShapePoisition, cube);
                 cube.Initialize(golemData.CubeDatas[cube.CubeData.ShapePoisition]);
                 cube.onCubeDestoried += OnParentCubeDestoried;
             }
 
             SetAttackMode(false);
             UpdateGolemMass();
+
+            OnEnable();
         }
 
         void IGolemObject.AddUnityRoutine(IOnEnablable onEnablable)
@@ -136,7 +154,7 @@ namespace CustomTIJI.CubicLand.Cube
         }
 
         void IGolemObject.StopCoroutine(Coroutine coroutine)
-        { 
+        {
             StopCoroutine(coroutine);
         }
 
@@ -151,9 +169,21 @@ namespace CustomTIJI.CubicLand.Cube
 
         public CubeObject FindCube(Vector3Int position)
         {
+            if (GolemData == null)
+                return null;
+
             if (_cubes.TryGetValue(position, out CubeObject cube))
                 return cube;
             return null;
+        }
+
+        public static void AttachCube(CubeObject parentCube, CubeObject childCube)
+        {
+            Vector3Int childPosition = childCube.CubeData.ShapePoisition;
+            childCube.transform.SetParent(parentCube.transform);
+            childCube.transform.localPosition = (Vector3)(childPosition - parentCube.CubeData.ShapePoisition) * CubeConfig.CUBE_BASE_LENGHT;
+            childCube.transform.localRotation = Quaternion.identity;
+            childCube.transform.localScale = Vector3.one;
         }
 
         internal bool AddCube(Vector3Int parentPosition, Enums.Direction3D direction)
@@ -166,11 +196,21 @@ namespace CustomTIJI.CubicLand.Cube
                 && parent.IsBreaked)
             {
                 RecreateBreakedCube(parentPosition);
+                cubeData.IsBreaked = true;
                 _breakedCubePositions.Add(position);
                 SortBreakedCubeList();
             }
-            else
-                _cubeFactory.CreateCube(cubeData);
+            else if (!CreateCube(cubeData, CubeSpawnOptions.ANIMATED))
+            {
+                cubeData.IsBreaked = true;
+                _breakedCubePositions.Add(position);
+                SortBreakedCubeList();
+
+                Debug.LogError($"Failed to create cube at position({position}).");
+                return false;
+            }
+
+            UpdateGolemMass();
 
             return true;
         }
@@ -189,7 +229,7 @@ namespace CustomTIJI.CubicLand.Cube
 
         internal void EnhanceStatus(StatusPoint statusPoint)
         {
-            if (!GolemData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out CubeData cubeData))
+            if (GolemData == null || !GolemData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out CubeData cubeData))
                 return;
 
             cubeData.EnhanceStatus(statusPoint);
@@ -212,6 +252,7 @@ namespace CustomTIJI.CubicLand.Cube
                     continue;
 
                 _orphanedCubeHandler?.HandleOrphanedCube(childCube);
+                _cubeFactory.DestoryCube(childCube);
                 childCube.onCubeDestoried -= OnParentCubeDestoried;
                 _cubes.Remove(child.ShapePoisition);
                 childCube.CubeData.StatusValue.ApplyDamage(childCube.CubeData.StatusValue.MaxHP);
@@ -221,6 +262,9 @@ namespace CustomTIJI.CubicLand.Cube
 
             UpdateGolemMass();
             SortBreakedCubeList();
+
+            if (cube.CubeData.ShapePoisition == CubeConfig.CORE_POSITION)
+                onReleased?.Invoke(cube);
         }
 
         private int ApplyHeal(int heal, CubeObject cube)
@@ -326,8 +370,10 @@ namespace CustomTIJI.CubicLand.Cube
             cubeData.IsBreaked = false;
             cubeData.IsAttackMode = _isAttackMode;
 
-            _cubeFactory.CreateCube(cubeData);
-            _breakedCubePositions.Remove(position);
+            if (CreateCube(cubeData, CubeSpawnOptions.ANIMATED))
+                _breakedCubePositions.Remove(position);
+            else
+                cubeData.IsBreaked = true;
         }
 
         private void RecreateBreakedCubes()
@@ -349,10 +395,30 @@ namespace CustomTIJI.CubicLand.Cube
                 cubeData.IsBreaked = false;
                 cubeData.IsAttackMode = _isAttackMode;
 
-                _cubeFactory.CreateCube(cubeData);
-                _breakedCubePositions.RemoveAt(i--);
+                if (CreateCube(cubeData, CubeSpawnOptions.ANIMATED))
+                    _breakedCubePositions.RemoveAt(i--);
+                else
+                    cubeData.IsBreaked = true;
             }
+        }
 
+        private bool CreateCube(CubeData cubeData, CubeSpawnOptions options)
+        {
+            Vector3Int position = cubeData.ShapePoisition;
+            if (_cubes.ContainsKey(position)
+                || !GolemData.Parents.TryGetValue(position, out Vector3Int parentPosition)
+                || !_cubes.TryGetValue(parentPosition, out CubeObject parentCube))
+                return false;
+
+            CubeObject cube = _cubeFactory.CreateCube(cubeData, options);
+            if (cube == null)
+                return false;
+
+            AttachCube(parentCube, cube);
+
+            _cubes.Add(position, cube);
+            cube.onCubeDestoried += OnParentCubeDestoried;
+            return true;
         }
 
         private void SortBreakedCubeList()
