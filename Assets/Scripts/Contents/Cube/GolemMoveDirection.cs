@@ -4,14 +4,14 @@ namespace CustomTIJI.CubicLand.Cube
 {
     internal struct GolemMoveDirection
     {
+        private readonly Vector3[] _directions;
+
         public Vector3 Right { get; private set; }
         public Vector3 Left { get => -Right; }
         public Vector3 Up { get; private set; }
         public Vector3 Down { get => -Up; }
         public Vector3 Front { get; private set; }
         public Vector3 Back { get => -Front; }
-
-        private readonly Vector3[] _directions;
 
         public GolemMoveDirection(Vector3 front, Vector3 right, Vector3 up)
         {
