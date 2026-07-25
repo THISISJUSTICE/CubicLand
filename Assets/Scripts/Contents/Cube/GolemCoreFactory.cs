@@ -26,7 +26,7 @@ namespace CustomTIJI.CubicLand.Cube
             GolemCore core = cube.GetComponent<GolemCore>();
             GolemMotionController motionController = new GolemMotionController(core);
             core.Initialize(_cubeCollisionResolver, _orphanedCubeHandler, _cubeFactory, motionController);
-            core.onReleased += DestoryCube;
+            core.OnReleased += DestoryCube;
         }
     }
 }
