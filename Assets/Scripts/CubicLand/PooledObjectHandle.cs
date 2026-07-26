@@ -4,12 +4,12 @@ namespace Commar.CubicLand
 {
     public class PooledObjectHandle
     {
-        public GameObject Prefab => _prefab;
-        public GameObject GameObject => _gameObject;
-
         private readonly GameObject _prefab;
         private readonly GameObject _gameObject;
         private readonly IObjectPool _pool;
+
+        public GameObject Prefab => _prefab;
+        public GameObject GameObject => _gameObject;
 
         internal bool IsRented { get; set; }
 
