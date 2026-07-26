@@ -6,7 +6,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace CustomTIJI
+namespace Commar
 {
     public class MonoBehaviourEventViewer : EditorWindow
     {
@@ -30,7 +30,7 @@ namespace CustomTIJI
         "OnMouseDown", "OnMouseUp", "OnMouseDrag", "OnMouseEnter", "OnMouseExit"
     };
 
-        [MenuItem("CustomTIJI/MonoBehaviour Event Viewer")]
+        [MenuItem("Commar/MonoBehaviour Event Viewer")]
         public static void ShowWindow()
         {
             GetWindow<MonoBehaviourEventViewer>("MonoBehaviour Event Viewer");

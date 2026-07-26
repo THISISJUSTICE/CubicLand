@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-namespace CustomTIJI
+namespace Commar
 {
     public class ReferenceViewer : EditorWindow
     {

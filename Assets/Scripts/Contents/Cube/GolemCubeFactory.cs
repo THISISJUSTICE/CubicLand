@@ -1,4 +1,4 @@
-namespace CustomTIJI.CubicLand.Cube
+namespace Commar.CubicLand.Cube
 {
     public class GolemCubeFactory : ObjectCubeFactory
     {

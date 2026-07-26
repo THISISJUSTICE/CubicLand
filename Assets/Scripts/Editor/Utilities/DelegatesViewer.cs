@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Events;
 using System.Linq;
 
-namespace CustomTIJI
+namespace Commar
 {
     public class DelegatesViewer : EditorWindow
     {
@@ -27,7 +27,7 @@ namespace CustomTIJI
         private Dictionary<UnityEventBase, List<MonoBehaviour>> _eventTracks;
         private Dictionary<UnityEventBase, string> _eventKeyTitles;
 
-        [MenuItem("CustomTIJI/Delegates Viewer")]
+        [MenuItem("Commar/Delegates Viewer")]
         public static void OpenWindow()
         {
             DelegatesViewer window = (DelegatesViewer)EditorWindow.GetWindow(typeof(DelegatesViewer));

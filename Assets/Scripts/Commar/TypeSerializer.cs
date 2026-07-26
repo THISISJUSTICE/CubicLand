@@ -5,7 +5,7 @@ using System.Reflection;
 using UnityEditor;
 #endif
 
-namespace CustomTIJI
+namespace Commar
 {
     [Serializable]
     public class TypeSerializer<T> where T : class

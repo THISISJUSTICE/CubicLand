@@ -1,4 +1,4 @@
-namespace CustomTIJI.CubicLand
+namespace Commar.CubicLand
 {
     public class GlobalRoot
     {

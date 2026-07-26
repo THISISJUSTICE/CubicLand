@@ -1,9 +1,7 @@
 {
-    "name": "CustomTIJI",
-    "rootNamespace": "CustomTIJI",
-    "references": [
-        "GUID:f51ebe6a0ceec4240a699833d6309b23"
-    ],
+    "name": "Commar.Develop",
+    "rootNamespace": "Commar",
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

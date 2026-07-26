@@ -3,7 +3,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
 
-namespace CustomTIJI.CubicLand
+namespace Commar.CubicLand
 {
     public class TerrainEditor : EditorWindow
     {

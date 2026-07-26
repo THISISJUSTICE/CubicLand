@@ -2,7 +2,7 @@ using Cysharp.Threading.Tasks;
 using System;
 using UnityEngine;
 
-namespace CustomTIJI
+namespace Commar
 {
     public static class Utils
     {

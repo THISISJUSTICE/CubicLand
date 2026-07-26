@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CustomTIJI
+namespace Commar
 {
     [Serializable]
     public struct KeyValue<K, V>

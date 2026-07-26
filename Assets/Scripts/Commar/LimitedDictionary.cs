@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace CustomTIJI
+namespace Commar
 {
     public class LimitedDictionary<TKey, TValue>
     {

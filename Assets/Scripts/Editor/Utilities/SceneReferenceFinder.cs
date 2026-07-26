@@ -6,13 +6,13 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace CustomTIJI
+namespace Commar
 {
     public class SceneReferenceFinder : EditorWindow
     {
         private const string MENU_NAME = "Find Direct References in Scene";
-        private const string ASSETS_MENU = "Assets/CustomTIJI/";
-        private const string GAMEOBJECT_MENU = "GameObject/CustomTIJI/";
+        private const string ASSETS_MENU = "Assets/Commar/";
+        private const string GAMEOBJECT_MENU = "GameObject/Commar/";
 
         private const int INDEX = int.MaxValue;
 

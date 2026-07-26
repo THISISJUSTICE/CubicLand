@@ -1,4 +1,4 @@
-namespace CustomTIJI
+namespace Commar
 {
     public struct OperationResult
     {

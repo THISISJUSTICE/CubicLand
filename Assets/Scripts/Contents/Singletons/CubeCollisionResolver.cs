@@ -1,9 +1,9 @@
-using CustomTIJI.CubicLand.Cube;
+using Commar.CubicLand.Cube;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CustomTIJI.CubicLand.Singletons
+namespace Commar.CubicLand.Singletons
 {
     public class CubeCollisionResolver : ICubeCollisionResolver, IHitNotifier, IFixedUpdatable
     {

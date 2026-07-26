@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace CustomTIJI.CubicLand.Cube
+namespace Commar.CubicLand.Cube
 {
     [RequireComponent(typeof(CubeObject), typeof(Rigidbody))]
     public class ObstacleCube : MonoBehaviour, ICubeMotionAdjuster

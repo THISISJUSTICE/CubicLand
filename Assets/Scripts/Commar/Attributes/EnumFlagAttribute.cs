@@ -4,7 +4,7 @@ using System;
 using UnityEditor;
 #endif
 
-namespace CustomTIJI
+namespace Commar
 {
     /// <summary>
     /// Target Type: int

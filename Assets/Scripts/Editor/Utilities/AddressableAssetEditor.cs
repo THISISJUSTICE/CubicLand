@@ -3,7 +3,7 @@ using UnityEditor;
 using System.Collections.Generic;
 using UnityEditor.AddressableAssets.Settings;
 
-namespace CustomTIJI
+namespace Commar
 {
     public class AddressableAssetEditor : EditorWindow
     {
@@ -21,7 +21,7 @@ namespace CustomTIJI
         private readonly EditorOption[] _editorOptions = { new DefaultAssetOption() };
 
 
-        [MenuItem("CustomTIJI/Addressable Asset Editor")]
+        [MenuItem("Commar/Addressable Asset Editor")]
         public static void ShowWindow()
         {
             GetWindow<AddressableAssetEditor>("Addressable Asset Editor").Show();

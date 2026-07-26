@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace CustomTIJI.CubicLand
+namespace Commar.CubicLand
 {
     public class MapEditor : EditorWindow
     {

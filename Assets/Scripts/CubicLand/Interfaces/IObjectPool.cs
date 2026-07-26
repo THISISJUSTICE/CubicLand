@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace CustomTIJI.CubicLand
+namespace Commar.CubicLand
 {
     public interface IObjectPool
     {

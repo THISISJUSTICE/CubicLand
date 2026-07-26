@@ -8,7 +8,7 @@ using System.Linq;
 using UnityEditor;
 #endif
 
-namespace CustomTIJI
+namespace Commar
 {
     /// <summary>
     /// Target Type: DefaultAsset's List or Array

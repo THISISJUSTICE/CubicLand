@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
-namespace CustomTIJI.CubicLand
+namespace Commar.CubicLand
 {
     public class LocalAddressableAssetLoader : IAsyncAssetLoader
     {

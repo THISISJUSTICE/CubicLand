@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace CustomTIJI.CubicLand.Cube
+namespace Commar.CubicLand.Cube
 {
     public interface IHitNotifier
     {

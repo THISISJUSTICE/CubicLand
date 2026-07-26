@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CustomTIJI.CubicLand.Cube
+namespace Commar.CubicLand.Cube
 {
     [RequireComponent(typeof(CubeObject), typeof(Rigidbody))]
     public class GolemCore : MonoBehaviour, IGolemObject

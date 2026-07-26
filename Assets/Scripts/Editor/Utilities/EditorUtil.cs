@@ -4,7 +4,7 @@ using UnityEditor;
 using System;
 using System.IO;
 
-namespace CustomTIJI
+namespace Commar
 {
     public static class EditorUtil
     {

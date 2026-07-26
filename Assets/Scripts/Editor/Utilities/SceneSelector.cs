@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
 
-namespace CustomTIJI
+namespace Commar
 {
     public class SceneSelector : EditorWindow
     {
@@ -12,7 +12,7 @@ namespace CustomTIJI
         private int _hoveredIndex = -1;
         private int _selectedIndex = -1;
 
-        [MenuItem("CustomTIJI/Scene Selector")]
+        [MenuItem("Commar/Scene Selector")]
         public static void ShowWindow()
         {
             GetWindow<SceneSelector>("Scene Selector");

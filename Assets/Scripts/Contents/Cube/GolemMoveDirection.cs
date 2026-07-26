@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace CustomTIJI.CubicLand.Cube
+namespace Commar.CubicLand.Cube
 {
     internal struct GolemMoveDirection
     {

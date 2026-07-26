@@ -1,4 +1,4 @@
-namespace CustomTIJI.CubicLand.Cube
+namespace Commar.CubicLand.Cube
 {
     public interface IGolemFactory
     {

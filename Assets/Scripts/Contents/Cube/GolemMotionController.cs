@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 
-namespace CustomTIJI.CubicLand.Cube
+namespace Commar.CubicLand.Cube
 {
     public class GolemMotionController : IGolemMotionController, ICubeMotionAdjuster, IOnEnablable
     {

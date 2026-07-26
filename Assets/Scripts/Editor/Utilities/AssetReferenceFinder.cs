@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using Object = UnityEngine.Object;
 
-namespace CustomTIJI
+namespace Commar
 {
     public class AssetReferenceFinder : EditorWindow
     {
@@ -85,7 +85,7 @@ namespace CustomTIJI
         private TaskValueList<string> _tvl;
         private int ProcessCount { get => Environment.ProcessorCount; }
 
-        [MenuItem("Assets/CustomTIJI/Find References in Project")]
+        [MenuItem("Assets/Commar/Find References in Project")]
         public static void FindInWindow()
         {
             AssetReferenceFinder window = GetWindow<AssetReferenceFinder>(MENU_NAME);
@@ -97,7 +97,7 @@ namespace CustomTIJI
             window.Show();
         }
 
-        [MenuItem("CustomTIJI/" + MENU_NAME)]
+        [MenuItem("Commar/" + MENU_NAME)]
         public static void ShowWindow()
         {
             GetWindow<AssetReferenceFinder>(MENU_NAME).Show();

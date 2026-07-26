@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEditor;
 
-namespace CustomTIJI
+namespace Commar
 {
     public class MeshMeasurer : EditorWindow
     {
@@ -10,7 +10,7 @@ namespace CustomTIJI
         private int _selectedTab = 0;
         private string[] _tabLabels = new string[] { "Mesh Size" };
 
-        [MenuItem("CustomTIJI/Mesh Measurer")]
+        [MenuItem("Commar/Mesh Measurer")]
         public static void ShowWindow()
         {
             GetWindow<MeshMeasurer>("Mesh Measurer");

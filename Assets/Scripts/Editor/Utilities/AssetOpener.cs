@@ -4,7 +4,7 @@ using UnityEditor;
 using System.IO;
 using System;
 
-namespace CustomTIJI
+namespace Commar
 {
     public class AssetOpener : EditorWindow
     {
@@ -17,7 +17,7 @@ namespace CustomTIJI
 
         private HashSet<string> _filePaths = new HashSet<string>();
 
-        [MenuItem("CustomTIJI/Asset Opener")]
+        [MenuItem("Commar/Asset Opener")]
         private static void ShowWindow()
         {
             GetWindow<AssetOpener>("Asset Opener");

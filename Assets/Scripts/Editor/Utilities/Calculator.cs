@@ -2,7 +2,7 @@
 using UnityEditor;
 using System;
 
-namespace CustomTIJI
+namespace Commar
 {
     public class Calculator : EditorWindow
     {
@@ -112,7 +112,7 @@ namespace CustomTIJI
 
         private Action[] _guiActions;
 
-        [MenuItem("CustomTIJI/Calculator")]
+        [MenuItem("Commar/Calculator")]
         public static void ShowWindow()
         {
             GetWindow<Calculator>("Calculator");

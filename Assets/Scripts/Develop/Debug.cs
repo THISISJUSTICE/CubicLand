@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using UnityEngine;
 
-namespace CustomTIJI
+namespace Commar
 {
     public static class Debug
     {

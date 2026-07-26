@@ -2,7 +2,7 @@ using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace CustomTIJI.CubicLand
+namespace Commar.CubicLand
 {
     public interface IAsyncAssetLoader
     {

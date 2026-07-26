@@ -1,4 +1,4 @@
-﻿namespace CustomTIJI.CubicLand.Enums
+﻿namespace Commar.CubicLand.Enums
 {
     public enum Direction
     {

@@ -4,7 +4,7 @@ using UnityEditor.AddressableAssets.Settings;
 using UnityEditor.AddressableAssets;
 using UnityEditor.AddressableAssets.Settings.GroupSchemas;
 
-namespace CustomTIJI
+namespace Commar
 {
     public static class AddressableUtil
     {
