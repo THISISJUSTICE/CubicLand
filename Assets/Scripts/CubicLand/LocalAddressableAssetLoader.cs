@@ -1,6 +1,5 @@
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
@@ -8,43 +7,64 @@ namespace Commar.CubicLand
 {
     public class LocalAddressableAssetLoader : IAsyncAssetLoader
     {
-        private readonly Dictionary<string, AsyncOperationHandle> _assetHandles = new Dictionary<string, AsyncOperationHandle>();
-
-        public async UniTask<T> LoadAsset<T>(string key) where T : Object
+        private class AssetHandle
         {
-            AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(key);
-            T res = await handle;
-            ReleaseAsset(key);
-            _assetHandles[key] = handle;
+            private readonly AsyncOperationHandle _handle;
 
-            return res;
-        }
+            public int Count { get; private set; }
+            public object Value { get; private set; }
 
-        public async UniTask<IList<T>> LoadAssets<T>(string key) where T : Object
-        {
-            AsyncOperationHandle<IList<T>> handle = Addressables.LoadAssetsAsync<T>(key);
-            IList<T> res = await handle;
-            ReleaseAsset(key);
-            _assetHandles[key] = handle;
-
-            return res;
-        }
-
-        public async UniTask<IList<T>> LoadAssets<T>(params string[] keys) where T : Object
-        {
-            List<UniTask<T>> loadTasks = new List<UniTask<T>>();
-
-            for (int i = 0; i < keys.Length; i++)
+            public AssetHandle(AsyncOperationHandle handle, object value)
             {
-                AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(keys[i]);
-                loadTasks.Add(handle.ToUniTask());
-                ReleaseAsset(keys[i]);
-                _assetHandles[keys[i]] = handle;
+                _handle = handle;
+                Value = value;
+                Count = 1;
             }
 
-            IList<T> res = await UniTask.WhenAll(loadTasks);
+            public void Increase() => Count++;
+            public void Decrease() => Count--;
+            public void Release() => _handle.Release();
+        }
 
-            return res;
+        private readonly Dictionary<string, AssetHandle> _assetHandles = new Dictionary<string, AssetHandle>();
+        private readonly InvalidKeyException _nullKeyException = new InvalidKeyException("IsNullOrEmpty");
+
+        public async UniTask<OperationResult<T>> LoadAsset<T>(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+                return OperationResult.GetFailedResult<T>(_nullKeyException.Message);
+
+            if (_assetHandles.TryGetValue(key, out AssetHandle assetHandle))
+            {
+                assetHandle.Increase();
+                return OperationResult.GetSuccessResult((T)assetHandle.Value);
+            }
+
+            AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(key);
+            T result = await handle;
+
+            _assetHandles.Add(key, new AssetHandle(handle, result));
+
+            return OperationResult.GetSuccessResult(result);
+        }
+
+        public async UniTask<OperationResult<IList<T>>> LoadAssets<T>(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+                return OperationResult.GetFailedResult<IList<T>>(_nullKeyException.Message);
+
+            if (_assetHandles.TryGetValue(key, out AssetHandle assetHandle))
+            {
+                assetHandle.Increase();
+                return OperationResult.GetSuccessResult((IList<T>)assetHandle.Value);
+            }
+
+            AsyncOperationHandle<IList<T>> handle = Addressables.LoadAssetsAsync<T>(key);
+            IList<T> result = await handle;
+
+            _assetHandles.Add(key, new AssetHandle(handle, result));
+
+            return OperationResult.GetSuccessResult(result);
         }
 
         public void ReleaseAsset(string key)
@@ -52,17 +72,16 @@ namespace Commar.CubicLand
             if (string.IsNullOrEmpty(key))
                 return;
 
-            if (_assetHandles.TryGetValue(key, out var handle))
+            if (_assetHandles.TryGetValue(key, out AssetHandle assetHandle))
             {
-                ReleaseHandle(handle);
-                _assetHandles.Remove(key);
+                if (assetHandle.Count > 1)
+                    assetHandle.Decrease();
+                else
+                {
+                    assetHandle.Release();
+                    _assetHandles.Remove(key);
+                }
             }
-        }
-
-        private void ReleaseHandle(AsyncOperationHandle handle)
-        {
-            if (handle.IsValid())
-                Addressables.Release(handle);
         }
     }
 }

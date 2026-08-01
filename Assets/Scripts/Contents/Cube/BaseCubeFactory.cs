@@ -29,8 +29,10 @@ namespace Commar.CubicLand.Cube
 
         public virtual async void Start()
         {
-            _cubePrefab = await _assetLoader.LoadAsset<GameObject>(LoadKey);
-            Result = OperationResult.GetSuccessedResult();
+            OperationResult<GameObject> result = await _assetLoader.LoadAsset<GameObject>(LoadKey);
+
+            _cubePrefab = result.Value;
+            Result = new OperationResult(result.IsSuccess, result.ErrorMessage);
             IsCompleted = true;
         }
 

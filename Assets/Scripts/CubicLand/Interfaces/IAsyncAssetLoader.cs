@@ -1,14 +1,12 @@
 using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace Commar.CubicLand
 {
     public interface IAsyncAssetLoader
     {
-        public UniTask<T> LoadAsset<T>(string key) where T : Object;
-        public UniTask<IList<T>> LoadAssets<T>(string key) where T : Object;
-        public UniTask<IList<T>> LoadAssets<T>(params string[] keys) where T : Object;
+        public UniTask<OperationResult<T>> LoadAsset<T>(string key);
+        public UniTask<OperationResult<IList<T>>> LoadAssets<T>(string key);
         public void ReleaseAsset(string key);
     }
 }
