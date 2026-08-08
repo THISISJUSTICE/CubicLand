@@ -120,6 +120,12 @@ namespace Commar.CubicLand.Cube
             _golemObject.Rigidbody.MoveRotation(CubeUtil.GetNormalizedRotation(Transform.rotation));
         }
 
+        public IEnumerator Tumble(Enums.Direction direction, float duration)
+        { 
+            // TODO: 구현
+            throw new System.NotImplementedException();
+        }
+
         /// <summary>
         /// 바닥에 붙었을 때만 정상 동작함
         /// </summary>

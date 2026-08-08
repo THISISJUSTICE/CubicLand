@@ -108,7 +108,7 @@ namespace Commar.CubicLand.Cube
             if (IsJumping)
             {
                 // TODO: 올라가는 도중에만 가능
-                // 일정 높이 이상은 Roll
+                // 일정 높이 이상은 Tumble
                 // 올라가는 도중은 Move (한 칸만 가능)
                 // 점프 가속에 따라 속도 조정
 
