@@ -62,6 +62,18 @@ namespace Commar.CubicLand.Cube
             return _golemObject.GolemData.FindEdgeCubes(ConvertObjectDirection(direction));
         }
 
+        public bool ReleaseJumpForce()
+        {
+            if (_chargedHeight > 0f && !_golemObject.Rigidbody.IsUnderGravity())
+            {
+                _golemObject.Rigidbody.AddForce(Vector3.up * CubeUtil.CalculateLiftForce(_golemObject.Rigidbody, _chargedHeight), ForceMode.Impulse);
+                _chargedHeight = 0f;
+                return true;
+            }
+
+            return false;
+        }
+
         public IEnumerator MoveWithRoll(Enums.Direction direction, float duration)
         {
             Vector3 moveDirection = _moveDirection.GetDirection(direction).normalized;
@@ -123,7 +135,6 @@ namespace Commar.CubicLand.Cube
 
         public IEnumerator Rotate(Enums.Direction direction, float duration)
         {
-            
             RotateAxisCube = _golemObject.FindCube(FindRotateAxis(direction));
 
             Quaternion startRotation = Transform.rotation;
@@ -136,20 +147,16 @@ namespace Commar.CubicLand.Cube
             Quaternion startViewRotation = ViewRotation;
             Quaternion targetViewRotation = startViewRotation * moveRotation;
 
-            
             float time = 0f;
-
             bool once = true;
 
             while (time < duration)
             {
-                float ratio = time / duration;
+                time += Time.fixedDeltaTime;
+
+                float ratio = Mathf.Min(1f, time / duration);
+
                 _golemObject.Rigidbody.MoveRotation(Quaternion.Slerp(startRotation, targetRotation, ratio));
-
-                Vector3 position = axisPosition - RotateAxisCube.transform.position;
-                position.y = 0f;
-                Transform.position += position;
-
                 ViewRotation = Quaternion.Slerp(startViewRotation, targetViewRotation, ratio);
 
                 if (ratio > 0.55f && once)
@@ -157,8 +164,11 @@ namespace Commar.CubicLand.Cube
                     once = false;
                     _moveDirection.Rotate(moveRotation.eulerAngles);
                 }
+                
+                Vector3 positionOffset = axisPosition - RotateAxisCube.transform.position;
+                positionOffset.y = 0f;
+                Transform.position += positionOffset;
 
-                time += Time.fixedDeltaTime;
                 yield return YieldCache.WaitForFixedUpdate;
             }
 
@@ -198,44 +208,11 @@ namespace Commar.CubicLand.Cube
 
         public IEnumerator ReleaseJump()
         {
-            if (_chargedHeight > 0f && !_golemObject.Rigidbody.IsUnderGravity())
-            {
-                _golemObject.Rigidbody.AddForce(Vector3.up * CubeUtil.CalculateLiftForce(_golemObject.Rigidbody, _chargedHeight), ForceMode.Impulse);
-                _chargedHeight = 0f;
-            }
-
+            ReleaseJumpForce();
             yield return RestoreScale();
         }
 
-        private IEnumerator MoveWithJumpCoroutine(Enums.Direction direction, float duration, float moveHeight)
-        {
-            Vector3 moveDirection = _moveDirection.GetDirection(direction).normalized;
-            Vector3 startPosition = Transform.position;
-
-            float targetHeight = startPosition.y + moveHeight;
-            float time = 0f;
-
-            while (time < duration)
-            {
-                Vector3 addMove = moveDirection * Mathf.Lerp(0f, CubeConfig.CUBE_BASE_LENGHT, time / duration);
-                float halfDuration = duration / 2f;
-                float height;
-                if (time < halfDuration)
-                    height = Mathf.Lerp(startPosition.y, targetHeight, time / halfDuration);
-                else
-                    height = Mathf.Lerp(targetHeight, startPosition.y, time / halfDuration / 2f);
-
-                Transform.position = new Vector3(Transform.position.x, height, Transform.position.z);
-                _golemObject.Rigidbody.MovePosition(startPosition + addMove);
-
-                time += Time.fixedDeltaTime;
-                yield return YieldCache.WaitForFixedUpdate;
-            }
-
-            _golemObject.Rigidbody.MovePosition(CubeUtil.GetNormalizedPosition(Transform.position));
-        }
-
-        private IEnumerator RestoreScale()
+        public IEnumerator RestoreScale()
         {
             if (Transform.localScale == Vector3.one)
                 yield break;
@@ -245,21 +222,50 @@ namespace Commar.CubicLand.Cube
             index /= 2;
             float golemHeight = GolemHeight * CubeConfig.CUBE_BASE_LENGHT;
 
-            float duration = CubeConfig.GOLEM_SIZE_UP_TIME;
+            float scaleRate = (1f - startScale[index]) / 0.5f;
+            float duration = CubeConfig.GOLEM_SIZE_UP_TIME * scaleRate;
+            float time = 0f;
+            float previousAxisScale = startScale[index];
+
+            while (time < duration)
+            {
+                time += Time.fixedDeltaTime;
+                float ratio = Mathf.Min(1f, time / duration);
+                Vector3 scale = Vector3.Lerp(startScale, Vector3.one, ratio);
+
+                Transform.position += (scale[index] - previousAxisScale) * golemHeight / 2f * Vector3.up;
+                Transform.localScale = scale;
+                previousAxisScale = scale[index];
+
+                yield return YieldCache.WaitForFixedUpdate;
+            }
+
+            Transform.position += (1f - previousAxisScale) * golemHeight / 2f * Vector3.up;
+            Transform.localScale = Vector3.one;
+        }
+
+        private IEnumerator MoveWithJumpCoroutine(Enums.Direction direction, float duration, float moveHeight)
+        {
+            Vector3 moveDirection = _moveDirection.GetDirection(direction).normalized;
+            Vector3 startPosition = Transform.position;
+            Vector3 targetPosition = startPosition + moveDirection * CubeConfig.CUBE_BASE_LENGHT;
+
             float time = 0f;
 
             while (time < duration)
             {
-                Vector3 scale = Transform.localScale;
-                for (int i = 0; i < 3; i++)
-                    scale[0] = Mathf.Lerp(startScale[0], 1f, time / duration);
-
-                Transform.position += (scale - Transform.localScale)[index] * golemHeight * Vector3.up;
-                Transform.localScale = scale;
-
                 time += Time.fixedDeltaTime;
+                float ratio = Mathf.Min(1f, time / duration);
+                float heightRatio = ratio < 0.5f ? ratio * 2f : (1f - ratio) * 2f;
+
+                Vector3 position = Vector3.Lerp(startPosition, targetPosition, ratio);
+                position.y += moveHeight * heightRatio;
+                _golemObject.Rigidbody.MovePosition(position);
+
                 yield return YieldCache.WaitForFixedUpdate;
             }
+
+            _golemObject.Rigidbody.MovePosition(CubeUtil.GetNormalizedPosition(targetPosition));
         }
 
         private void UpdateGeometryData()

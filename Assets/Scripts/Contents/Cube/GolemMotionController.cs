@@ -43,7 +43,7 @@ namespace Commar.CubicLand.Cube
             if (IsStun || _coroutine != null)
                 return;
 
-            _coroutine = _golemObject.StartCoroutine(MoveCoroutine(direction));
+            StartCoroutine(MoveCoroutine(direction));
         }
 
         public void Rotate(bool isRight)
@@ -55,7 +55,7 @@ namespace Commar.CubicLand.Cube
             if (!isRight)
                 direction = Enums.Direction.Left;
 
-            _coroutine = _golemObject.StartCoroutine(RotateCoroutine(direction));
+            StartCoroutine(RotateCoroutine(direction));
         }
 
         public void StartJumpCharge()
@@ -63,7 +63,7 @@ namespace Commar.CubicLand.Cube
             if (IsStun || MoveState != GolemMoveState.Idle || _coroutine != null)
                 return;
 
-            _coroutine = _golemObject.StartCoroutine(StartJumpChargeCoroutine());
+            StartCoroutine(StartJumpChargeCoroutine());
         }
 
         public void ReleaseJump()
@@ -71,10 +71,9 @@ namespace Commar.CubicLand.Cube
             if (MoveState != GolemMoveState.Charging)
                 return;
 
-            if (_coroutine != null)
-                _golemObject.StopCoroutine(_coroutine);
+            StopCurrentCoroutine();
 
-            _coroutine = _golemObject.StartCoroutine(ReleaseJumpCoroutine());
+            StartCoroutine(ReleaseJumpCoroutine());
         }
 
         public void ApplyKnockback(Vector3 impulse)
@@ -83,20 +82,23 @@ namespace Commar.CubicLand.Cube
             if (impulse.magnitude <= 0f)
                 return;
 
+            bool wasCharging = MoveState == GolemMoveState.Charging;
+
+            StopCurrentCoroutine();
+            SetStunState();
+
+            _golemObject.Rigidbody.ClearVelocity();
             _golemObject.Rigidbody.FreezePositionXZ(false);
             _golemObject.Rigidbody.AddForce(impulse, ForceMode.Impulse);
 
-            if (_coroutine != null)
-                _golemObject.StopCoroutine(_coroutine);
-            _coroutine = _golemObject.StartCoroutine(HandleKnockback());
+            StartCoroutine(HandleKnockback(wasCharging));
         }
 
         public void NormalizePose()
         {
-            if (_coroutine != null)
-                _golemObject.StopCoroutine(_coroutine);
+            StopCurrentCoroutine();
 
-            _coroutine = _golemObject.StartCoroutine(NormalizePoseCoroutine());
+            StartCoroutine(NormalizePoseCoroutine());
         }
 
         private IEnumerator MoveCoroutine(Enums.Direction direction)
@@ -134,8 +136,8 @@ namespace Commar.CubicLand.Cube
                 _golemObject.Rigidbody.useGravity = true;
             }
 
-            MoveState = GolemMoveState.Idle;
-            _coroutine = null;
+            SetIdleState();
+            CompleteCurrentCoroutine();
         }
 
         private IEnumerator RotateCoroutine(Enums.Direction direction)
@@ -159,57 +161,104 @@ namespace Commar.CubicLand.Cube
                 _golemObject.SetAttackMode(false);
             }
 
-            MoveState = GolemMoveState.Idle;
-            _coroutine = null;
+            SetIdleState();
+            CompleteCurrentCoroutine();
         }
 
         private IEnumerator StartJumpChargeCoroutine()
         {
             MoveState = GolemMoveState.Charging;
             yield return _motionMotor.ChargeJump();
-            _coroutine = null;
+            CompleteCurrentCoroutine();
         }
 
         private IEnumerator ReleaseJumpCoroutine()
         {
             IsJumping = true;
             yield return _motionMotor.ReleaseJump();
-            _coroutine = null;
+
+            SetIdleState();
+            CompleteCurrentCoroutine();
 
             // TODO: State는 지상에 착지할 때까지 유지
             // Ray는 Golem Bottom의 Axis 큐브의 모든 중심에서 쏴서, 가장 거리가 가까운 것을 사용
             // 지상 높이는 최초에 Raycast 후 해당 오브젝트가 파괴되거나 위치가 변경되지 않는 한 유지
         }
 
-        private IEnumerator HandleKnockback()
+        private IEnumerator HandleKnockback(bool wasCharging)
         {
-            IsStun = true;
-
             yield return YieldCache.WaitForFixedUpdate;
 
             float waitTime = CubeUtil.CalculateKnockbackTime(_golemObject.Rigidbody.linearVelocity, _golemObject.Rigidbody.mass);
+
+            if (wasCharging)
+            {
+                IsJumping = _motionMotor.ReleaseJumpForce();
+
+                float restoreStartTime = Time.time;
+                yield return _motionMotor.RestoreScale();
+                waitTime -= Time.time - restoreStartTime;
+            }
+
             if (waitTime > 0f)
                 yield return GlobalRoot.Instance.YieldCache.GetWaitForSeconds(waitTime);
 
             _golemObject.Rigidbody.ClearVelocity();
 
-            _coroutine = null;
-
-            NormalizePose();
+            yield return NormalizePoseInternal();
+            CompleteCurrentCoroutine();
         }
 
         private IEnumerator NormalizePoseCoroutine()
         {
+            yield return NormalizePoseInternal();
+            CompleteCurrentCoroutine();
+        }
+
+        private IEnumerator NormalizePoseInternal()
+        {
+            SetStunState();
             _golemObject.Rigidbody.FreezePositionXZ(true);
-            IsStun = true;
+
             yield return CubeUtil.NormalizePoseCoroutine(_golemObject.Rigidbody);
+
             IsStun = false;
-            _coroutine = null;
         }
 
         private float CalculateMoveTime()
         {
             return _golemObject.CalculateMoveTime(CubeConfig.GOLEM_INIT_MOVE_TIME, CubeConfig.GOLEM_MIN_MOVE_TIME, CubeConfig.GOLEM_MAX_MOVE_TIME);
+        }
+
+        private void StopCurrentCoroutine()
+        {
+            if (_coroutine != null)
+                _golemObject.StopCoroutine(_coroutine);
+
+            _coroutine = null;
+        }
+
+        private void StartCoroutine(IEnumerator coroutine)
+        {
+            _coroutine = _golemObject.StartCoroutine(coroutine);
+        }
+
+        private void CompleteCurrentCoroutine()
+        {
+            _coroutine = null;
+        }
+
+        private void SetIdleState()
+        {
+            MoveState = GolemMoveState.Idle;
+            _golemObject.SetAttackMode(false);
+            _golemObject.Rigidbody.useGravity = true;
+        }
+
+        private void SetStunState()
+        {
+            IsStun = true;
+            SetIdleState();
         }
     }
 }
