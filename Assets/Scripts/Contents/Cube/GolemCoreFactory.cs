@@ -24,7 +24,8 @@ namespace Commar.CubicLand.Cube
             base.OnCubeInitialized(cube);
 
             GolemCore core = cube.GetComponent<GolemCore>();
-            GolemMotionController motionController = new GolemMotionController(core);
+            GolemGroundSensor groundSensor = cube.GetComponent<GolemGroundSensor>();
+            GolemMotionController motionController = new GolemMotionController(core, groundSensor);
             core.Initialize(_cubeCollisionResolver, _orphanedCubeHandler, _cubeFactory, motionController);
             core.onReleased += DestoryCube;
         }

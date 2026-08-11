@@ -212,12 +212,6 @@ namespace Commar.CubicLand.Cube
             }
         }
 
-        public IEnumerator ReleaseJump()
-        {
-            ReleaseJumpForce();
-            yield return RestoreScale();
-        }
-
         public IEnumerator RestoreScale()
         {
             if (Transform.localScale == Vector3.one)

@@ -10,7 +10,7 @@ namespace Commar.CubicLand.Cube
         public IGolemGeometryProvider GeometryProvider { get; }
         public GolemMoveState MoveState { get; }
         public bool IsStun { get; }
-        public bool IsJumping { get; }
+        public bool IsAirborne { get; }
 
         public void Move(Enums.Direction direction);
         public void Rotate(bool isRight);

@@ -6,19 +6,21 @@ namespace Commar.CubicLand.Cube
     public class GolemMotionController : IGolemMotionController, ICubeMotionAdjuster, IOnEnablable
     {
         private readonly IGolemObject _golemObject;
+        private readonly IGroundSensor _groundSensor;
         private readonly GolemMotionMotor _motionMotor;
 
         private Coroutine _coroutine;
 
         public GolemMoveState MoveState { get; private set; }
         public bool IsStun { get; private set; }
-        public bool IsJumping { get; private set; }
+        public bool IsAirborne => !_groundSensor.IsGrounded;
         public IGolemGeometryProvider GeometryProvider => _motionMotor;
 
-        public GolemMotionController(IGolemObject golemObject)
+        public GolemMotionController(IGolemObject golemObject, IGroundSensor groundSensor)
         {
             _golemObject = golemObject;
             _motionMotor = new GolemMotionMotor(golemObject);
+            _groundSensor = groundSensor;
 
             golemObject.AddUnityRoutine(this);
         }
@@ -26,7 +28,6 @@ namespace Commar.CubicLand.Cube
         public void OnEnable()
         {
             _coroutine = null;
-            IsJumping = false;
 
             _motionMotor.OnEnable();
 
@@ -105,7 +106,7 @@ namespace Commar.CubicLand.Cube
         {
             MoveState = GolemMoveState.Moving;
 
-            if (IsJumping)
+            if (IsAirborne)
             {
                 // TODO: 올라가는 도중에만 가능
                 // 일정 높이 이상은 Tumble
@@ -144,7 +145,7 @@ namespace Commar.CubicLand.Cube
         {
             MoveState = GolemMoveState.Moving;
 
-            if (IsJumping)
+            if (IsAirborne)
             {
                 // TODO: 내려가는 중이면, 회전 속도 약간 가속?
                 // Friction 적용은 없음
@@ -174,15 +175,13 @@ namespace Commar.CubicLand.Cube
 
         private IEnumerator ReleaseJumpCoroutine()
         {
-            IsJumping = true;
-            yield return _motionMotor.ReleaseJump();
+            if (_motionMotor.ReleaseJumpForce())
+                _groundSensor.NotifyAirborne();
+
+            yield return _motionMotor.RestoreScale();
 
             SetIdleState();
             CompleteCurrentCoroutine();
-
-            // TODO: State는 지상에 착지할 때까지 유지
-            // Ray는 Golem Bottom의 Axis 큐브의 모든 중심에서 쏴서, 가장 거리가 가까운 것을 사용
-            // 지상 높이는 최초에 Raycast 후 해당 오브젝트가 파괴되거나 위치가 변경되지 않는 한 유지
         }
 
         private IEnumerator HandleKnockback(bool wasCharging)
@@ -193,7 +192,8 @@ namespace Commar.CubicLand.Cube
 
             if (wasCharging)
             {
-                IsJumping = _motionMotor.ReleaseJumpForce();
+                if (_motionMotor.ReleaseJumpForce())
+                    _groundSensor.NotifyAirborne();
 
                 float restoreStartTime = Time.time;
                 yield return _motionMotor.RestoreScale();
