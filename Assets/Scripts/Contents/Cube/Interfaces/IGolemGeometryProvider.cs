@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Commar.CubicLand.Cube
@@ -14,5 +15,7 @@ namespace Commar.CubicLand.Cube
         public int GolemBack { get; }
 
         public Quaternion ViewRotation { get; }
+
+        public void FindEdgeCubeDatas(Enums.Direction3D direction, IList<CubeData> cubeDatas);
     }
 }

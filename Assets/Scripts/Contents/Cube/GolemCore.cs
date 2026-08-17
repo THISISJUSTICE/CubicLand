@@ -19,6 +19,7 @@ namespace Commar.CubicLand.Cube
         private readonly Dictionary<Vector3Int, CubeObject> _cubes = new Dictionary<Vector3Int, CubeObject>();
         private readonly List<Vector3Int> _breakedCubePositions = new List<Vector3Int>();
 
+        private readonly List<CubeData> _tempChildren = new List<CubeData>();
         private readonly List<object> _tempList = new List<object>();
 
         private Rigidbody _rigidbody;
@@ -245,8 +246,8 @@ namespace Commar.CubicLand.Cube
             cube.CubeData.IsBreaked = true;
             _breakedCubePositions.Add(cube.CubeData.ShapePoisition);
 
-            List<CubeData> children = GolemData.FindChildren(cube.CubeData.ShapePoisition);
-            foreach (CubeData child in children)
+            GolemData.FindChildren(cube.CubeData.ShapePoisition, _tempChildren);
+            foreach (CubeData child in _tempChildren)
             {
                 if (!_cubes.TryGetValue(child.ShapePoisition, out CubeObject childCube))
                     continue;

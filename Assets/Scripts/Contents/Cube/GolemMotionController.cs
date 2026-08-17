@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Commar.CubicLand.Cube
@@ -8,6 +9,8 @@ namespace Commar.CubicLand.Cube
         private readonly IGolemObject _golemObject;
         private readonly IGroundSensor _groundSensor;
         private readonly GolemMotionMotor _motionMotor;
+
+        private readonly List<CubeData> _edgeCubes = new List<CubeData>();
 
         private Coroutine _coroutine;
 
@@ -152,7 +155,8 @@ namespace Commar.CubicLand.Cube
             }
             else
             {
-                int bottomCount = _motionMotor.FindEdgeCubeDatas(Enums.Direction3D.Down).Count;
+                _motionMotor.FindEdgeCubeDatas(Enums.Direction3D.Down, _edgeCubes);
+                int bottomCount = _edgeCubes.Count;
                 float moveTime = Mathf.Clamp(CalculateMoveTime() * 0.9f, CubeConfig.GOLEM_MIN_MOVE_TIME, CubeConfig.GOLEM_MAX_MOVE_TIME);
                 float duration = Mathf.Max(moveTime, moveTime * (CubeConfig.GOLEM_ROTATE_FRICTION * (bottomCount - 1)));
                 duration = Mathf.Clamp(duration, CubeConfig.GOLEM_MIN_MOVE_TIME, CubeConfig.GOLEM_MAX_MOVE_TIME);

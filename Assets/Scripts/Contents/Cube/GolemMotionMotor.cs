@@ -15,6 +15,7 @@ namespace Commar.CubicLand.Cube
 
         private readonly List<Vector3Int> _tempList = new List<Vector3Int>();
         private readonly Dictionary<Enums.Direction3D, Vector3Int> _tempDictionary = new Dictionary<Enums.Direction3D, Vector3Int>();
+        private readonly List<CubeData> _edgeCubes = new List<CubeData>();
 
         private static readonly Enums.Direction3D[] PRIORITY_CANDIDATES = new Enums.Direction3D[]
         {
@@ -57,9 +58,9 @@ namespace Commar.CubicLand.Cube
             UpdateGeometryData();
         }
 
-        public List<CubeData> FindEdgeCubeDatas(Enums.Direction3D direction)
+        public void FindEdgeCubeDatas(Enums.Direction3D direction, IList<CubeData> cubeDatas)
         {
-            return _golemObject.GolemData.FindEdgeCubes(ConvertObjectDirection(direction));
+            _golemObject.GolemData.FindEdgeCubes(ConvertObjectDirection(direction), cubeDatas);
         }
 
         public bool ReleaseJumpForce()
@@ -312,21 +313,21 @@ namespace Commar.CubicLand.Cube
         {
             _tempList.Clear();
 
-            List<CubeData> edgeCubes = FindEdgeCubeDatas(moveDirection);
-            if (edgeCubes == null || edgeCubes.Count <= 0) // Error
+            FindEdgeCubeDatas(moveDirection, _edgeCubes);
+            if (_edgeCubes.Count <= 0) // Error
             {
                 _tempList.Add(CubeConfig.CORE_POSITION);
                 return _tempList;
             }
 
-            if (edgeCubes.Count == 1)
+            if (_edgeCubes.Count == 1)
             {
-                _tempList.Add(edgeCubes[0].ShapePoisition);
+                _tempList.Add(_edgeCubes[0].ShapePoisition);
                 return _tempList;
             }
 
-            float nearestDist = Vector3Int.Distance(CubeConfig.CORE_POSITION, edgeCubes[0].ShapePoisition);
-            foreach (CubeData cubeData in edgeCubes)
+            float nearestDist = Vector3Int.Distance(CubeConfig.CORE_POSITION, _edgeCubes[0].ShapePoisition);
+            foreach (CubeData cubeData in _edgeCubes)
             {
                 float dist = Vector3Int.Distance(CubeConfig.CORE_POSITION, cubeData.ShapePoisition);
                 if (dist < nearestDist)

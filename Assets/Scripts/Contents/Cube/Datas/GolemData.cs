@@ -99,13 +99,16 @@ namespace Commar.CubicLand.Cube
             return result;
         }
 
-        public List<CubeData> FindEdgeCubes(Enums.Direction3D direction)
+        public void FindEdgeCubes(Enums.Direction3D direction, IList<CubeData> list)
         {
+            if (list == null)
+                return;
+
             int vectorIndex = (int)direction / 2;
             int edge = GetDirectionLength(direction);
 
             SetAvailables();
-            List<CubeData> results = new List<CubeData>();
+            list.Clear();
 
             foreach (Vector3Int position in _availables)
             {
@@ -113,15 +116,16 @@ namespace Commar.CubicLand.Cube
                     continue;
 
                 if (data.ShapePoisition[vectorIndex] == edge)
-                    results.Add(data);
+                    list.Add(data);
             }
-
-            return results;
         }
 
-        public List<Vector3Int> GetAddablePositions(Vector3Int parentPosition)
+        public void GetAddablePositions(Vector3Int parentPosition, IList<Vector3Int> list)
         {
-            List<Vector3Int> list = new List<Vector3Int>();
+            if (list == null)
+                return;
+
+            list.Clear();
             int length = Enum.GetValues(typeof(Enums.Direction3D)).Length;
 
             for (int i = 0; i < length; i++)
@@ -130,16 +134,15 @@ namespace Commar.CubicLand.Cube
                 if (!_cubeDatas.ContainsKey(position))
                     list.Add(position);
             }
-
-            return list;
         }
 
-        public List<CubeData> FindChildren(Vector3Int parentPosition)
+        public void FindChildren(Vector3Int parentPosition, IList<CubeData> list)
         {
-            List<CubeData> list = new List<CubeData>();
-            FindChildren(parentPosition, list);
+            if (list == null)
+                return;
 
-            return list;
+            list.Clear();
+            AddChildren(parentPosition, list);
         }
 
         internal bool TryAddCube(Vector3Int parentPosition, Enums.Direction3D direction, out Vector3Int position)
@@ -178,7 +181,7 @@ namespace Commar.CubicLand.Cube
             }
         }
 
-        private void FindChildren(Vector3Int parentPosition, List<CubeData> list)
+        private void AddChildren(Vector3Int parentPosition, IList<CubeData> list)
         {
             if (!_cubeDatas.ContainsKey(parentPosition) || !_children.ContainsKey(parentPosition) || _children[parentPosition].Count == 0)
                 return;
@@ -186,7 +189,7 @@ namespace Commar.CubicLand.Cube
             foreach (Vector3Int position in _children[parentPosition])
             {
                 list.Add(_cubeDatas[position]);
-                FindChildren(position, list);
+                AddChildren(position, list);
             }
         }
 
