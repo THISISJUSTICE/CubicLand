@@ -94,6 +94,8 @@ namespace Commar.CubicLand.Cube
             _golemObject.Rigidbody.ClearVelocity();
             _golemObject.Rigidbody.FreezePositionXZ(false);
             _golemObject.Rigidbody.AddForce(impulse, ForceMode.Impulse);
+            if (impulse.y > 0f)
+                _groundSensor.NotifyAirborne();
 
             StartCoroutine(HandleKnockback(wasCharging));
         }
