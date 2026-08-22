@@ -31,7 +31,7 @@ namespace Commar.CubicLand.Cube
         public CubeData MakeChildData(Vector3Int shapePosition)
         {
             Color color = Color * CubeConfig.COLOR_CHILD_RATE;
-            color.Clamp(color, Color.white);
+            color = color.Clamp(color, Color.white);
 
             return new CubeData(StatusPoint.MakeChildStatus(), shapePosition, color, IsBreaked);
         }
@@ -51,7 +51,7 @@ namespace Commar.CubicLand.Cube
             StatusValue.EnhanceStatus(StatusPoint);
 
             Color color = parent.Color * CubeConfig.COLOR_CHILD_RATE;
-            color.Clamp(color, Color.white);
+            color = color.Clamp(color, Color.white);
             Color = color;
         }
 
