@@ -13,7 +13,7 @@ namespace Commar.CubicLand.Cube
         private readonly IGolemGeometryProvider _geometryProvider;
         private readonly Component _context;
 
-        private readonly List<CubeObject> _visibleCubes = new List<CubeObject>();
+        private readonly List<CubeData> _visibleCubes = new List<CubeData>();
         private readonly RaycastHit[] _hits = new RaycastHit[BOX_CAST_HIT_BUFFER_SIZE];
 
         private bool _loggedMissingCollider;
@@ -43,13 +43,13 @@ namespace Commar.CubicLand.Cube
                 return false;
             }
 
-            _geometryProvider.FindVisibleCubes(Enums.Direction3D.Down, _visibleCubes);
+            _geometryProvider.FindVisibleCubeDatas(Enums.Direction3D.Down, _visibleCubes);
 
             bool foundCollider = false;
             bool foundGround = false;
             for (int i = 0; i < _visibleCubes.Count; i++)
             {
-                BoxCollider collider = _visibleCubes[i]?.Collider as BoxCollider;
+                BoxCollider collider = _golemObject.FindCube(_visibleCubes[i].ShapePoisition)?.Collider as BoxCollider;
                 if (!IsUsableSelfCollider(collider, rigidbody))
                     continue;
 

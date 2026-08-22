@@ -14,6 +14,7 @@ namespace Commar.CubicLand.Cube
         private readonly Dictionary<Vector3Int, int> _childDepths;
 
         private readonly List<Vector3Int> _availables = new List<Vector3Int>();
+        private readonly Dictionary<Vector3Int, CubeData> _visibleCubes = new Dictionary<Vector3Int, CubeData>();
 
         /*TODO: 저장 대상*/
         public int MoveSpeedPoint { get; set; }
@@ -118,6 +119,44 @@ namespace Commar.CubicLand.Cube
                 if (data.ShapePoisition[vectorIndex] == edge)
                     list.Add(data);
             }
+        }
+
+        public void FindVisibleCubes(Enums.Direction3D direction, IList<CubeData> list)
+        {
+            if (list == null)
+                return;
+
+            int vectorIndex = (int)direction / 2;
+            bool isMax = (int)direction % 2 == 0;
+
+            SetAvailables();
+            _visibleCubes.Clear();
+            list.Clear();
+
+            foreach (Vector3Int position in _availables)
+            {
+                if (!_cubeDatas.TryGetValue(position, out CubeData data))
+                    continue;
+
+                Vector3Int column = position;
+                column[vectorIndex] = 0;
+
+                if (!_visibleCubes.TryGetValue(column, out CubeData visibleCube))
+                {
+                    _visibleCubes.Add(column, data);
+                    continue;
+                }
+
+                int axisPosition = position[vectorIndex];
+                int visibleAxisPosition = visibleCube.ShapePoisition[vectorIndex];
+
+                if ((isMax && axisPosition > visibleAxisPosition)
+                    || (!isMax && axisPosition < visibleAxisPosition))
+                    _visibleCubes[column] = data;
+            }
+
+            foreach (CubeData visibleCube in _visibleCubes.Values)
+                list.Add(visibleCube);
         }
 
         public void GetAddablePositions(Vector3Int parentPosition, IList<Vector3Int> list)

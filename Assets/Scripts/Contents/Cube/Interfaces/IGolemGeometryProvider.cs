@@ -17,6 +17,6 @@ namespace Commar.CubicLand.Cube
         public Quaternion ViewRotation { get; }
 
         public void FindEdgeCubeDatas(Enums.Direction3D direction, IList<CubeData> cubeDatas);
-        public void FindVisibleCubes(Enums.Direction3D direction, IList<CubeObject> cubes);
+        public void FindVisibleCubeDatas(Enums.Direction3D direction, IList<CubeData> cubes);
     }
 }

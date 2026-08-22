@@ -63,10 +63,9 @@ namespace Commar.CubicLand.Cube
             _golemObject.GolemData.FindEdgeCubes(ConvertObjectDirection(direction), cubeDatas);
         }
 
-        public void FindVisibleCubes(Enums.Direction3D direction, IList<CubeObject> cubes)
+        public void FindVisibleCubeDatas(Enums.Direction3D direction, IList<CubeData> cubes)
         {
-            // TODO: 지정한 방향에서 보이는 모든 큐브 탐색
-            throw new System.NotImplementedException();
+            _golemObject.GolemData.FindVisibleCubes(ConvertObjectDirection(direction), cubes);
         }
 
         public bool ReleaseJumpForce()
