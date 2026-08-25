@@ -1,9 +1,8 @@
-using Commar.CubicLand.Cube;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Commar.CubicLand.Singletons
+namespace Commar.CubicLand.Cube
 {
     public class CubeCollisionResolver : ICubeCollisionResolver, IHitNotifier, IFixedUpdatable
     {
