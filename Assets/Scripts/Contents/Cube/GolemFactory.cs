@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VContainer;
 
 namespace Commar.CubicLand.Cube
 {
@@ -9,7 +10,7 @@ namespace Commar.CubicLand.Cube
         private readonly ICubeFactory _coreFactory;
         private readonly ICubeFactory _cubeFactory;
 
-        public GolemFactory(ICubeFactory coreFactory, ICubeFactory cubeFactory)
+        public GolemFactory([Key(CubeFactoryKey.Core)] ICubeFactory coreFactory, [Key(CubeFactoryKey.Object)] ICubeFactory cubeFactory)
         {
             _coreFactory = coreFactory;
             _cubeFactory = cubeFactory;

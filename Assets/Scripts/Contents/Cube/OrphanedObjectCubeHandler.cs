@@ -1,10 +1,12 @@
+using VContainer;
+
 namespace Commar.CubicLand.Cube
 {
-    internal class OrphanedObjectCubeHandler : IOrphanedCubeHandler
+    public class OrphanedObjectCubeHandler : IOrphanedCubeHandler
     {
         private readonly ICubeFactory _cubeFactory;
 
-        internal OrphanedObjectCubeHandler(ICubeFactory cubeFactory)
+        public OrphanedObjectCubeHandler([Key(CubeFactoryKey.Obstacle)] ICubeFactory cubeFactory)
         {
             _cubeFactory = cubeFactory;
         }

@@ -1,3 +1,4 @@
+using VContainer;
 
 namespace Commar.CubicLand.Cube
 {
@@ -10,7 +11,8 @@ namespace Commar.CubicLand.Cube
         protected override string LoadKey => "GolemCore";
         protected override bool AutoReleaseOnDestroyed => false;
 
-        public GolemCoreFactory(ICubeCollisionResolver cubeCollisionResolver, IOrphanedCubeHandler orphanedCubeHandler, ICubeFactory cubeFactory,
+        public GolemCoreFactory(ICubeCollisionResolver cubeCollisionResolver, IOrphanedCubeHandler orphanedCubeHandler,
+            [Key(CubeFactoryKey.Object)] ICubeFactory cubeFactory,
             IObjectPool objectPool, IAsyncAssetLoader assetLoader, ICubeSpawnEffect spawnEffect)
             : base(objectPool, assetLoader, spawnEffect)
         {

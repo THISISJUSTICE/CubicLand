@@ -1,5 +1,12 @@
 namespace Commar.CubicLand.Cube
 {
+    public enum CubeFactoryKey
+    {
+        Object,
+        Core,
+        Obstacle
+    }
+
     public interface ICubeFactory
     {
         public CubeObject CreateCube(CubeData cubeData, CubeSpawnOptions options);

@@ -1,10 +1,11 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using VContainer.Unity;
 
 namespace Commar.CubicLand.Cube
 {
-    public abstract class BaseCubeFactory : ICubeFactory, IStartable, IDisposable, IOperationHandle
+    public abstract class BaseCubeFactory : ICubeFactory, IInitializable, IDisposable, IOperationHandle
     {
         protected readonly IObjectPool _objectPool;
         protected readonly IAsyncAssetLoader _assetLoader;
@@ -27,13 +28,23 @@ namespace Commar.CubicLand.Cube
             _spawnEffect = spawnEffect;
         }
 
-        public virtual async void Start()
+        public virtual async void Initialize()
         {
-            OperationResult<GameObject> result = await _assetLoader.LoadAsset<GameObject>(LoadKey);
+            try
+            {
+                OperationResult<GameObject> result = await _assetLoader.LoadAsset<GameObject>(LoadKey);
 
-            _cubePrefab = result.Value;
-            Result = new OperationResult(result.IsSuccess, result.ErrorMessage);
-            IsCompleted = true;
+                _cubePrefab = result.Value;
+                Result = new OperationResult(result.IsSuccess, result.ErrorMessage);
+            }
+            catch (Exception exception)
+            {
+                Result = OperationResult.GetFailedResult(exception.Message);
+            }
+            finally
+            {
+                IsCompleted = true;
+            }
         }
 
         public virtual void Dispose()
