@@ -11,10 +11,10 @@ GameObject:
   - component: {fileID: 1972471567476518914}
   - component: {fileID: 8083419350197018859}
   - component: {fileID: 6717501315592015518}
-  - component: {fileID: 4284302319157034892}
-  - component: {fileID: 779628117942678819}
+  - component: {fileID: 3729666523396092144}
+  - component: {fileID: 5822345712387563038}
   m_Layer: 7
-  m_Name: GolemCube
+  m_Name: ObjectCube
   m_TagString: Cube
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -63,6 +63,8 @@ MeshRenderer:
   m_RayTracingAccelStructBuildFlagsOverride: 0
   m_RayTracingAccelStructBuildFlags: 1
   m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -84,40 +86,13 @@ MeshRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &4284302319157034892
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 584223288029311799}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a0b93a9ace21e5542a2ec1a524a29550, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _cubeInfo:
-    Status:
-      Point_HP: 0
-      Point_Armor: 0
-      Point_Attack: 0
-      _color: {r: 0, g: 0, b: 0, a: 0}
-    AttackMode: 0
-    CurrentStatus:
-      _hp: 0
-      _armor: 0
-      _attack: 0
-      _pointHP: 0
-    _isCore: 0
-    _shapePosition: {x: 0, y: 0, z: 0}
-  _parent: {fileID: 0}
-  _childs: []
-  _core: {fileID: 0}
---- !u!65 &779628117942678819
+--- !u!65 &3729666523396092144
 BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -138,3 +113,15 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5822345712387563038
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 584223288029311799}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0604e01fc68b72941a597e5c37e3fda6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: CustomTIJI.CubicLand.Cube::CustomTIJI.CubicLand.Cube.CubeObject

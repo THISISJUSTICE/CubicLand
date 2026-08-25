@@ -1,154 +1,63 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &584223288029311799
-GameObject:
+--- !u!1001 &8766206772225480360
+PrefabInstance:
   m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1972471567476518914}
-  - component: {fileID: 8083419350197018859}
-  - component: {fileID: 6717501315592015518}
-  - component: {fileID: 779628117942678819}
-  - component: {fileID: 8818923863776672717}
-  - component: {fileID: 626357440147848136}
-  - component: {fileID: 9200267880003071831}
-  m_Layer: 7
-  m_Name: GolemCore
-  m_TagString: Cube
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1972471567476518914
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 584223288029311799}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!33 &8083419350197018859
-MeshFilter:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 584223288029311799, guid: c994671d4fc5b8f47bf2773dc3c36958, type: 3}
+      propertyPath: m_Name
+      value: GolemCore
+      objectReference: {fileID: 0}
+    - target: {fileID: 1972471567476518914, guid: c994671d4fc5b8f47bf2773dc3c36958, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1972471567476518914, guid: c994671d4fc5b8f47bf2773dc3c36958, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1972471567476518914, guid: c994671d4fc5b8f47bf2773dc3c36958, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6717501315592015518, guid: c994671d4fc5b8f47bf2773dc3c36958, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 27fabf9a2191abf4c811a96bcc16fe48, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 584223288029311799, guid: c994671d4fc5b8f47bf2773dc3c36958, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -6473292190480098826}
+    - targetCorrespondingSourceObject: {fileID: 584223288029311799, guid: c994671d4fc5b8f47bf2773dc3c36958, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 482223876771783360}
+    - targetCorrespondingSourceObject: {fileID: 584223288029311799, guid: c994671d4fc5b8f47bf2773dc3c36958, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4468036815467256350}
+  m_SourcePrefab: {fileID: 100100000, guid: c994671d4fc5b8f47bf2773dc3c36958, type: 3}
+--- !u!1 &8195497307284759967 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 584223288029311799, guid: c994671d4fc5b8f47bf2773dc3c36958, type: 3}
+  m_PrefabInstance: {fileID: 8766206772225480360}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 584223288029311799}
-  m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!23 &6717501315592015518
-MeshRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 584223288029311799}
-  m_Enabled: 1
-  m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
-  m_StaticShadowCaster: 0
-  m_MotionVectors: 1
-  m_LightProbeUsage: 1
-  m_ReflectionProbeUsage: 1
-  m_RayTracingMode: 2
-  m_RayTraceProcedural: 0
-  m_RayTracingAccelStructBuildFlagsOverride: 0
-  m_RayTracingAccelStructBuildFlags: 1
-  m_SmallMeshCulling: 1
-  m_RenderingLayerMask: 1
-  m_RendererPriority: 0
-  m_Materials:
-  - {fileID: 2100000, guid: 27fabf9a2191abf4c811a96bcc16fe48, type: 2}
-  m_StaticBatchInfo:
-    firstSubMesh: 0
-    subMeshCount: 0
-  m_StaticBatchRoot: {fileID: 0}
-  m_ProbeAnchor: {fileID: 0}
-  m_LightProbeVolumeOverride: {fileID: 0}
-  m_ScaleInLightmap: 1
-  m_ReceiveGI: 1
-  m_PreserveUVs: 0
-  m_IgnoreNormalsForChartDetection: 0
-  m_ImportantGI: 0
-  m_StitchLightmapSeams: 1
-  m_SelectedEditorRenderState: 3
-  m_MinimumChartSize: 4
-  m_AutoUVMaxDistance: 0.5
-  m_AutoUVMaxAngle: 89
-  m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &779628117942678819
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 584223288029311799}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &8818923863776672717
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 584223288029311799}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 269cb687d6c3c1c448fe9602927b026c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _golemInfo:
-    _status:
-      Point_HP: 0
-      Point_Armor: 0
-      Point_Attack: 0
-      _color: {r: 1, g: 1, b: 1, a: 1}
-    _moveSpeedPoint: 0
-  _golemCube: {fileID: 0}
-  _curGolemInfo:
-    _status:
-      Point_HP: 0
-      Point_Armor: 0
-      Point_Attack: 0
-      _color: {r: 1, g: 1, b: 1, a: 1}
-    _moveSpeedPoint: 0
---- !u!54 &626357440147848136
+--- !u!54 &-6473292190480098826
 Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 584223288029311799}
-  serializedVersion: 4
+  m_GameObject: {fileID: 8195497307284759967}
+  serializedVersion: 5
   m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -163,34 +72,29 @@ Rigidbody:
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
-  m_Constraints: 0
+  m_Constraints: 122
   m_CollisionDetection: 0
---- !u!114 &9200267880003071831
+--- !u!114 &482223876771783360
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 584223288029311799}
+  m_GameObject: {fileID: 8195497307284759967}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a0b93a9ace21e5542a2ec1a524a29550, type: 3}
+  m_Script: {fileID: 11500000, guid: 8dab91c32f85f4e4fb2a2c6018e9252a, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  _cubeInfo:
-    Status:
-      Point_HP: 0
-      Point_Armor: 0
-      Point_Attack: 0
-      _color: {r: 0, g: 0, b: 0, a: 0}
-    AttackMode: 0
-    CurrentStatus:
-      _hp: 0
-      _armor: 0
-      _attack: 0
-      _pointHP: 0
-    _isCore: 0
-    _shapePosition: {x: 0, y: 0, z: 0}
-  _parent: {fileID: 0}
-  _childs: []
-  _core: {fileID: 0}
+  m_EditorClassIdentifier: Commar.CubicLand.Cube::Commar.CubicLand.Cube.GolemCore
+--- !u!114 &4468036815467256350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8195497307284759967}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9c550cb3e4129824d9bdfecce965ec43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Commar.CubicLand.Cube::Commar.CubicLand.Cube.GolemGroundSensor
