@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -30,7 +30,7 @@ namespace Commar
         "OnMouseDown", "OnMouseUp", "OnMouseDrag", "OnMouseEnter", "OnMouseExit"
     };
 
-        [MenuItem("Commar/MonoBehaviour Event Viewer")]
+        [MenuItem(EditorUtil.MAIN_MENU + "/MonoBehaviour Event Viewer")]
         public static void ShowWindow()
         {
             GetWindow<MonoBehaviourEventViewer>("MonoBehaviour Event Viewer");

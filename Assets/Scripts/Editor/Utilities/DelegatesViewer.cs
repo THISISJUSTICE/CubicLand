@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
 using System;
-using System.Reflection;
-using UnityEngine.SceneManagement;
-using UnityEngine.Events;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 namespace Commar
 {
@@ -27,7 +27,7 @@ namespace Commar
         private Dictionary<UnityEventBase, List<MonoBehaviour>> _eventTracks;
         private Dictionary<UnityEventBase, string> _eventKeyTitles;
 
-        [MenuItem("Commar/Delegates Viewer")]
+        [MenuItem(EditorUtil.MAIN_MENU + "/Delegates Viewer")]
         public static void OpenWindow()
         {
             DelegatesViewer window = (DelegatesViewer)EditorWindow.GetWindow(typeof(DelegatesViewer));

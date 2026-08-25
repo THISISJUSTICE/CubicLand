@@ -1,11 +1,11 @@
-using UnityEditor;
-using UnityEngine;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using UnityEditor;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Commar
@@ -85,19 +85,19 @@ namespace Commar
         private TaskValueList<string> _tvl;
         private int ProcessCount { get => Environment.ProcessorCount; }
 
-        [MenuItem("Assets/Commar/Find References in Project")]
+        [MenuItem("Assets/" + EditorUtil.MAIN_MENU + "/Find References in Project")]
         public static void FindInWindow()
         {
             AssetReferenceFinder window = GetWindow<AssetReferenceFinder>(MENU_NAME);
-            
+
             UnityEngine.Object obj = Selection.activeObject;
-            if(obj != null && AssetDatabase.Contains(obj))
+            if (obj != null && AssetDatabase.Contains(obj))
                 window._targetAsset = obj;
 
             window.Show();
         }
 
-        [MenuItem("Commar/" + MENU_NAME)]
+        [MenuItem(EditorUtil.MAIN_MENU + "/" + MENU_NAME)]
         public static void ShowWindow()
         {
             GetWindow<AssetReferenceFinder>(MENU_NAME).Show();

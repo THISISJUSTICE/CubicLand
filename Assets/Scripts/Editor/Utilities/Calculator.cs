@@ -1,6 +1,6 @@
-﻿using UnityEngine;
-using UnityEditor;
 using System;
+using UnityEditor;
+using UnityEngine;
 
 namespace Commar
 {
@@ -112,7 +112,7 @@ namespace Commar
 
         private Action[] _guiActions;
 
-        [MenuItem("Commar/Calculator")]
+        [MenuItem(EditorUtil.MAIN_MENU + "/Calculator")]
         public static void ShowWindow()
         {
             GetWindow<Calculator>("Calculator");

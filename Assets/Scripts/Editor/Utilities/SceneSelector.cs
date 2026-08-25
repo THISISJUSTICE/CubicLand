@@ -1,6 +1,6 @@
-﻿using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace Commar
@@ -12,7 +12,7 @@ namespace Commar
         private int _hoveredIndex = -1;
         private int _selectedIndex = -1;
 
-        [MenuItem("Commar/Scene Selector")]
+        [MenuItem(EditorUtil.MAIN_MENU + "/Scene Selector")]
         public static void ShowWindow()
         {
             GetWindow<SceneSelector>("Scene Selector");

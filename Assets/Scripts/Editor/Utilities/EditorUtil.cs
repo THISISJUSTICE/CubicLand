@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using System;
@@ -8,6 +8,8 @@ namespace Commar
 {
     public static class EditorUtil
     {
+        public const string MAIN_MENU = "Commar";
+
         #region Vector Fields
         public static Vector3 LayoutVector3Field(string label, Vector3 vec3)
         {

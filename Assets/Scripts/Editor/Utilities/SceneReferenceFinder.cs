@@ -1,18 +1,18 @@
-using UnityEngine;
-using UnityEngine.SceneManagement;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.SceneManagement;
-using System;
-using System.Linq;
-using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Commar
 {
     public class SceneReferenceFinder : EditorWindow
     {
         private const string MENU_NAME = "Find Direct References in Scene";
-        private const string ASSETS_MENU = "Assets/Commar/";
-        private const string GAMEOBJECT_MENU = "GameObject/Commar/";
+        private const string ASSETS_MENU = "Assets/" + EditorUtil.MAIN_MENU + "/";
+        private const string GAMEOBJECT_MENU = "GameObject/" + EditorUtil.MAIN_MENU + "/";
 
         private const int INDEX = int.MaxValue;
 

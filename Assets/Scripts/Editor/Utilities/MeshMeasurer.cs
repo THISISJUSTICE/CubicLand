@@ -1,5 +1,5 @@
-﻿using UnityEngine;
 using UnityEditor;
+using UnityEngine;
 
 namespace Commar
 {
@@ -10,7 +10,7 @@ namespace Commar
         private int _selectedTab = 0;
         private string[] _tabLabels = new string[] { "Mesh Size" };
 
-        [MenuItem("Commar/Mesh Measurer")]
+        [MenuItem(EditorUtil.MAIN_MENU + "/Mesh Measurer")]
         public static void ShowWindow()
         {
             GetWindow<MeshMeasurer>("Mesh Measurer");

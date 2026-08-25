@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using UnityEditor;
-using System.IO;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using UnityEditor;
+using UnityEngine;
 
 namespace Commar
 {
@@ -17,7 +17,7 @@ namespace Commar
 
         private HashSet<string> _filePaths = new HashSet<string>();
 
-        [MenuItem("Commar/Asset Opener")]
+        [MenuItem(EditorUtil.MAIN_MENU + "/Asset Opener")]
         private static void ShowWindow()
         {
             GetWindow<AssetOpener>("Asset Opener");
