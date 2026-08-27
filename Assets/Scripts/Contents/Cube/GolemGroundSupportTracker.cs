@@ -7,13 +7,13 @@ namespace Commar.CubicLand.Cube
     {
         private struct SupportContact
         {
-            public Collider Collider;
-            public bool IsValid;
+            public Collider collider;
+            public bool isValid;
 
             public SupportContact(Collider collider)
             {
-                Collider = collider;
-                IsValid = false;
+                this.collider = collider;
+                isValid = false;
             }
         }
 
@@ -126,7 +126,7 @@ namespace Commar.CubicLand.Cube
                     continue;
 
                 SupportContact supportContact = _supportContacts[supportContactIndex];
-                supportContact.IsValid = true;
+                supportContact.isValid = true;
                 _supportContacts[supportContactIndex] = supportContact;
 
                 if (groundNormalDot > bestGroundNormalDot)
@@ -139,10 +139,10 @@ namespace Commar.CubicLand.Cube
             for (int i = 0; i < _supportContacts.Count; i++)
             {
                 SupportContact supportContact = _supportContacts[i];
-                if (supportContact.IsValid)
-                    _supportColliders.Add(supportContact.Collider);
+                if (supportContact.isValid)
+                    _supportColliders.Add(supportContact.collider);
                 else
-                    _supportColliders.Remove(supportContact.Collider);
+                    _supportColliders.Remove(supportContact.collider);
             }
 
             if (_supportColliders.Count <= 0)
@@ -202,7 +202,7 @@ namespace Commar.CubicLand.Cube
         {
             for (int i = 0; i < _supportContacts.Count; i++)
             {
-                if (_supportContacts[i].Collider == collider)
+                if (_supportContacts[i].collider == collider)
                     return i;
             }
 
