@@ -20,7 +20,6 @@ namespace Commar.CubicLand.Cube
         private readonly List<Vector3Int> _breakedCubePositions = new List<Vector3Int>();
 
         private readonly List<CubeData> _tempChildren = new List<CubeData>();
-        private readonly List<object> _tempList = new List<object>();
 
         private Rigidbody _rigidbody;
         private bool _isAttackMode;
@@ -41,20 +40,21 @@ namespace Commar.CubicLand.Cube
         {
             if (GolemData != null)
             {
-                _tempList.Clear();
+                bool hasNull = false;
+
                 foreach (IOnEnablable onEnalblable in _onEnablables)
                 {
                     if (onEnalblable == null)
                     {
-                        _tempList.Add(onEnalblable);
+                        hasNull = true;
                         continue;
                     }
 
                     onEnalblable.OnEnable();
                 }
 
-                foreach (object dummy in _tempList)
-                    _onEnablables.Remove(dummy as IOnEnablable);
+                if (hasNull)
+                    _onEnablables.Remove(null);
             }
         }
 
@@ -73,20 +73,21 @@ namespace Commar.CubicLand.Cube
 
         private void FixedUpdate()
         {
-            _tempList.Clear();
+            bool hasNull = false;
+
             foreach (IFixedUpdatable fixedUpdatable in _fixedUpdatables)
             {
                 if (fixedUpdatable == null)
                 {
-                    _tempList.Add(fixedUpdatable);
+                    hasNull = true;
                     continue;
                 }
 
                 fixedUpdatable.FixedUpdate();
             }
 
-            foreach (object dummy in _tempList)
-                _fixedUpdatables.Remove(dummy as IFixedUpdatable);
+            if (hasNull)
+                _fixedUpdatables.Remove(null);
         }
 
         private void OnCollisionEnter(Collision collision)
