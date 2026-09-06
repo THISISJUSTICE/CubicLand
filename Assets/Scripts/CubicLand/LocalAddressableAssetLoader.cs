@@ -27,12 +27,11 @@ namespace Commar.CubicLand
         }
 
         private readonly Dictionary<string, AssetHandle> _assetHandles = new Dictionary<string, AssetHandle>();
-        private readonly InvalidKeyException _nullKeyException = new InvalidKeyException("IsNullOrEmpty");
 
         public async UniTask<OperationResult<T>> LoadAssetAsync<T>(string key)
         {
             if (string.IsNullOrEmpty(key))
-                return OperationResult.GetFailedResult<T>(_nullKeyException.Message);
+                return OperationResult.GetFailedResult<T>(GetKeyErrorMessage(key));
 
             if (_assetHandles.TryGetValue(key, out AssetHandle assetHandle))
             {
@@ -51,7 +50,7 @@ namespace Commar.CubicLand
         public async UniTask<OperationResult<IList<T>>> LoadAssetsAsync<T>(string key)
         {
             if (string.IsNullOrEmpty(key))
-                return OperationResult.GetFailedResult<IList<T>>(_nullKeyException.Message);
+                return OperationResult.GetFailedResult<IList<T>>(GetKeyErrorMessage(key));
 
             if (_assetHandles.TryGetValue(key, out AssetHandle assetHandle))
             {
@@ -82,6 +81,14 @@ namespace Commar.CubicLand
                     _assetHandles.Remove(key);
                 }
             }
+        }
+
+        private string GetKeyErrorMessage(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+                return "Empty Load Key Error";
+
+            return $"Invalid Load Key Error({key})";
         }
     }
 }
