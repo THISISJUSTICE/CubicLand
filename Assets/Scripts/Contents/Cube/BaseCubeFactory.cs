@@ -32,7 +32,7 @@ namespace Commar.CubicLand.Cube
         {
             try
             {
-                OperationResult<GameObject> result = await _assetLoader.LoadAsset<GameObject>(LoadKey);
+                OperationResult<GameObject> result = await _assetLoader.LoadAssetAsync<GameObject>(LoadKey);
 
                 _cubePrefab = result.Value;
                 Result = new OperationResult(result.IsSuccess, result.ErrorMessage);
