@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2011307937538748838}
   - component: {fileID: 7132978369396183913}
+  - component: {fileID: 4791263827190182331}
   m_Layer: 0
   m_Name: RootLifetimeScope
   m_TagString: Untagged
@@ -50,3 +51,16 @@ MonoBehaviour:
   autoInjectGameObjects: []
   _maxPoolSizeInWindows: 1000
   _maxPoolSizeInMobile: 100
+  _unityLoopHandler: {fileID: 4791263827190182331}
+--- !u!114 &4791263827190182331
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1967928757662005370}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 805d9964ba30406dbb5da26a8f0170ce, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Commar.CubicLand.Compositions::Commar.CubicLand.Compositions.UnityLoopHandler

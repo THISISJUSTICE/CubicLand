@@ -9,6 +9,7 @@ namespace Commar.CubicLand.Compositions
     {
         [SerializeField, Min(0)] private int _maxPoolSizeInWindows = 1000;
         [SerializeField, Min(0)] private int _maxPoolSizeInMobile = 100;
+        [SerializeField] private UnityLoopHandler _unityLoopHandler;
 
         private int MaxPoolSize
         {
@@ -26,6 +27,7 @@ namespace Commar.CubicLand.Compositions
         {
             RegisterCoreServices(builder);
             RegisterCube(builder);
+            RegisterHandlers(builder);
         }
 
         private void RegisterCoreServices(IContainerBuilder builder)
@@ -56,6 +58,11 @@ namespace Commar.CubicLand.Compositions
                 .As<IOrphanedCubeHandler>();
             builder.Register<GolemFactory>(Lifetime.Singleton)
                 .As<IGolemFactory>();
+        }
+
+        private void RegisterHandlers(IContainerBuilder builder)
+        {
+            builder.RegisterComponent(_unityLoopHandler);
         }
     }
 }
