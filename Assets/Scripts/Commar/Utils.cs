@@ -116,5 +116,14 @@ namespace Commar
             float v = Mathf.Sqrt(2f * distance);
             return v * mass;
         }
+
+        public static void QuitApplication()
+        {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
+            Application.Quit();
+#endif
+        }
     }
 }
