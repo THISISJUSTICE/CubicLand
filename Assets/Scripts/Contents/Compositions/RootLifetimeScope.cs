@@ -43,6 +43,8 @@ namespace Commar.CubicLand.Compositions
         {
             builder.Register<CubeCollisionResolver>(Lifetime.Singleton)
                 .AsImplementedInterfaces();
+            builder.Register<EmptyCubeSpawnEffect>(Lifetime.Singleton)
+                .As<ICubeSpawnEffect>();
 
             builder.Register<GolemCubeFactory>(Lifetime.Singleton)
                 .AsImplementedInterfaces()

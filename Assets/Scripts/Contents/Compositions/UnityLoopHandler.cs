@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using VContainer;
 
@@ -5,11 +6,11 @@ namespace Commar.CubicLand.Compositions
 {
     public class UnityLoopHandler : MonoBehaviour
     {
-        private IUpdatable[] _updatables;
-        private IFixedUpdatable[] _fixedUpdatables;
+        private IReadOnlyList<IUpdatable> _updatables;
+        private IReadOnlyList<IFixedUpdatable> _fixedUpdatables;
 
         [Inject]
-        public void Initialize(IUpdatable[] updatables, IFixedUpdatable[] fixedUpdatables)
+        public void Initialize(IReadOnlyList<IUpdatable> updatables, IReadOnlyList<IFixedUpdatable> fixedUpdatables)
         {
             _updatables = updatables;
             _fixedUpdatables = fixedUpdatables;

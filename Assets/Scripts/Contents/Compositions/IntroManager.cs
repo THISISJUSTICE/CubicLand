@@ -9,10 +9,10 @@ namespace Commar.CubicLand.Compositions
     {
         [SerializeField] private SceneList.Scene _nextScene;
 
-        private OperationHandleHandler _operationHandleHandler;
+        private OperationWaiter _operationHandleHandler;
 
         [Inject]
-        public void Initialize(OperationHandleHandler operationHandleHandler)
+        public void Initialize(OperationWaiter operationHandleHandler)
         {
             _operationHandleHandler = operationHandleHandler;
         }

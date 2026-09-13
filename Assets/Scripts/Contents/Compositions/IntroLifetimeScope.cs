@@ -10,7 +10,7 @@ namespace Commar.CubicLand.Compositions
 
         protected override void Configure(IContainerBuilder builder)
         {
-            builder.Register<OperationHandleHandler>(Lifetime.Scoped);
+            builder.Register<OperationWaiter>(Lifetime.Scoped);
             builder.RegisterComponent(_introManager);
         }
     }

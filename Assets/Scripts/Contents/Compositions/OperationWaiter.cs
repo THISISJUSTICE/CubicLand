@@ -1,17 +1,18 @@
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using VContainer;
 
 namespace Commar.CubicLand.Compositions
 {
-    public class OperationHandleHandler
+    public class OperationWaiter
     {
-        private IOperationHandle[] _operationHandles;
+        private IReadOnlyList<IOperationHandle> _operationHandles;
 
         public event Action<OperationResult> OnCompleted;
 
         [Inject]
-        public void Initialize(IOperationHandle[] operationHandles)
+        public void Initialize(IReadOnlyList<IOperationHandle> operationHandles)
         {
             _operationHandles = operationHandles;
         }
@@ -24,8 +25,10 @@ namespace Commar.CubicLand.Compositions
             {
                 bool isCompleted = true;
 
-                foreach (IOperationHandle operationHandle in _operationHandles)
+                for (int i = 0; i < _operationHandles.Count; i++)
                 {
+                    IOperationHandle operationHandle = _operationHandles[i];
+
                     if (operationHandle == null)
                     {
                         result = OperationResult.GetFailedResult("Null Operation Handle Included");
