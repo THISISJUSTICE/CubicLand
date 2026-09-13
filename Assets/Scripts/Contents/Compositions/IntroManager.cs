@@ -7,7 +7,7 @@ namespace Commar.CubicLand.Compositions
 {
     public class IntroManager : MonoBehaviour
     {
-        [SerializeField] private string _nextSceneName;
+        [SerializeField] private SceneList.Scene _nextScene;
 
         private OperationHandleHandler _operationHandleHandler;
 
@@ -33,8 +33,10 @@ namespace Commar.CubicLand.Compositions
             if (result.IsSuccess)
             {
                 Scene currentScene = gameObject.scene;
-                await SceneManager.LoadSceneAsync(_nextSceneName, LoadSceneMode.Additive);
-                SceneManager.SetActiveScene(SceneManager.GetSceneByName(_nextSceneName));
+                string nextSceneName = SceneList.GetSceneName(_nextScene);
+
+                await SceneManager.LoadSceneAsync(nextSceneName, LoadSceneMode.Additive);
+                SceneManager.SetActiveScene(SceneManager.GetSceneByName(nextSceneName));
                 _ = SceneManager.UnloadSceneAsync(currentScene);
             }
             else
