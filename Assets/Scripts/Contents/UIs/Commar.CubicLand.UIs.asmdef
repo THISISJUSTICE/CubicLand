@@ -1,0 +1,14 @@
+{
+    "name": "Commar.CubicLand.UIs",
+    "rootNamespace": "Commar.CubicLand.UIs",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
