@@ -19,7 +19,10 @@ namespace Commar.CubicLand.Cube
         public GolemCore CreateGolem(string name, GolemData golemData, CubeSpawnOptions options)
         {
             if (golemData == null)
-                throw new ArgumentNullException(nameof(golemData));
+            {
+                Debug.LogError($"GolemData is null");
+                return null;
+            }
 
             GolemData instanceData = golemData.Clone();
             if (!instanceData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out CubeData coreData))
