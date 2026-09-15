@@ -1,0 +1,18 @@
+{
+    "name": "Commar.CubicLand.Player",
+    "rootNamespace": "Commar.CubicLand.Player",
+    "references": [
+        "GUID:81880666b545d40419f7291db544c83a",
+        "GUID:196b9ba46fdb2eb43ab3eb08f42d225c",
+        "GUID:171f2f0311f364d49843c023ce40a7dd"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
