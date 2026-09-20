@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using VContainer;
@@ -25,7 +24,7 @@ namespace Commar.CubicLand.Cube
             }
 
             GolemData instanceData = golemData.Clone();
-            if (!instanceData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out CubeData coreData))
+            if (!instanceData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData coreData))
             {
                 Debug.LogError($"GolemData must contain core cube data.");
                 return null;
@@ -45,30 +44,36 @@ namespace Commar.CubicLand.Cube
             coreCube.transform.position = Vector3.zero;
             coreCube.transform.rotation = Quaternion.identity;
             coreCube.transform.localScale = Vector3.one;
+            coreCube.Initialize(coreData);
 
-            List<CubeObject> cubes = new List<CubeObject>() { coreCube };
-            CreateChildCubes(instanceData, coreData, coreCube, cubes, options);
+            GolemCubeHandle coreHandle = new GolemCubeHandle(coreCube);
+            List<GolemCubeHandle> handles = new List<GolemCubeHandle>() { coreHandle };
+            CreateChildCubes(instanceData, coreData, coreHandle, handles, options);
 
-            golemCore.Initialize(instanceData, cubes);
+            golemCore.Initialize(instanceData, handles);
             return golemCore;
         }
 
-        private void CreateChildCubes(GolemData golemData, CubeData parentData, CubeObject parentCube, List<CubeObject> cubes, CubeSpawnOptions options)
+        private void CreateChildCubes(GolemData golemData, GolemCubeData parentData, GolemCubeHandle parentHandle, List<GolemCubeHandle> handles, CubeSpawnOptions options)
         {
-            if (!golemData.Children.TryGetValue(parentData.ShapePoisition, out List<Vector3Int> childPositions)
-                || childPositions == null || childPositions.Count == 0)
+            if (!golemData.Children.TryGetValue(parentData.shapePoisition, out List<Vector3Int> childPositions)
+                || childPositions == null || childPositions.Count == 0 || !parentHandle.IsValid)
                 return;
 
             foreach (Vector3Int childPosition in childPositions)
             {
-                if (!golemData.CubeDatas.TryGetValue(childPosition, out CubeData childData)
+                if (!golemData.CubeDatas.TryGetValue(childPosition, out GolemCubeData childData)
                     || childData.IsBreaked)
                     continue;
 
                 CubeObject childCube = _cubeFactory.CreateCube(childData, options);
-                GolemCore.AttachCube(parentCube, childCube);
-                cubes.Add(childCube);
-                CreateChildCubes(golemData, childData, childCube, cubes, options);
+                childCube.Initialize(childData);
+
+                GolemCubeHandle childHandle = new GolemCubeHandle(childCube);
+                GolemCore.AttachCube(parentHandle, childHandle);
+
+                handles.Add(childHandle);
+                CreateChildCubes(golemData, childData, childHandle, handles, options);
             }
         }
     }

@@ -4,36 +4,23 @@ namespace Commar.CubicLand.Cube
 {
     public class CubeData
     {
-        public StatusPoint StatusPoint { get; private set; }
-        public StatusValue StatusValue { get; private set; }
-        public Vector3Int ShapePoisition { get; private set; }
-        public bool IsAttackMode { get; internal set; }
-        public Color Color { get; private set; }
-        public bool IsBreaked { get; internal set; }
-
-        public CubeData(StatusPoint statusPoint, Vector3Int shapePosition, Color color, bool isBreaked = false)
+        public StatusPoint StatusPoint { get; protected set; }
+        public StatusValue StatusValue { get; protected set; }
+        
+        public Color Color { get; protected set; }
+        
+        public CubeData(StatusPoint statusPoint, Color color)
         {
             StatusPoint = statusPoint;
             StatusValue = new StatusValue(statusPoint);
-            ShapePoisition = shapePosition;
-            IsAttackMode = false;
             Color = color;
-            IsBreaked = isBreaked;
         }
 
-        public CubeData Clone()
+        public virtual CubeData Clone()
         {
-            CubeData clone = new CubeData(StatusPoint, ShapePoisition, Color, IsBreaked);
+            CubeData clone = new CubeData(StatusPoint, Color);
             clone.StatusValue = StatusValue.Clone();
             return clone;
-        }
-
-        public CubeData MakeChildData(Vector3Int shapePosition)
-        {
-            Color color = Color * CubeConfig.COLOR_CHILD_RATE;
-            color = color.Clamp(color, Color.white);
-
-            return new CubeData(StatusPoint.MakeChildStatus(), shapePosition, color, IsBreaked);
         }
 
         internal void EnhanceStatus(StatusPoint statusPoint)
@@ -55,13 +42,12 @@ namespace Commar.CubicLand.Cube
             Color = color;
         }
 
-        internal void ApplyDamage(float selfMass, Vector3 impulse, CubeData collider)
+        internal void ApplyDamage(float selfMass, Vector3 impulse, CubeData collider, float extraDamage)
         {
             int damage = 1;
             if (collider != null)
                 damage = Mathf.RoundToInt((float)collider.StatusValue.HP / collider.StatusValue.MaxHP
-                   * collider.StatusValue.Armor
-                   + (collider.IsAttackMode ? collider.StatusValue.Attack : 0f));
+                   * collider.StatusValue.Armor + extraDamage);
 
             ApplyDamage(damage, selfMass, impulse);
         }
@@ -91,6 +77,43 @@ namespace Commar.CubicLand.Cube
 
             // 데미지 반영
             StatusValue.ApplyDamage(Mathf.RoundToInt(damage));
+        }
+    }
+
+    public class GolemCubeData : CubeData
+    {
+        public readonly Vector3Int shapePoisition;
+
+        public bool IsAttackMode { get; internal set; }
+        public bool IsBreaked { get; internal set; }
+
+        public GolemCubeData(StatusPoint statusPoint, Color color, Vector3Int shapePoisition, bool isBreaked = false)
+            : base(statusPoint, color)
+        {
+            this.shapePoisition = shapePoisition;
+            IsAttackMode = false;
+            IsBreaked = isBreaked;
+        }
+
+        public new GolemCubeData Clone()
+        {
+            GolemCubeData clone = new GolemCubeData(StatusPoint, Color, shapePoisition, IsBreaked);
+            clone.StatusValue = StatusValue.Clone();
+            clone.IsAttackMode = IsAttackMode;
+            return clone;
+        }
+
+        public GolemCubeData MakeChildData(Vector3Int shapePosition)
+        {
+            Color color = Color * CubeConfig.COLOR_CHILD_RATE;
+            color = color.Clamp(color, Color.white);
+
+            return new GolemCubeData(StatusPoint.MakeChildStatus(), color, shapePosition, IsBreaked);
+        }
+
+        public float CalculateExtraDamage()
+        { 
+            return IsAttackMode ? StatusValue.Attack : 0f;
         }
     }
 }

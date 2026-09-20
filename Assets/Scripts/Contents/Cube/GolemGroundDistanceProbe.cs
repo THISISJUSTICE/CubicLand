@@ -13,7 +13,7 @@ namespace Commar.CubicLand.Cube
         private readonly IGolemGeometryProvider _geometryProvider;
         private readonly Component _context;
 
-        private readonly List<CubeData> _visibleCubes = new List<CubeData>();
+        private readonly List<GolemCubeData> _visibleCubes = new List<GolemCubeData>();
         private readonly RaycastHit[] _hits = new RaycastHit[BOX_CAST_HIT_BUFFER_SIZE];
 
         private bool _loggedMissingCollider;
@@ -49,7 +49,7 @@ namespace Commar.CubicLand.Cube
             bool foundGround = false;
             for (int i = 0; i < _visibleCubes.Count; i++)
             {
-                BoxCollider collider = _golemObject.FindCube(_visibleCubes[i].ShapePoisition)?.Collider as BoxCollider;
+                BoxCollider collider = _golemObject.FindCube(_visibleCubes[i].shapePoisition)?.Collider as BoxCollider;
                 if (!IsUsableSelfCollider(collider, rigidbody))
                     continue;
 

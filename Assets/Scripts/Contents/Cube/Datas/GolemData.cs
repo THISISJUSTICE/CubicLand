@@ -7,25 +7,25 @@ namespace Commar.CubicLand.Cube
     public class GolemData
     {
         /*TODO: 저장 대상*/
-        private readonly Dictionary<Vector3Int, CubeData> _cubeDatas; // (0,0,0)은 Core (R:x+1, L:x-1, U:y+1, D:y-1, F:z+1, B:z-1)
+        private readonly Dictionary<Vector3Int, GolemCubeData> _cubeDatas; // (0,0,0)은 Core (R:x+1, L:x-1, U:y+1, D:y-1, F:z+1, B:z-1)
         /*TODO: 저장 대상*/
         private readonly Dictionary<Vector3Int, List<Vector3Int>> _children;
         private readonly Dictionary<Vector3Int, Vector3Int> _parents;
         private readonly Dictionary<Vector3Int, int> _childDepths;
 
         private readonly List<Vector3Int> _availables = new List<Vector3Int>();
-        private readonly Dictionary<Vector3Int, CubeData> _visibleCubes = new Dictionary<Vector3Int, CubeData>();
+        private readonly Dictionary<Vector3Int, GolemCubeData> _visibleCubes = new Dictionary<Vector3Int, GolemCubeData>();
 
         /*TODO: 저장 대상*/
-        public int MoveSpeedPoint { get; set; }
+        public int MoveSpeedPoint { get; private set; } // TODO: Enhance 추가
         public int MoveSpeed => CubeConfig.Status.INIT_MOVE_SPEED + MoveSpeedPoint * CubeConfig.Status.ADD_MOVE_SPEED;
-        public IReadOnlyDictionary<Vector3Int, CubeData> CubeDatas => _cubeDatas;
+        public IReadOnlyDictionary<Vector3Int, GolemCubeData> CubeDatas => _cubeDatas;
         public IReadOnlyDictionary<Vector3Int, List<Vector3Int>> Children => _children;
         public IReadOnlyDictionary<Vector3Int, Vector3Int> Parents => _parents;
         public IReadOnlyDictionary<Vector3Int, int> ChildDepths => _childDepths;
 
         public GolemData(int moveSpeedPoint = 0,
-            Dictionary<Vector3Int, CubeData> cubeDatas = null,
+            Dictionary<Vector3Int, GolemCubeData> cubeDatas = null,
             Dictionary<Vector3Int, List<Vector3Int>> children = null)
         {
             MoveSpeedPoint = moveSpeedPoint;
@@ -33,8 +33,8 @@ namespace Commar.CubicLand.Cube
             if (cubeDatas != null)
                 _cubeDatas = cubeDatas;
             else
-                _cubeDatas = new Dictionary<Vector3Int, CubeData>()
-                { { CubeConfig.CORE_POSITION, new CubeData(new StatusPoint(), CubeConfig.CORE_POSITION, Color.white) } };
+                _cubeDatas = new Dictionary<Vector3Int, GolemCubeData>()
+                { { CubeConfig.CORE_POSITION, new GolemCubeData(new StatusPoint(), Color.white, CubeConfig.CORE_POSITION) } };
 
             if (children != null)
                 _children = children;
@@ -59,8 +59,8 @@ namespace Commar.CubicLand.Cube
 
         public GolemData Clone()
         {
-            Dictionary<Vector3Int, CubeData> cubeDatas = new Dictionary<Vector3Int, CubeData>();
-            foreach (KeyValuePair<Vector3Int, CubeData> cubeData in CubeDatas)
+            Dictionary<Vector3Int, GolemCubeData> cubeDatas = new Dictionary<Vector3Int, GolemCubeData>();
+            foreach (KeyValuePair<Vector3Int, GolemCubeData> cubeData in CubeDatas)
                 cubeDatas[cubeData.Key] = cubeData.Value.Clone();
 
             Dictionary<Vector3Int, List<Vector3Int>> children = new Dictionary<Vector3Int, List<Vector3Int>>();
@@ -88,19 +88,19 @@ namespace Commar.CubicLand.Cube
 
             foreach (Vector3Int position in _availables)
             {
-                if (!_cubeDatas.TryGetValue(position, out CubeData data))
+                if (!_cubeDatas.TryGetValue(position, out GolemCubeData data))
                     continue;
 
                 if (isMax)
-                    result = Mathf.Max(result, data.ShapePoisition[vectorIndex]);
+                    result = Mathf.Max(result, data.shapePoisition[vectorIndex]);
                 else
-                    result = Mathf.Min(result, data.ShapePoisition[vectorIndex]);
+                    result = Mathf.Min(result, data.shapePoisition[vectorIndex]);
             }
 
             return result;
         }
 
-        public void FindEdgeCubes(Enums.Direction3D direction, IList<CubeData> list)
+        public void FindEdgeCubes(Enums.Direction3D direction, IList<GolemCubeData> list)
         {
             if (list == null)
                 return;
@@ -113,15 +113,15 @@ namespace Commar.CubicLand.Cube
 
             foreach (Vector3Int position in _availables)
             {
-                if (!_cubeDatas.TryGetValue(position, out CubeData data))
+                if (!_cubeDatas.TryGetValue(position, out GolemCubeData data))
                     continue;
 
-                if (data.ShapePoisition[vectorIndex] == edge)
+                if (data.shapePoisition[vectorIndex] == edge)
                     list.Add(data);
             }
         }
 
-        public void FindVisibleCubes(Enums.Direction3D direction, IList<CubeData> list)
+        public void FindVisibleCubes(Enums.Direction3D direction, IList<GolemCubeData> list)
         {
             if (list == null)
                 return;
@@ -135,27 +135,27 @@ namespace Commar.CubicLand.Cube
 
             foreach (Vector3Int position in _availables)
             {
-                if (!_cubeDatas.TryGetValue(position, out CubeData data))
+                if (!_cubeDatas.TryGetValue(position, out GolemCubeData data))
                     continue;
 
                 Vector3Int column = position;
                 column[vectorIndex] = 0;
 
-                if (!_visibleCubes.TryGetValue(column, out CubeData visibleCube))
+                if (!_visibleCubes.TryGetValue(column, out GolemCubeData visibleCube))
                 {
                     _visibleCubes.Add(column, data);
                     continue;
                 }
 
                 int axisPosition = position[vectorIndex];
-                int visibleAxisPosition = visibleCube.ShapePoisition[vectorIndex];
+                int visibleAxisPosition = visibleCube.shapePoisition[vectorIndex];
 
                 if ((isMax && axisPosition > visibleAxisPosition)
                     || (!isMax && axisPosition < visibleAxisPosition))
                     _visibleCubes[column] = data;
             }
 
-            foreach (CubeData visibleCube in _visibleCubes.Values)
+            foreach (GolemCubeData visibleCube in _visibleCubes.Values)
                 list.Add(visibleCube);
         }
 
@@ -175,7 +175,7 @@ namespace Commar.CubicLand.Cube
             }
         }
 
-        public void FindChildren(Vector3Int parentPosition, IList<CubeData> list)
+        public void FindChildren(Vector3Int parentPosition, IList<GolemCubeData> list)
         {
             if (list == null)
                 return;
@@ -213,14 +213,14 @@ namespace Commar.CubicLand.Cube
         private void SetAvailables()
         {
             _availables.Clear();
-            foreach (CubeData data in _cubeDatas.Values)
+            foreach (GolemCubeData data in _cubeDatas.Values)
             {
                 if (!data.IsBreaked)
-                    _availables.Add(data.ShapePoisition);
+                    _availables.Add(data.shapePoisition);
             }
         }
 
-        private void AddChildren(Vector3Int parentPosition, IList<CubeData> list)
+        private void AddChildren(Vector3Int parentPosition, IList<GolemCubeData> list)
         {
             if (!_cubeDatas.ContainsKey(parentPosition) || !_children.ContainsKey(parentPosition) || _children[parentPosition].Count == 0)
                 return;

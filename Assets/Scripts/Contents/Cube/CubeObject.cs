@@ -37,10 +37,13 @@ namespace Commar.CubicLand.Cube
             UpdateCubeObject();
         }
 
-        public void OnDamaged(float selfMass, Vector3 impulse, CubeData collider)
+        public void OnDamaged(float selfMass, Vector3 impulse, CubeData collider, float extraDamage)
         {
+            if (CubeData == null)
+                return;
+
             if (collider != null)
-                CubeData.ApplyDamage(selfMass, impulse, collider);
+                CubeData.ApplyDamage(selfMass, impulse, collider, extraDamage);
             else
                 CubeData.ApplyDamage(selfMass, impulse);
 
@@ -52,6 +55,9 @@ namespace Commar.CubicLand.Cube
 
         public void UpdateCubeObject()
         {
+            if (CubeData == null)
+                return;
+
             Mass = _cubeTrait.CalculateMass(CubeData.StatusValue);
             _meshRenderer.SetPropertyBlock(_cubeTrait.BuildPropertyBlock(CubeData));
         }

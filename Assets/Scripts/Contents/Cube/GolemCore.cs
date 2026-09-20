@@ -16,10 +16,11 @@ namespace Commar.CubicLand.Cube
         private readonly HashSet<IOnEnablable> _onEnablables = new HashSet<IOnEnablable>();
         private readonly HashSet<IFixedUpdatable> _fixedUpdatables = new HashSet<IFixedUpdatable>();
 
-        private readonly Dictionary<Vector3Int, CubeObject> _cubes = new Dictionary<Vector3Int, CubeObject>();
+        private readonly Dictionary<Vector3Int, GolemCubeHandle> _cubes = new Dictionary<Vector3Int, GolemCubeHandle>();
         private readonly List<Vector3Int> _breakedCubePositions = new List<Vector3Int>();
 
-        private readonly List<CubeData> _tempChildren = new List<CubeData>();
+        private readonly List<GolemCubeData> _tempChildren = new List<GolemCubeData>();
+        private readonly List<GolemCubeHandle> _tempHandles = new List<GolemCubeHandle>();
 
         private Rigidbody _rigidbody;
         private bool _isAttackMode;
@@ -33,7 +34,6 @@ namespace Commar.CubicLand.Cube
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody>();
-            _cubes[CubeConfig.CORE_POSITION] = GetComponent<CubeObject>();
         }
 
         private void OnEnable()
@@ -60,10 +60,10 @@ namespace Commar.CubicLand.Cube
 
         private void OnDisable()
         {
-            foreach (CubeObject cube in _cubes.Values)
+            foreach (GolemCubeHandle handle in _cubes.Values)
             {
-                if (cube != null)
-                    cube.onCubeDestoried -= OnParentCubeDestoried;
+                if (handle.IsValid)
+                    handle.cube.onCubeDestoried -= OnParentCubeDestoried;
             }
 
             _cubes.Clear();
@@ -108,25 +108,27 @@ namespace Commar.CubicLand.Cube
             _motionAdjuster = motionAdjuster;
         }
 
-        public void Initialize(GolemData golemData, IList<CubeObject> cubes)
+        public void Initialize(GolemData golemData, IList<GolemCubeHandle> handles)
         {
             GolemData = golemData;
 
             _breakedCubePositions.Clear();
-            foreach (CubeData cubeData in golemData.CubeDatas.Values)
+            foreach (GolemCubeData cubeData in golemData.CubeDatas.Values)
             {
                 if (cubeData.IsBreaked)
-                    _breakedCubePositions.Add(cubeData.ShapePoisition);
+                    _breakedCubePositions.Add(cubeData.shapePoisition);
             }
 
             SortBreakedCubeList();
             _cubes.Clear();
 
-            foreach (CubeObject cube in cubes)
+            foreach (GolemCubeHandle handle in handles)
             {
-                _cubes.Add(cube.CubeData.ShapePoisition, cube);
-                cube.Initialize(golemData.CubeDatas[cube.CubeData.ShapePoisition]);
-                cube.onCubeDestoried += OnParentCubeDestoried;
+                if (!handle.IsValid)
+                    continue;
+
+                _cubes.Add(handle.data.shapePoisition, handle);
+                handle.cube.onCubeDestoried += OnParentCubeDestoried;
             }
 
             SetAttackMode(false);
@@ -174,27 +176,32 @@ namespace Commar.CubicLand.Cube
             if (GolemData == null)
                 return null;
 
-            if (_cubes.TryGetValue(position, out CubeObject cube))
-                return cube;
+            if (_cubes.TryGetValue(position, out GolemCubeHandle handle))
+                return handle.cube;
             return null;
         }
 
-        public static void AttachCube(CubeObject parentCube, CubeObject childCube)
+        public static bool AttachCube(GolemCubeHandle parentHandle, GolemCubeHandle childHandle)
         {
-            Vector3Int childPosition = childCube.CubeData.ShapePoisition;
-            childCube.transform.SetParent(parentCube.transform);
-            childCube.transform.localPosition = (Vector3)(childPosition - parentCube.CubeData.ShapePoisition) * CubeConfig.CUBE_BASE_LENGHT;
-            childCube.transform.localRotation = Quaternion.identity;
-            childCube.transform.localScale = Vector3.one;
+            if (!parentHandle.IsValid || !childHandle.IsValid)
+                return false;
+
+            Vector3Int childPosition = childHandle.data.shapePoisition;
+            childHandle.cube.transform.SetParent(parentHandle.cube.transform);
+            childHandle.cube.transform.localPosition = (Vector3)(childPosition - parentHandle.data.shapePoisition) * CubeConfig.CUBE_BASE_LENGHT;
+            childHandle.cube.transform.localRotation = Quaternion.identity;
+            childHandle.cube.transform.localScale = Vector3.one;
+
+            return true;
         }
 
         internal bool AddCube(Vector3Int parentPosition, Enums.Direction3D direction)
         {
             if (!GolemData.TryAddCube(parentPosition, direction, out Vector3Int position)
-                || !GolemData.CubeDatas.TryGetValue(position, out CubeData cubeData))
+                || !GolemData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData))
                 return false;
 
-            if (GolemData.CubeDatas.TryGetValue(parentPosition, out CubeData parent)
+            if (GolemData.CubeDatas.TryGetValue(parentPosition, out GolemCubeData parent)
                 && parent.IsBreaked)
             {
                 RecreateBreakedCube(parentPosition);
@@ -219,11 +226,11 @@ namespace Commar.CubicLand.Cube
 
         internal void OnHealed(int heal)
         {
-            if (!_cubes.TryGetValue(CubeConfig.CORE_POSITION, out CubeObject cube))
+            if (!_cubes.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeHandle handle))
                 return;
 
-            heal = ApplyHeal(heal, cube);
-            DistributeHeal(heal, cube);
+            heal = ApplyHeal(heal, handle);
+            DistributeHeal(heal, new GolemCubeHandle[] { handle });
 
             RecreateBreakedCubes();
             UpdateGolemMass();
@@ -231,7 +238,7 @@ namespace Commar.CubicLand.Cube
 
         internal void EnhanceStatus(StatusPoint statusPoint)
         {
-            if (GolemData == null || !GolemData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out CubeData cubeData))
+            if (GolemData == null || !GolemData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData cubeData))
                 return;
 
             cubeData.EnhanceStatus(statusPoint);
@@ -242,41 +249,46 @@ namespace Commar.CubicLand.Cube
 
         private void OnParentCubeDestoried(CubeObject cube)
         {
-            _cubes.Remove(cube.CubeData.ShapePoisition);
+            GolemCubeHandle handle = new GolemCubeHandle(cube);
             cube.onCubeDestoried -= OnParentCubeDestoried;
-            cube.CubeData.IsBreaked = true;
-            _breakedCubePositions.Add(cube.CubeData.ShapePoisition);
 
-            GolemData.FindChildren(cube.CubeData.ShapePoisition, _tempChildren);
-            foreach (CubeData child in _tempChildren)
+            if (!handle.IsValid)
+                return;
+
+            _cubes.Remove(handle.data.shapePoisition);
+            handle.data.IsBreaked = true;
+            _breakedCubePositions.Add(handle.data.shapePoisition);
+
+            GolemData.FindChildren(handle.data.shapePoisition, _tempChildren);
+            foreach (GolemCubeData child in _tempChildren)
             {
-                if (!_cubes.TryGetValue(child.ShapePoisition, out CubeObject childCube))
+                if (!_cubes.TryGetValue(child.shapePoisition, out GolemCubeHandle childHandle))
                     continue;
 
-                _orphanedCubeHandler?.HandleOrphanedCube(childCube);
-                _cubeFactory.DestoryCube(childCube);
-                childCube.onCubeDestoried -= OnParentCubeDestoried;
-                _cubes.Remove(child.ShapePoisition);
-                childCube.CubeData.StatusValue.ApplyDamage(childCube.CubeData.StatusValue.MaxHP);
-                childCube.CubeData.IsBreaked = true;
-                _breakedCubePositions.Add(childCube.CubeData.ShapePoisition);
+                _orphanedCubeHandler?.HandleOrphanedCube(childHandle.cube);
+                _cubeFactory.DestoryCube(childHandle.cube);
+                childHandle.cube.onCubeDestoried -= OnParentCubeDestoried;
+                _cubes.Remove(child.shapePoisition);
+                childHandle.data.StatusValue.ApplyDamage(childHandle.data.StatusValue.MaxHP);
+                childHandle.data.IsBreaked = true;
+                _breakedCubePositions.Add(childHandle.data.shapePoisition);
             }
 
             UpdateGolemMass();
             SortBreakedCubeList();
 
-            if (cube.CubeData.ShapePoisition == CubeConfig.CORE_POSITION)
+            if (handle.data.shapePoisition == CubeConfig.CORE_POSITION)
                 onReleased?.Invoke(cube);
         }
 
-        private int ApplyHeal(int heal, CubeObject cube)
+        private int ApplyHeal(int heal, GolemCubeHandle handle)
         {
-            StatusValue statusValue = cube.CubeData.StatusValue;
+            StatusValue statusValue = handle.data.StatusValue;
             if (!statusValue.IsFullHP() && heal > 0)
             {
                 heal = statusValue.Heal(heal);
-                cube.UpdateCubeObject();
-                onHealed?.Invoke(cube);
+                handle.cube.UpdateCubeObject();
+                onHealed?.Invoke(handle.cube);
 
                 if (heal <= 0)
                     return 0;
@@ -285,23 +297,21 @@ namespace Commar.CubicLand.Cube
             return heal;
         }
 
-        private void DistributeHeal(int heal, params CubeObject[] cubes)
+        private void DistributeHeal(int heal, IList<GolemCubeHandle> handles)
         {
-            if (heal <= 0 || cubes == null || cubes.Length == 0)
+            if (heal <= 0 || handles == null || handles.Count == 0)
                 return;
 
-            List<CubeObject> children = new List<CubeObject>();
-            foreach (CubeObject cube in cubes)
-            {
-                List<CubeObject> validChildren = FindValidChildren(cube.CubeData.ShapePoisition);
-                if (validChildren != null && validChildren.Count > 0)
-                    children.AddRange(validChildren);
-            }
+            List<GolemCubeHandle> children = new List<GolemCubeHandle>();
+
+            foreach (GolemCubeHandle handle in handles)
+                FindValidChildren(handle.data.shapePoisition, children);
 
             if (children.Count == 0)
                 return;
 
-            List<CubeObject> targets = new List<CubeObject>();
+            List<GolemCubeHandle> targets = _tempHandles;
+            targets.Clear();
             targets.AddRange(children);
 
             while (heal > 0 && targets.Count > 0)
@@ -319,39 +329,36 @@ namespace Commar.CubicLand.Cube
 
                 for (int i = targets.Count - 1; i >= 0; i--)
                 {
-                    if (targets[i].CubeData.StatusValue.IsFullHP())
+                    if (targets[i].data.StatusValue.IsFullHP())
                     {
-                        if (targets[i].CubeData.IsBreaked)
-                            targets[i].CubeData.IsBreaked = false;
+                        if (targets[i].data.IsBreaked)
+                            targets[i].data.IsBreaked = false;
                         targets.RemoveAt(i);
                     }
                 }
             }
 
-            DistributeHeal(heal, children.ToArray());
+            DistributeHeal(heal, children);
         }
 
-        private List<CubeObject> FindValidChildren(Vector3Int position)
+        private void FindValidChildren(Vector3Int position, IList<GolemCubeHandle> handles)
         {
-            if (!GolemData.Children.TryGetValue(position, out List<Vector3Int> children) || children.Count == 0)
-                return null;
+            if (handles == null || !GolemData.Children.TryGetValue(position, out List<Vector3Int> children) || children.Count == 0)
+                return;
 
-            List<CubeObject> result = new List<CubeObject>();
             foreach (Vector3Int childPosition in children)
             {
-                if (_cubes.TryGetValue(childPosition, out CubeObject cube))
-                    result.Add(cube);
+                if (_cubes.TryGetValue(childPosition, out GolemCubeHandle handle))
+                    handles.Add(handle);
             }
-
-            return result;
         }
 
         private void UpdateGolemMass()
         {
             float mass = 0f;
-            foreach (CubeObject cube in _cubes.Values)
+            foreach (GolemCubeHandle handle in _cubes.Values)
             {
-                mass += cube.Mass;
+                mass += handle.cube.Mass;
             }
             _rigidbody.mass = mass;
         }
@@ -359,14 +366,14 @@ namespace Commar.CubicLand.Cube
         private void RecreateBreakedCube(Vector3Int position)
         {
             if (GolemData.Parents.TryGetValue(position, out Vector3Int parentPosition)
-                && GolemData.CubeDatas.TryGetValue(parentPosition, out CubeData parent)
+                && GolemData.CubeDatas.TryGetValue(parentPosition, out GolemCubeData parent)
                 && parent.IsBreaked)
             {
                 RecreateBreakedCube(parentPosition);
                 return;
             }
 
-            if (!GolemData.CubeDatas.TryGetValue(position, out CubeData cubeData))
+            if (!GolemData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData))
                 return;
 
             cubeData.IsBreaked = false;
@@ -387,10 +394,10 @@ namespace Commar.CubicLand.Cube
             {
                 Vector3Int position = _breakedCubePositions[i];
 
-                if (!GolemData.CubeDatas.TryGetValue(position, out CubeData cubeData)
+                if (!GolemData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData)
                     || !cubeData.StatusValue.IsFullHP()
                     || !GolemData.Parents.TryGetValue(position, out Vector3Int parentPosition)
-                    || !GolemData.CubeDatas.TryGetValue(parentPosition, out CubeData parent)
+                    || !GolemData.CubeDatas.TryGetValue(parentPosition, out GolemCubeData parent)
                     || parent.IsBreaked)
                     continue;
 
@@ -404,22 +411,22 @@ namespace Commar.CubicLand.Cube
             }
         }
 
-        private bool CreateCube(CubeData cubeData, CubeSpawnOptions options)
+        private bool CreateCube(GolemCubeData cubeData, CubeSpawnOptions options)
         {
-            Vector3Int position = cubeData.ShapePoisition;
+            Vector3Int position = cubeData.shapePoisition;
             if (_cubes.ContainsKey(position)
                 || !GolemData.Parents.TryGetValue(position, out Vector3Int parentPosition)
-                || !_cubes.TryGetValue(parentPosition, out CubeObject parentCube))
+                || !_cubes.TryGetValue(parentPosition, out GolemCubeHandle parentHandle))
                 return false;
 
-            CubeObject cube = _cubeFactory.CreateCube(cubeData, options);
-            if (cube == null)
+            GolemCubeHandle handle = new GolemCubeHandle(_cubeFactory.CreateCube(cubeData, options));
+            if (!handle.IsValid)
                 return false;
 
-            AttachCube(parentCube, cube);
+            AttachCube(parentHandle, handle);
 
-            _cubes.Add(position, cube);
-            cube.onCubeDestoried += OnParentCubeDestoried;
+            _cubes.Add(position, handle);
+            handle.cube.onCubeDestoried += OnParentCubeDestoried;
             return true;
         }
 
@@ -438,14 +445,14 @@ namespace Commar.CubicLand.Cube
             });
         }
 
-        private void EnhanceChildStatus(CubeData parent)
+        private void EnhanceChildStatus(GolemCubeData parent)
         {
-            if (!GolemData.Children.TryGetValue(parent.ShapePoisition, out List<Vector3Int> childList))
+            if (!GolemData.Children.TryGetValue(parent.shapePoisition, out List<Vector3Int> childList))
                 return;
 
             foreach (Vector3Int position in childList)
             {
-                if (!GolemData.CubeDatas.TryGetValue(position, out CubeData cubeData))
+                if (!GolemData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData))
                     continue;
 
                 cubeData.EnhanceChildStatus(parent);
@@ -457,8 +464,8 @@ namespace Commar.CubicLand.Cube
         {
             _isAttackMode = attackMode;
 
-            foreach (CubeObject cube in _cubes.Values)
-                cube.CubeData.IsAttackMode = _isAttackMode;
+            foreach (GolemCubeHandle handle in _cubes.Values)
+                handle.data.IsAttackMode = _isAttackMode;
         }
     }
 }

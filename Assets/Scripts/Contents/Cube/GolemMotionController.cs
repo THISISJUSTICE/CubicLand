@@ -10,7 +10,7 @@ namespace Commar.CubicLand.Cube
         private readonly IGroundSensor _groundSensor;
         private readonly GolemMotionMotor _motionMotor;
 
-        private readonly List<CubeData> _edgeCubes = new List<CubeData>();
+        private readonly List<GolemCubeData> _edgeCubes = new List<GolemCubeData>();
 
         private Coroutine _coroutine;
 

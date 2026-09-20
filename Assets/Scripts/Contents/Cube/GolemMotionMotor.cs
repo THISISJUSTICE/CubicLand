@@ -15,7 +15,7 @@ namespace Commar.CubicLand.Cube
 
         private readonly List<Vector3Int> _tempList = new List<Vector3Int>();
         private readonly Dictionary<Enums.Direction3D, Vector3Int> _tempDictionary = new Dictionary<Enums.Direction3D, Vector3Int>();
-        private readonly List<CubeData> _edgeCubes = new List<CubeData>();
+        private readonly List<GolemCubeData> _edgeCubes = new List<GolemCubeData>();
 
         private static readonly Enums.Direction3D[] PRIORITY_CANDIDATES = new Enums.Direction3D[]
         {
@@ -58,12 +58,12 @@ namespace Commar.CubicLand.Cube
             UpdateGeometryData();
         }
 
-        public void FindEdgeCubeDatas(Enums.Direction3D direction, IList<CubeData> cubeDatas)
+        public void FindEdgeCubeDatas(Enums.Direction3D direction, IList<GolemCubeData> cubeDatas)
         {
             _golemObject.GolemData.FindEdgeCubes(ConvertObjectDirection(direction), cubeDatas);
         }
 
-        public void FindVisibleCubeDatas(Enums.Direction3D direction, IList<CubeData> cubes)
+        public void FindVisibleCubeDatas(Enums.Direction3D direction, IList<GolemCubeData> cubes)
         {
             _golemObject.GolemData.FindVisibleCubes(ConvertObjectDirection(direction), cubes);
         }
@@ -327,22 +327,22 @@ namespace Commar.CubicLand.Cube
 
             if (_edgeCubes.Count == 1)
             {
-                _tempList.Add(_edgeCubes[0].ShapePoisition);
+                _tempList.Add(_edgeCubes[0].shapePoisition);
                 return _tempList;
             }
 
-            float nearestDist = Vector3Int.Distance(CubeConfig.CORE_POSITION, _edgeCubes[0].ShapePoisition);
-            foreach (CubeData cubeData in _edgeCubes)
+            float nearestDist = Vector3Int.Distance(CubeConfig.CORE_POSITION, _edgeCubes[0].shapePoisition);
+            foreach (GolemCubeData cubeData in _edgeCubes)
             {
-                float dist = Vector3Int.Distance(CubeConfig.CORE_POSITION, cubeData.ShapePoisition);
+                float dist = Vector3Int.Distance(CubeConfig.CORE_POSITION, cubeData.shapePoisition);
                 if (dist < nearestDist)
                 {
                     _tempList.Clear();
-                    _tempList.Add(cubeData.ShapePoisition);
+                    _tempList.Add(cubeData.shapePoisition);
                     nearestDist = dist;
                 }
                 else if (dist == nearestDist)
-                    _tempList.Add(cubeData.ShapePoisition);
+                    _tempList.Add(cubeData.shapePoisition);
             }
 
             return _tempList;

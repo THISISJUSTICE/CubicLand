@@ -44,7 +44,7 @@ namespace Commar.CubicLand.Cube
             {
                 _defferedCollisionAction += () =>
                 {
-                    cubeObject.OnDamaged(cubeObject.Mass, impulse, null);
+                    cubeObject.OnDamaged(cubeObject.Mass, impulse, null, CalculateExtraDamage(cubeObject));
                     motionAdjuster.ApplyKnockback(impulse);
                 };
             }
@@ -52,7 +52,7 @@ namespace Commar.CubicLand.Cube
             {
                 _defferedCollisionAction += () =>
                 {
-                    cubeObject.OnDamaged(cubeObject.Mass, impulse, collisionCube.CubeData);
+                    cubeObject.OnDamaged(cubeObject.Mass, impulse, collisionCube.CubeData, CalculateExtraDamage(cubeObject));
                     motionAdjuster.ApplyKnockback(impulse);
                 };
             }
@@ -71,6 +71,15 @@ namespace Commar.CubicLand.Cube
                 return (a, b);
             else
                 return (b, a);
+        }
+
+        private float CalculateExtraDamage(CubeObject cubeObject)
+        {
+            float extraDamage = 0f;
+            if (cubeObject.CubeData is GolemCubeData cubeData)
+                extraDamage = cubeData.CalculateExtraDamage();
+
+            return extraDamage;
         }
     }
 }
