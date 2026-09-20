@@ -6,7 +6,7 @@ namespace Commar.CubicLand.Cube
     public interface IGolemObject
     {
         internal Rigidbody Rigidbody { get; }
-        public GolemData GolemData { get; }
+        public GolemStructureData StructureData { get; }
 
         internal void AddUnityRoutine(IOnEnablable onEnablable);
         internal void AddUnityRoutine(IFixedUpdatable fixedUpdatable);

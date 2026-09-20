@@ -60,12 +60,12 @@ namespace Commar.CubicLand.Cube
 
         public void FindEdgeCubeDatas(Enums.Direction3D direction, IList<GolemCubeData> cubeDatas)
         {
-            _golemObject.GolemData.FindEdgeCubes(ConvertObjectDirection(direction), cubeDatas);
+            _golemObject.StructureData.FindEdgeCubes(ConvertObjectDirection(direction), cubeDatas);
         }
 
         public void FindVisibleCubeDatas(Enums.Direction3D direction, IList<GolemCubeData> cubes)
         {
-            _golemObject.GolemData.FindVisibleCubes(ConvertObjectDirection(direction), cubes);
+            _golemObject.StructureData.FindVisibleCubes(ConvertObjectDirection(direction), cubes);
         }
 
         public bool ReleaseJumpForce()
@@ -311,7 +311,7 @@ namespace Commar.CubicLand.Cube
 
         private int GetGolemLength(Enums.Direction3D direction)
         {
-            return _golemObject.GolemData.GetDirectionLength(ConvertObjectDirection(direction));
+            return _golemObject.StructureData.GetDirectionLength(ConvertObjectDirection(direction));
         }
 
         private List<Vector3Int> FindAxisCandidates(Enums.Direction3D moveDirection)

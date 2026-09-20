@@ -8,6 +8,8 @@ namespace Commar.CubicLand.Cube
     [RequireComponent(typeof(CubeObject), typeof(Rigidbody))]
     public class GolemCore : MonoBehaviour, IGolemObject
     {
+        private GolemData _golemData;
+
         private ICubeCollisionResolver _cubeCollisionResolver;
         private IOrphanedCubeHandler _orphanedCubeHandler;
         private ICubeFactory _cubeFactory;
@@ -29,7 +31,7 @@ namespace Commar.CubicLand.Cube
         internal event Action<CubeObject> onReleased;
 
         Rigidbody IGolemObject.Rigidbody => _rigidbody;
-        public GolemData GolemData { get; private set; }
+        public GolemStructureData StructureData => _golemData.structureData;
 
         private void Awake()
         {
@@ -38,7 +40,7 @@ namespace Commar.CubicLand.Cube
 
         private void OnEnable()
         {
-            if (GolemData != null)
+            if (_golemData != null)
             {
                 bool hasNull = false;
 
@@ -68,7 +70,7 @@ namespace Commar.CubicLand.Cube
 
             _cubes.Clear();
             _breakedCubePositions.Clear();
-            GolemData = null;
+            _golemData = null;
         }
 
         private void FixedUpdate()
@@ -110,10 +112,10 @@ namespace Commar.CubicLand.Cube
 
         public void Initialize(GolemData golemData, IList<GolemCubeHandle> handles)
         {
-            GolemData = golemData;
+            _golemData = golemData;
 
             _breakedCubePositions.Clear();
-            foreach (GolemCubeData cubeData in golemData.CubeDatas.Values)
+            foreach (GolemCubeData cubeData in golemData.structureData.CubeDatas.Values)
             {
                 if (cubeData.IsBreaked)
                     _breakedCubePositions.Add(cubeData.shapePoisition);
@@ -165,7 +167,7 @@ namespace Commar.CubicLand.Cube
         public float CalculateMoveTime(float initTime, float minTime, float maxTime)
         {
             float weightFactor = Mathf.Pow(_rigidbody.mass, CubeConfig.WEIGHT_EXPONENT) / Mathf.Pow(CubeUtil.CalculateBasicCubeObjectMass(), CubeConfig.WEIGHT_EXPONENT);
-            float speedFactor = Mathf.Pow((float)CubeConfig.Status.INIT_MOVE_SPEED / GolemData.MoveSpeed, CubeConfig.SPEED_EXPONENT);
+            float speedFactor = Mathf.Pow((float)CubeConfig.Status.INIT_MOVE_SPEED / _golemData.MoveSpeed, CubeConfig.SPEED_EXPONENT);
             float moveTime = initTime * weightFactor * speedFactor;
 
             return Mathf.Clamp(moveTime, minTime, maxTime);
@@ -173,7 +175,7 @@ namespace Commar.CubicLand.Cube
 
         public CubeObject FindCube(Vector3Int position)
         {
-            if (GolemData == null)
+            if (_golemData == null)
                 return null;
 
             if (_cubes.TryGetValue(position, out GolemCubeHandle handle))
@@ -197,11 +199,11 @@ namespace Commar.CubicLand.Cube
 
         internal bool AddCube(Vector3Int parentPosition, Enums.Direction3D direction)
         {
-            if (!GolemData.TryAddCube(parentPosition, direction, out Vector3Int position)
-                || !GolemData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData))
+            if (!StructureData.TryAddCube(parentPosition, direction, out Vector3Int position)
+                || !StructureData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData))
                 return false;
 
-            if (GolemData.CubeDatas.TryGetValue(parentPosition, out GolemCubeData parent)
+            if (StructureData.CubeDatas.TryGetValue(parentPosition, out GolemCubeData parent)
                 && parent.IsBreaked)
             {
                 RecreateBreakedCube(parentPosition);
@@ -238,7 +240,7 @@ namespace Commar.CubicLand.Cube
 
         internal void EnhanceStatus(StatusPoint statusPoint)
         {
-            if (GolemData == null || !GolemData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData cubeData))
+            if (_golemData == null || !StructureData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData cubeData))
                 return;
 
             cubeData.EnhanceStatus(statusPoint);
@@ -259,7 +261,7 @@ namespace Commar.CubicLand.Cube
             handle.data.IsBreaked = true;
             _breakedCubePositions.Add(handle.data.shapePoisition);
 
-            GolemData.FindChildren(handle.data.shapePoisition, _tempChildren);
+            StructureData.FindChildren(handle.data.shapePoisition, _tempChildren);
             foreach (GolemCubeData child in _tempChildren)
             {
                 if (!_cubes.TryGetValue(child.shapePoisition, out GolemCubeHandle childHandle))
@@ -343,7 +345,7 @@ namespace Commar.CubicLand.Cube
 
         private void FindValidChildren(Vector3Int position, IList<GolemCubeHandle> handles)
         {
-            if (handles == null || !GolemData.Children.TryGetValue(position, out List<Vector3Int> children) || children.Count == 0)
+            if (handles == null || !StructureData.Children.TryGetValue(position, out List<Vector3Int> children) || children.Count == 0)
                 return;
 
             foreach (Vector3Int childPosition in children)
@@ -365,15 +367,15 @@ namespace Commar.CubicLand.Cube
 
         private void RecreateBreakedCube(Vector3Int position)
         {
-            if (GolemData.Parents.TryGetValue(position, out Vector3Int parentPosition)
-                && GolemData.CubeDatas.TryGetValue(parentPosition, out GolemCubeData parent)
+            if (StructureData.Parents.TryGetValue(position, out Vector3Int parentPosition)
+                && StructureData.CubeDatas.TryGetValue(parentPosition, out GolemCubeData parent)
                 && parent.IsBreaked)
             {
                 RecreateBreakedCube(parentPosition);
                 return;
             }
 
-            if (!GolemData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData))
+            if (!StructureData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData))
                 return;
 
             cubeData.IsBreaked = false;
@@ -394,10 +396,10 @@ namespace Commar.CubicLand.Cube
             {
                 Vector3Int position = _breakedCubePositions[i];
 
-                if (!GolemData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData)
+                if (!StructureData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData)
                     || !cubeData.StatusValue.IsFullHP()
-                    || !GolemData.Parents.TryGetValue(position, out Vector3Int parentPosition)
-                    || !GolemData.CubeDatas.TryGetValue(parentPosition, out GolemCubeData parent)
+                    || !StructureData.Parents.TryGetValue(position, out Vector3Int parentPosition)
+                    || !StructureData.CubeDatas.TryGetValue(parentPosition, out GolemCubeData parent)
                     || parent.IsBreaked)
                     continue;
 
@@ -415,7 +417,7 @@ namespace Commar.CubicLand.Cube
         {
             Vector3Int position = cubeData.shapePoisition;
             if (_cubes.ContainsKey(position)
-                || !GolemData.Parents.TryGetValue(position, out Vector3Int parentPosition)
+                || !StructureData.Parents.TryGetValue(position, out Vector3Int parentPosition)
                 || !_cubes.TryGetValue(parentPosition, out GolemCubeHandle parentHandle))
                 return false;
 
@@ -437,8 +439,8 @@ namespace Commar.CubicLand.Cube
 
             _breakedCubePositions.Sort((a, b) =>
             {
-                if (!GolemData.ChildDepths.TryGetValue(a, out int depthA)
-                 || !GolemData.ChildDepths.TryGetValue(b, out int depthB))
+                if (!StructureData.ChildDepths.TryGetValue(a, out int depthA)
+                 || !StructureData.ChildDepths.TryGetValue(b, out int depthB))
                     return 0;
 
                 return depthB - depthA;
@@ -447,12 +449,12 @@ namespace Commar.CubicLand.Cube
 
         private void EnhanceChildStatus(GolemCubeData parent)
         {
-            if (!GolemData.Children.TryGetValue(parent.shapePoisition, out List<Vector3Int> childList))
+            if (!StructureData.Children.TryGetValue(parent.shapePoisition, out List<Vector3Int> childList))
                 return;
 
             foreach (Vector3Int position in childList)
             {
-                if (!GolemData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData))
+                if (!StructureData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData))
                     continue;
 
                 cubeData.EnhanceChildStatus(parent);

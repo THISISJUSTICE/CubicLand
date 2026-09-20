@@ -24,7 +24,7 @@ namespace Commar.CubicLand.Cube
             }
 
             GolemData instanceData = golemData.Clone();
-            if (!instanceData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData coreData))
+            if (!instanceData.structureData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData coreData))
             {
                 Debug.LogError($"GolemData must contain core cube data.");
                 return null;
@@ -48,21 +48,21 @@ namespace Commar.CubicLand.Cube
 
             GolemCubeHandle coreHandle = new GolemCubeHandle(coreCube);
             List<GolemCubeHandle> handles = new List<GolemCubeHandle>() { coreHandle };
-            CreateChildCubes(instanceData, coreData, coreHandle, handles, options);
+            CreateChildCubes(instanceData.structureData, coreData, coreHandle, handles, options);
 
             golemCore.Initialize(instanceData, handles);
             return golemCore;
         }
 
-        private void CreateChildCubes(GolemData golemData, GolemCubeData parentData, GolemCubeHandle parentHandle, List<GolemCubeHandle> handles, CubeSpawnOptions options)
+        private void CreateChildCubes(GolemStructureData structureData, GolemCubeData parentData, GolemCubeHandle parentHandle, List<GolemCubeHandle> handles, CubeSpawnOptions options)
         {
-            if (!golemData.Children.TryGetValue(parentData.shapePoisition, out List<Vector3Int> childPositions)
+            if (!structureData.Children.TryGetValue(parentData.shapePoisition, out List<Vector3Int> childPositions)
                 || childPositions == null || childPositions.Count == 0 || !parentHandle.IsValid)
                 return;
 
             foreach (Vector3Int childPosition in childPositions)
             {
-                if (!golemData.CubeDatas.TryGetValue(childPosition, out GolemCubeData childData)
+                if (!structureData.CubeDatas.TryGetValue(childPosition, out GolemCubeData childData)
                     || childData.IsBreaked)
                     continue;
 
@@ -73,7 +73,7 @@ namespace Commar.CubicLand.Cube
                 GolemCore.AttachCube(parentHandle, childHandle);
 
                 handles.Add(childHandle);
-                CreateChildCubes(golemData, childData, childHandle, handles, options);
+                CreateChildCubes(structureData, childData, childHandle, handles, options);
             }
         }
     }
