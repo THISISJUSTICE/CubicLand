@@ -6,9 +6,9 @@ namespace Commar.CubicLand.Cube
     {
         public StatusPoint StatusPoint { get; protected set; }
         public StatusValue StatusValue { get; protected set; }
-        
+
         public Color Color { get; protected set; }
-        
+
         public CubeData(StatusPoint statusPoint, Color color)
         {
             StatusPoint = statusPoint;
@@ -30,16 +30,6 @@ namespace Commar.CubicLand.Cube
                 StatusValue.EnhanceStatus(statusPoint);
             else
                 StatusValue = new StatusValue(statusPoint);
-        }
-
-        internal void EnhanceChildStatus(CubeData parent)
-        {
-            StatusPoint = parent.StatusPoint.MakeChildStatus();
-            StatusValue.EnhanceStatus(StatusPoint);
-
-            Color color = parent.Color * CubeConfig.COLOR_CHILD_RATE;
-            color = color.Clamp(color, Color.white);
-            Color = color;
         }
 
         internal void ApplyDamage(float selfMass, Vector3 impulse, CubeData collider, float extraDamage)
@@ -112,8 +102,18 @@ namespace Commar.CubicLand.Cube
         }
 
         public float CalculateExtraDamage()
-        { 
+        {
             return IsAttackMode ? StatusValue.Attack : 0f;
+        }
+
+        internal void EnhanceChildStatus(CubeData parent)
+        {
+            StatusPoint = parent.StatusPoint.MakeChildStatus();
+            StatusValue.EnhanceStatus(StatusPoint, !IsBreaked);
+
+            Color color = parent.Color * CubeConfig.COLOR_CHILD_RATE;
+            color = color.Clamp(color, Color.white);
+            Color = color;
         }
     }
 }

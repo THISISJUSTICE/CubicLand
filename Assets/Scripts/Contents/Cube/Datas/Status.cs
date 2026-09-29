@@ -77,13 +77,16 @@ namespace Commar.CubicLand.Cube
             return HP == MaxHP;
         }
 
-        internal void EnhanceStatus(StatusPoint statusPoint)
+        internal void EnhanceStatus(StatusPoint statusPoint, bool isHeal = true)
         {
             int previousMaxHP = MaxHP;
             int previousHP = HP;
             Initialize(statusPoint);
 
-            HP = Mathf.Min(MaxHP, previousHP + MaxHP - previousMaxHP);
+            if (isHeal)
+                HP = Mathf.Min(MaxHP, previousHP + MaxHP - previousMaxHP);
+            else
+                HP = previousHP;
         }
 
         internal void ApplyDamage(int damage)
