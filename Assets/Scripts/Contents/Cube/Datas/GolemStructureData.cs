@@ -37,19 +37,10 @@ namespace Commar.CubicLand.Cube
                 _children = new Dictionary<Vector3Int, List<Vector3Int>>();
 
             _parents = new Dictionary<Vector3Int, Vector3Int>();
-            foreach (Vector3Int parent in _children.Keys)
-            {
-                if (!_children.TryGetValue(parent, out List<Vector3Int> childList)
-                    || childList == null || childList.Count == 0)
-                    continue;
-
-                foreach (Vector3Int child in childList)
-                    _parents[child] = parent;
-            }
+            BuildParents();
 
             _childDepths = new Dictionary<Vector3Int, int>();
             _childDepths[CubeConfig.CORE_POSITION] = 0;
-
             BuildChildDepths();
         }
 
@@ -180,6 +171,20 @@ namespace Commar.CubicLand.Cube
             AddChildren(parentPosition, list);
         }
 
+        public GolemCubeData FindCreatableCube(Vector3Int childPosition)
+        {
+            if (!_parents.TryGetValue(childPosition, out Vector3Int position)
+                || !_cubeDatas.TryGetValue(position, out GolemCubeData current)
+                || !_parents.TryGetValue(position, out Vector3Int parentPosition)
+                || !_cubeDatas.TryGetValue(parentPosition, out GolemCubeData parent))
+                return null;
+
+            if (parent.IsBreaked)
+                return FindCreatableCube(position);
+
+            return current;
+        }
+
         internal bool TryAddCube(Vector3Int parentPosition, Enums.Direction3D direction, out Vector3Int position)
         {
             position = parentPosition;
@@ -225,6 +230,19 @@ namespace Commar.CubicLand.Cube
             {
                 list.Add(_cubeDatas[position]);
                 AddChildren(position, list);
+            }
+        }
+
+        private void BuildParents()
+        {
+            foreach (Vector3Int parent in _children.Keys)
+            {
+                if (!_children.TryGetValue(parent, out List<Vector3Int> children)
+                    || children == null || children.Count == 0)
+                    continue;
+
+                foreach (Vector3Int child in children)
+                    _parents[child] = parent;
             }
         }
 
