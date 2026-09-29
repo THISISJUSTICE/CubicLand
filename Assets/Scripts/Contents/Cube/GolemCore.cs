@@ -261,7 +261,7 @@ namespace Commar.CubicLand.Cube
             handle.data.IsBreaked = true;
             _breakedCubePositions.Add(handle.data.shapePoisition);
 
-            StructureData.FindChildren(handle.data.shapePoisition, _tempChildren);
+            StructureData.FindAllChildren(handle.data.shapePoisition, _tempChildren);
             foreach (GolemCubeData child in _tempChildren)
             {
                 if (!_cubes.TryGetValue(child.shapePoisition, out GolemCubeHandle childHandle))

@@ -171,7 +171,7 @@ namespace Commar.CubicLand.Cube
             }
         }
 
-        public void FindChildren(Vector3Int parentPosition, IList<GolemCubeData> list)
+        public void FindAllChildren(Vector3Int parentPosition, IList<GolemCubeData> list)
         {
             if (list == null)
                 return;
