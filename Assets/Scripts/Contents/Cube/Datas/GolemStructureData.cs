@@ -29,7 +29,7 @@ namespace Commar.CubicLand.Cube
                 _cubeDatas = cubeDatas;
             else
                 _cubeDatas = new Dictionary<Vector3Int, GolemCubeData>()
-                { { CubeConfig.CORE_POSITION, new GolemCubeData(new StatusPoint(), Color.white, CubeConfig.CORE_POSITION) } };
+                { { CubeConfig.CORE_POSITION, new GolemCubeData(StatusPoint.Zero, CubeConfig.CORE_POSITION, GolemColorPoint.Zero) } };
 
             if (children != null)
                 _children = children;
@@ -188,7 +188,7 @@ namespace Commar.CubicLand.Cube
         internal bool TryAddCube(Vector3Int parentPosition, Enums.Direction3D direction, out Vector3Int position)
         {
             position = parentPosition;
-            if (!_cubeDatas.ContainsKey(parentPosition))
+            if (!_cubeDatas.TryGetValue(parentPosition, out GolemCubeData parent))
             {
                 Debug.LogError($"This Golem has not this Position({parentPosition})");
                 return false;
@@ -201,12 +201,19 @@ namespace Commar.CubicLand.Cube
                 return false;
             }
 
-            _cubeDatas[position] = _cubeDatas[parentPosition].MakeChildData(position);
-            if (!_children.ContainsKey(parentPosition) || _children[parentPosition] == null)
-                _children[parentPosition] = new List<Vector3Int>();
-            _children[parentPosition].Add(position);
+            _cubeDatas[position] = parent.MakeChild(position);
+            if (!_children.TryGetValue(parentPosition, out List<Vector3Int> children))
+            {
+                children = new List<Vector3Int>();
+                _children[parentPosition] = children;
+            }
+
+            children.Add(position);
             _parents[position] = parentPosition;
-            _childDepths[position] = _childDepths[parentPosition] + 1;
+
+            if (!_childDepths.TryGetValue(parentPosition, out int depth))
+                depth = 0;
+            _childDepths[position] = depth + 1;
 
             return true;
         }

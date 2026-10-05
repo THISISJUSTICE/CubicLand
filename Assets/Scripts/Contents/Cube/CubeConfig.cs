@@ -17,7 +17,8 @@ namespace Commar.CubicLand.Cube
         public const float MAX_CUBE_NOMALIZE_TIME = 0.2f;
         public static readonly float MAX_CUBE_NOMALIZE_DISTANCE = Mathf.Sqrt(CUBE_BASE_LENGHT * 2f);
 
-        public const float COLOR_CHILD_RATE = 1.1f;
+        public const float STATUS_COLOR_RATE = 0.999f;
+        public const float GOLEM_COLOR_RATE = 1f - (1f - STATUS_COLOR_RATE) / 3f;
 
         public const float RESTITUTION = 0.5f;
 
