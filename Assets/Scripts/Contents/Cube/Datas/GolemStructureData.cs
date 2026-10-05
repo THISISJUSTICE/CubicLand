@@ -256,10 +256,10 @@ namespace Commar.CubicLand.Cube
                 Vector3Int parent = queue.Dequeue();
                 int nextDepth = _childDepths[parent] + 1;
 
-                if (!_children.TryGetValue(parent, out List<Vector3Int> childList))
+                if (!_children.TryGetValue(parent, out List<Vector3Int> children))
                     continue;
 
-                foreach (Vector3Int child in childList)
+                foreach (Vector3Int child in children)
                 {
                     _childDepths[child] = nextDepth;
                     queue.Enqueue(child);

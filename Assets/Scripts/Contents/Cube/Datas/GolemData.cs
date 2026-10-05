@@ -11,7 +11,7 @@ namespace Commar.CubicLand.Cube
 
         private readonly List<GolemCubeData> _tempCubeDatas = new List<GolemCubeData>();
 
-        public event Action onStatusChanged;
+        public event Action onCubeChanged;
         public event Action<GolemCubeData> onCubeCreated;
 
         /*TODO: 저장 대상*/
@@ -62,7 +62,7 @@ namespace Commar.CubicLand.Cube
             cubeData.EnhanceStatus(statusPoint);
             EnhanceChildStatus(cubeData);
 
-            onStatusChanged?.Invoke();
+            onCubeChanged?.Invoke();
         }
 
         internal void Heal(int heal)
@@ -73,7 +73,7 @@ namespace Commar.CubicLand.Cube
             heal = ApplyHeal(heal, cubeData);
             DistributeHeal(heal, new GolemCubeData[] { cubeData });
 
-            onStatusChanged?.Invoke();
+            onCubeChanged?.Invoke();
         }
 
         internal bool AddCube(Vector3Int parentPosition, Enums.Direction3D direction)

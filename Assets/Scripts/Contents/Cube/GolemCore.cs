@@ -68,7 +68,7 @@ namespace Commar.CubicLand.Cube
 
             if (_golemData != null)
             {
-                _golemData.onStatusChanged -= OnStatusChanged;
+                _golemData.onCubeChanged -= OnCubeChanged;
                 _golemData.onCubeCreated -= OnCubeCreated;
             }
 
@@ -116,12 +116,12 @@ namespace Commar.CubicLand.Cube
         {
             if (_golemData != null)
             {
-                _golemData.onStatusChanged -= OnStatusChanged;
+                _golemData.onCubeChanged -= OnCubeChanged;
                 _golemData.onCubeCreated -= OnCubeCreated;
             }
 
             _golemData = golemData;
-            golemData.onStatusChanged += OnStatusChanged;
+            golemData.onCubeChanged += OnCubeChanged;
             golemData.onCubeCreated += OnCubeCreated;
 
             _cubes.Clear();
@@ -230,7 +230,7 @@ namespace Commar.CubicLand.Cube
                 onReleased?.Invoke(cube);
         }
 
-        private void OnStatusChanged()
+        private void OnCubeChanged()
         {
             foreach (GolemCubeHandle handle in _cubes.Values)
                 handle.cube.UpdateCubeObject();
