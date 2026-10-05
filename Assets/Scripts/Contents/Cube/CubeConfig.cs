@@ -39,6 +39,8 @@ namespace Commar.CubicLand.Cube
 
         public static class Status
         {
+            public const float CHILD_REDUCE_RATE = 0.7f;
+
             public const int INIT_MOVE_SPEED = 10;
             public const int ADD_MOVE_SPEED = 2;
 

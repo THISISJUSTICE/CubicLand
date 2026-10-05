@@ -1,12 +1,15 @@
+using System;
 using UnityEngine;
 
 namespace Commar.CubicLand.Cube
 {
-    public struct StatusPoint
+    public struct StatusPoint : IEquatable<StatusPoint>
     {
         private int _hp;
         private int _armor;
         private int _attack;
+
+        public readonly static StatusPoint Zero = new StatusPoint(0, 0, 0);
 
         public int HP
         {
@@ -26,9 +29,7 @@ namespace Commar.CubicLand.Cube
             set => SetAttack(value);
         }
 
-        public void SetHP(int value) => _hp = Mathf.Max(value, 0);
-        public void SetArmor(int value) => _armor = Mathf.Max(value, 0);
-        public void SetAttack(int value) => _attack = Mathf.Max(value, 0);
+        public int TotalPoint => _hp + _armor + _attack;
 
         public StatusPoint(int hp, int armor, int attack)
         {
@@ -41,15 +42,29 @@ namespace Commar.CubicLand.Cube
             Attack = attack;
         }
 
-        public StatusPoint MakeChildStatus()
+        public bool Equals(StatusPoint other)
         {
-            StatusPoint childStatusPoint = new StatusPoint();
-            childStatusPoint.HP = HP - 1;
-            childStatusPoint.Armor = Armor - 1;
-            childStatusPoint.Attack = Attack - 1;
+            if (_hp != other._hp) return false;
+            if (_armor != other._armor) return false;
+            if (_attack != other._attack) return false;
 
-            return childStatusPoint;
+            return true;
         }
+
+        public override bool Equals(object obj)
+        {
+            return obj is StatusPoint statusPoint && Equals(statusPoint);
+        }
+
+        public StatusPoint MakeChild()
+        {
+            const float rate = CubeConfig.Status.CHILD_REDUCE_RATE;
+            return new StatusPoint(Mathf.FloorToInt(_hp * rate), Mathf.FloorToInt(_armor * rate), Mathf.FloorToInt(_attack * rate));
+        }
+
+        private void SetHP(int value) => _hp = Mathf.Max(value, 0);
+        private void SetArmor(int value) => _armor = Mathf.Max(value, 0);
+        private void SetAttack(int value) => _attack = Mathf.Max(value, 0);
     }
 
     public class StatusValue
