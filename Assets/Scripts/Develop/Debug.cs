@@ -1,28 +1,37 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using UnityEngine;
 
 namespace Commar
 {
     public static class Debug
     {
-        const string SYMBOL = "TEST_DEBUG";
+        private const string SYMBOL = "TEST_DEBUG";
 
         [Conditional(SYMBOL)]
-        public static void Log(string message)
+        public static void Log(string message, Object context = null)
         {
-            UnityEngine.Debug.Log(message);
+            if (context != null)
+                UnityEngine.Debug.Log(message, context);
+            else
+                UnityEngine.Debug.Log(message);
         }
 
         [Conditional(SYMBOL)]
-        public static void LogWarning(string message)
+        public static void LogWarning(string message, Object context = null)
         {
-            UnityEngine.Debug.LogWarning(message);
+            if (context != null)
+                UnityEngine.Debug.LogWarning(message, context);
+            else
+                UnityEngine.Debug.LogWarning(message);
         }
 
         [Conditional(SYMBOL)]
-        public static void LogError(string message)
+        public static void LogError(string message, Object context = null)
         {
-            UnityEngine.Debug.LogError(message);
+            if (context != null)
+                UnityEngine.Debug.LogError(message, context);
+            else
+                UnityEngine.Debug.LogError(message);
         }
 
         [Conditional(SYMBOL)]
