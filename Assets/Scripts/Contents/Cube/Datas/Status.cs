@@ -124,7 +124,7 @@ namespace Commar.CubicLand.Cube
             return heal - HP + prevHP;
         }
 
-        internal StatusValue Clone() => new StatusValue(this);
+        public StatusValue Clone() => new StatusValue(this);
 
         private void Initialize(StatusPoint statusPoint)
         {
