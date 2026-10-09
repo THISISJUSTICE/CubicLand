@@ -35,7 +35,8 @@ namespace Commar.CubicLand.Cube
                 return structureData.CubeDatas.Count;
             }
         }
-        public int TotalStatusPoint => StatusPoint.TotalPoint + MoveSpeedPoint + TotalCubeCount - 1;
+        public int TotalStatusPoint => StatusPoint.TotalPoint + MoveSpeedPoint;
+        public int TotalPoint => TotalStatusPoint + +TotalCubeCount - 1;
 
         public StatusValue StatusValue
         {
