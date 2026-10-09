@@ -4,35 +4,8 @@ using UnityEngine;
 
 namespace Commar.CubicLand.Cube
 {
-    public readonly struct GolemColorPoint
+    public class GolemData : IGolemStatusPoint, IGolemStatusValue
     {
-        public readonly int r;
-        public readonly int g;
-        public readonly int b;
-
-        public readonly static GolemColorPoint Zero = new GolemColorPoint(0, 0, 0);
-
-        public GolemColorPoint(int r, int g, int b)
-        {
-            if (r < 0) r = 0;
-            if (g < 0) g = 0;
-            if (b < 0) b = 0;
-
-            this.r = r;
-            this.g = g;
-            this.b = b;
-        }
-
-        public GolemColorPoint MakeChild()
-        {
-            const float rate = CubeConfig.Status.CHILD_REDUCE_RATE;
-            return new GolemColorPoint(Mathf.FloorToInt(r * rate), Mathf.FloorToInt(g * rate), Mathf.FloorToInt(b * rate));
-        }
-    }
-
-    public class GolemData
-    {
-        /*TODO: 저장 대상*/
         public readonly GolemStructureData structureData;
 
         private readonly List<GolemCubeData> _tempCubeDatas = new List<GolemCubeData>();
@@ -40,9 +13,6 @@ namespace Commar.CubicLand.Cube
         public event Action onCubeChanged;
         public event Action<GolemCubeData> onCubeCreated;
 
-        /*TODO: 저장 대상*/
-        public int MoveSpeedPoint { get; private set; } // TODO: Enhance 추가
-        public int MoveSpeed => CubeConfig.Status.INIT_MOVE_SPEED + MoveSpeedPoint * CubeConfig.Status.ADD_MOVE_SPEED;
         public StatusPoint StatusPoint
         {
             get
@@ -54,7 +24,8 @@ namespace Commar.CubicLand.Cube
                 return cubeData.StatusPoint;
             }
         }
-        public int CubeCount
+        public int MoveSpeedPoint { get; private set; }
+        public int TotalCubeCount
         {
             get
             {
@@ -62,6 +33,38 @@ namespace Commar.CubicLand.Cube
                     return 0;
 
                 return structureData.CubeDatas.Count;
+            }
+        }
+        public int TotalStatusPoint => StatusPoint.TotalPoint + MoveSpeedPoint + TotalCubeCount - 1;
+
+        public StatusValue StatusValue
+        {
+            get
+            {
+                if (structureData == null || structureData.CubeDatas == null
+                        || !structureData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData cubeData))
+                    return null;
+
+                return cubeData.StatusValue;
+            }
+        }
+        public int MoveSpeed => CubeConfig.Status.INIT_MOVE_SPEED + MoveSpeedPoint * CubeConfig.Status.ADD_MOVE_SPEED;
+        public int CurrentCubeCount
+        {
+            get
+            {
+                if (structureData == null || structureData.CubeDatas == null)
+                    return 0;
+
+                int cubeCount = 0;
+
+                foreach (GolemCubeData cubeData in structureData.CubeDatas.Values)
+                {
+                    if (!cubeData.IsBreaked)
+                        cubeCount++;
+                }
+
+                return cubeCount;
             }
         }
 
@@ -87,42 +90,31 @@ namespace Commar.CubicLand.Cube
             return new GolemColorPoint();
         }
 
-        internal void UpdateColor()
+        public void EnhanceStatusPoint(StatusPoint addStatusPoint, int addMoveSpeedPoint)
         {
-            if (structureData == null || structureData.CubeDatas == null
-                || !structureData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData cubeData))
+            addMoveSpeedPoint = Mathf.Max(addMoveSpeedPoint, 0);
+
+            if (addStatusPoint.TotalPoint + addMoveSpeedPoint <= 0)
                 return;
 
-            cubeData.UpdateColor(GetColorPoint());
-            ApplyToChildren(cubeData, (parent, child) => child.UpdateColor(parent.ColorPoint.MakeChild()));
+            MoveSpeedPoint += addMoveSpeedPoint;
 
-            onCubeChanged?.Invoke();
+            if (structureData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData cubeData)
+               && !addStatusPoint.Equals(StatusPoint.Zero))
+            {
+                StatusPoint statusPoint = cubeData.StatusPoint;
+                statusPoint.HP += addStatusPoint.HP;
+                statusPoint.Armor += addStatusPoint.Armor;
+                statusPoint.Attack += addStatusPoint.Attack;
+
+                cubeData.EnhanceStatus(statusPoint);
+                ApplyToChildren(cubeData, (parent, child) => child.EnhanceChildStatus(parent));
+
+                onCubeChanged?.Invoke();
+            }
         }
 
-        internal void EnhanceStatus(StatusPoint statusPoint)
-        {
-            if (!structureData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData cubeData)
-                || cubeData.StatusPoint.Equals(statusPoint))
-                return;
-
-            cubeData.EnhanceStatus(statusPoint);
-            ApplyToChildren(cubeData, (parent, child) => child.EnhanceChildStatus(parent));
-
-            onCubeChanged?.Invoke();
-        }
-
-        internal void Heal(int heal)
-        {
-            if (!structureData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData cubeData))
-                return;
-
-            heal = ApplyHeal(heal, cubeData);
-            DistributeHeal(heal, new GolemCubeData[] { cubeData });
-
-            onCubeChanged?.Invoke();
-        }
-
-        internal bool AddCube(Vector3Int parentPosition, Enums.Direction3D direction)
+        public bool AddCube(Vector3Int parentPosition, Enums.Direction3D direction)
         {
             if (!structureData.AddCube(parentPosition, direction, out Vector3Int position)
                 || !structureData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData))
@@ -150,6 +142,29 @@ namespace Commar.CubicLand.Cube
                 onCubeCreated?.Invoke(cubeData);
 
             return true;
+        }
+
+        internal void UpdateColor()
+        {
+            if (structureData == null || structureData.CubeDatas == null
+                || !structureData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData cubeData))
+                return;
+
+            cubeData.UpdateColor(GetColorPoint());
+            ApplyToChildren(cubeData, (parent, child) => child.UpdateColor(parent.ColorPoint.MakeChild()));
+
+            onCubeChanged?.Invoke();
+        }
+
+        internal void Heal(int heal)
+        {
+            if (!structureData.CubeDatas.TryGetValue(CubeConfig.CORE_POSITION, out GolemCubeData cubeData))
+                return;
+
+            heal = ApplyHeal(heal, cubeData);
+            DistributeHeal(heal, new GolemCubeData[] { cubeData });
+
+            onCubeChanged?.Invoke();
         }
 
         internal void SetAttackMode(bool isAttackMode)
