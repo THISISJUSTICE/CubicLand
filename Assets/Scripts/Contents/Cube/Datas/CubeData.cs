@@ -1,7 +1,9 @@
+using System;
 using UnityEngine;
 
 namespace Commar.CubicLand.Cube
 {
+    [Serializable]
     public class CubeData
     {
         public StatusPoint StatusPoint { get; protected set; }
@@ -104,6 +106,7 @@ namespace Commar.CubicLand.Cube
         }
     }
 
+    [Serializable]
     public class GolemCubeData : CubeData
     {
         public readonly Vector3Int shapePoisition;

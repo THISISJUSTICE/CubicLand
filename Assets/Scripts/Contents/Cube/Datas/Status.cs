@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Commar.CubicLand.Cube
 {
+    [Serializable]
     public struct StatusPoint : IEquatable<StatusPoint>
     {
         private int _hp;
@@ -72,6 +73,7 @@ namespace Commar.CubicLand.Cube
         private void SetAttack(int value) => _attack = Mathf.Max(value, 0);
     }
 
+    [Serializable]
     public class StatusValue
     {
         public int MaxHP { get; private set; }
