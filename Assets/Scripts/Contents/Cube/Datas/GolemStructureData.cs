@@ -189,17 +189,11 @@ namespace Commar.CubicLand.Cube
         {
             position = parentPosition;
             if (!_cubeDatas.TryGetValue(parentPosition, out GolemCubeData parent))
-            {
-                Debug.LogError($"This Golem has not this Position({parentPosition})");
                 return false;
-            }
 
             position = parentPosition + DirectionEnumUtils.GetDirection3DValue(direction);
             if (_cubeDatas.ContainsKey(position))
-            {
-                Debug.LogError($"{position} is already exist");
                 return false;
-            }
 
             _cubeDatas[position] = parent.MakeChild(position);
             if (!_children.TryGetValue(parentPosition, out List<Vector3Int> children))
