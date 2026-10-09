@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace Commar.CubicLand.UIs
+namespace Commar.CubicLand.UI
 {
     public class Spinner : MonoBehaviour
     {

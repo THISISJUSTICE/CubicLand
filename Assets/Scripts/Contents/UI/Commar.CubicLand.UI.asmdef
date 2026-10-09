@@ -1,6 +1,6 @@
 {
-    "name": "Commar.CubicLand.UIs",
-    "rootNamespace": "Commar.CubicLand.UIs",
+    "name": "Commar.CubicLand.UI",
+    "rootNamespace": "Commar.CubicLand.UI",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
