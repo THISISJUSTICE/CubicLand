@@ -64,8 +64,8 @@ namespace Commar.CubicLand.Cube
         #region Normalize
         public static Vector3 GetNormalizedPosition(Vector3 position)
         {
-            position.x = Mathf.Round(position.x / CubeConfig.CUBE_BASE_LENGHT) * CubeConfig.CUBE_BASE_LENGHT;
-            position.z = Mathf.Round(position.z / CubeConfig.CUBE_BASE_LENGHT) * CubeConfig.CUBE_BASE_LENGHT;
+            position.x = Mathf.Round(position.x / CubeConfig.CUBE_BASE_LENGTH) * CubeConfig.CUBE_BASE_LENGTH;
+            position.z = Mathf.Round(position.z / CubeConfig.CUBE_BASE_LENGTH) * CubeConfig.CUBE_BASE_LENGTH;
 
             return position;
         }

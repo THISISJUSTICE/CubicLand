@@ -21,7 +21,7 @@ namespace Commar.CubicLand.Cube
         {
             _meshRenderer = GetComponent<MeshRenderer>();
             _collider = GetComponent<BoxCollider>();
-            _collider.size = Vector3.one * (CubeConfig.CUBE_BASE_LENGHT - Physics.defaultContactOffset * 4f);
+            _collider.size = Vector3.one * (CubeConfig.CUBE_BASE_LENGTH - Physics.defaultContactOffset * 4f);
         }
 
         internal void Initialize(CubeData cubeData, ICubeTrait cubeTrait)

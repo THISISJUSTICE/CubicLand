@@ -6,7 +6,7 @@ namespace Commar.CubicLand.Cube
     {
         public static readonly Vector3Int CORE_POSITION = Vector3Int.zero;
 
-        public const float CUBE_BASE_LENGHT = 1f;
+        public const float CUBE_BASE_LENGTH = 1f;
         public const float ONE_CUBE_MASS = 10f;
         public const float MASS_RATE = 0.2f;
 
@@ -15,7 +15,7 @@ namespace Commar.CubicLand.Cube
         public const float ARMOR_EXPONENTIAL_SCALE = 50f;
 
         public const float MAX_CUBE_NOMALIZE_TIME = 0.2f;
-        public static readonly float MAX_CUBE_NOMALIZE_DISTANCE = Mathf.Sqrt(CUBE_BASE_LENGHT * 2f);
+        public static readonly float MAX_CUBE_NOMALIZE_DISTANCE = Mathf.Sqrt(CUBE_BASE_LENGTH * 2f);
 
         public const float STATUS_COLOR_RATE = 0.999f;
         public const float GOLEM_COLOR_RATE = 1f - (1f - STATUS_COLOR_RATE) / 3f;

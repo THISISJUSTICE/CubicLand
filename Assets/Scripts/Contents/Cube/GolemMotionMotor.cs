@@ -83,7 +83,7 @@ namespace Commar.CubicLand.Cube
         public IEnumerator MoveWithRoll(Direction direction, float duration)
         {
             Vector3 moveDirection = _moveDirection.GetDirection(direction).normalized;
-            float halfLine = CubeConfig.CUBE_BASE_LENGHT / 2f;
+            float halfLine = CubeConfig.CUBE_BASE_LENGTH / 2f;
 
             int currentDownLength = GetGolemLength(Direction3D.Down);
             if (currentDownLength == 0)
@@ -137,7 +137,7 @@ namespace Commar.CubicLand.Cube
         /// </summary>
         public IEnumerator MoveWithJump(Direction direction, float duration)
         {
-            yield return MoveWithJumpCoroutine(direction, duration, CubeConfig.CUBE_BASE_LENGHT * 0.5f);
+            yield return MoveWithJumpCoroutine(direction, duration, CubeConfig.CUBE_BASE_LENGTH * 0.5f);
         }
 
         public IEnumerator Move(Direction direction, float duration)
@@ -196,8 +196,8 @@ namespace Commar.CubicLand.Cube
             index /= 2;
             Vector3 scaleDirection = new Vector3[] { Vector3.right, Vector3.up, Vector3.forward }[index];
 
-            float golemHeight = GolemHeight * CubeConfig.CUBE_BASE_LENGHT;
-            float maxHeight = CubeConfig.CUBE_BASE_LENGHT / 2f + (GolemHeight - 1) * CubeConfig.CUBE_BASE_LENGHT;
+            float golemHeight = GolemHeight * CubeConfig.CUBE_BASE_LENGTH;
+            float maxHeight = CubeConfig.CUBE_BASE_LENGTH / 2f + (GolemHeight - 1) * CubeConfig.CUBE_BASE_LENGTH;
             Vector3 previousScale = Transform.localScale;
 
             float duration = GolemHeight * CubeConfig.GOLEM_JUMP_CHARGE_TIME;
@@ -209,7 +209,7 @@ namespace Commar.CubicLand.Cube
 
                 Transform.localScale = Vector3.one - scaleDirection * ratio / 2f;
                 Transform.position += (Transform.localScale[index] - previousScale[index]) * golemHeight / 2f * Vector3.up;
-                _chargedHeight = Mathf.Max(maxHeight * ratio, CubeConfig.CUBE_BASE_LENGHT / 2f);
+                _chargedHeight = Mathf.Max(maxHeight * ratio, CubeConfig.CUBE_BASE_LENGTH / 2f);
 
                 previousScale = Transform.localScale;
 
@@ -226,7 +226,7 @@ namespace Commar.CubicLand.Cube
             Vector3 startScale = Transform.localScale;
             Utils.GetClosestAxisVector(Transform.GetDirections(), Vector3.up, out int index);
             index /= 2;
-            float golemHeight = GolemHeight * CubeConfig.CUBE_BASE_LENGHT;
+            float golemHeight = GolemHeight * CubeConfig.CUBE_BASE_LENGTH;
 
             float scaleRate = (1f - startScale[index]) / 0.5f;
             float duration = CubeConfig.GOLEM_SIZE_UP_TIME * scaleRate;
@@ -254,7 +254,7 @@ namespace Commar.CubicLand.Cube
         {
             Vector3 moveDirection = _moveDirection.GetDirection(direction).normalized;
             Vector3 startPosition = Transform.position;
-            Vector3 targetPosition = startPosition + moveDirection * CubeConfig.CUBE_BASE_LENGHT;
+            Vector3 targetPosition = startPosition + moveDirection * CubeConfig.CUBE_BASE_LENGTH;
 
             float time = 0f;
 

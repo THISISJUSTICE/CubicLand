@@ -28,6 +28,7 @@ namespace Commar.CubicLand.Cube
 
         Rigidbody IGolemObject.Rigidbody => _rigidbody;
         public GolemStructureData StructureData => _golemData.structureData;
+        public IGolemMotionController MotionController { get; private set; }
 
         private void Awake()
         {
@@ -104,12 +105,13 @@ namespace Commar.CubicLand.Cube
             UpdateGolemMass();
         }
 
-        internal void Initialize(ICubeCollisionResolver cubeCollisionResolver, IOrphanedCubeHandler orphanedCubeHandler, ICubeFactory cubeFactory, ICubeMotionAdjuster motionAdjuster)
+        internal void Initialize(ICubeCollisionResolver cubeCollisionResolver, IOrphanedCubeHandler orphanedCubeHandler, ICubeFactory cubeFactory, GolemMotionController motionController)
         {
             _cubeCollisionResolver = cubeCollisionResolver;
             _orphanedCubeHandler = orphanedCubeHandler;
             _cubeFactory = cubeFactory;
-            _motionAdjuster = motionAdjuster;
+            _motionAdjuster = motionController;
+            MotionController = motionController;
         }
 
         public void Initialize(GolemData golemData, IList<GolemCubeHandle> handles)
@@ -192,7 +194,7 @@ namespace Commar.CubicLand.Cube
 
             Vector3Int childPosition = childHandle.data.shapePoisition;
             childHandle.cube.transform.SetParent(parentHandle.cube.transform);
-            childHandle.cube.transform.localPosition = (Vector3)(childPosition - parentHandle.data.shapePoisition) * CubeConfig.CUBE_BASE_LENGHT;
+            childHandle.cube.transform.localPosition = (Vector3)(childPosition - parentHandle.data.shapePoisition) * CubeConfig.CUBE_BASE_LENGTH;
             childHandle.cube.transform.localRotation = Quaternion.identity;
             childHandle.cube.transform.localScale = Vector3.one;
 

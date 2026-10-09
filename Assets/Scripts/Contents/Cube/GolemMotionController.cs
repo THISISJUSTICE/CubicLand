@@ -118,7 +118,7 @@ namespace Commar.CubicLand.Cube
                 // 올라가는 도중은 Move (한 칸만 가능)
                 // 점프 가속에 따라 속도 조정
 
-                float velocity = CubeUtil.CalculateLiftForce(_golemObject.Rigidbody, CubeConfig.CUBE_BASE_LENGHT * 0.5f) / _golemObject.Rigidbody.mass;
+                float velocity = CubeUtil.CalculateLiftForce(_golemObject.Rigidbody, CubeConfig.CUBE_BASE_LENGTH * 0.5f) / _golemObject.Rigidbody.mass;
                 float duration = velocity / Mathf.Abs(Physics.gravity.y) * 1.2f;
                 yield return _motionMotor.Move(direction, duration);
             }
@@ -128,7 +128,7 @@ namespace Commar.CubicLand.Cube
 
                 if (direction == Direction.Front)
                 {
-                    float velocity = CubeUtil.CalculateLiftForce(_golemObject.Rigidbody, CubeConfig.CUBE_BASE_LENGHT * 0.5f) / _golemObject.Rigidbody.mass;
+                    float velocity = CubeUtil.CalculateLiftForce(_golemObject.Rigidbody, CubeConfig.CUBE_BASE_LENGTH * 0.5f) / _golemObject.Rigidbody.mass;
                     float duration = velocity / Mathf.Abs(Physics.gravity.y) * 1.2f;
                     yield return _motionMotor.MoveWithJump(direction, duration);
                 }
