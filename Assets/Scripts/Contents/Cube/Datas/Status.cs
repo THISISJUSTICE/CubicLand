@@ -56,6 +56,11 @@ namespace Commar.CubicLand.Cube
             return obj is StatusPoint statusPoint && Equals(statusPoint);
         }
 
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(_hp, _armor, _attack);
+        }
+
         public StatusPoint MakeChild()
         {
             const float rate = CubeConfig.Status.CHILD_REDUCE_RATE;
