@@ -89,38 +89,38 @@ namespace Commar.CubicLand.Cube
             return _directions;
         }
 
-        public Vector3 GetDirection(Enums.Direction direction)
+        public Vector3 GetDirection(Direction direction)
         {
             switch (direction)
             {
-                case Enums.Direction.Front:
+                case Direction.Front:
                     return Front;
-                case Enums.Direction.Back:
+                case Direction.Back:
                     return Back;
-                case Enums.Direction.Left:
+                case Direction.Left:
                     return Left;
-                case Enums.Direction.Right:
+                case Direction.Right:
                     return Right;
             }
 
             return Vector3.zero;
         }
 
-        public Vector3 GetDirection(Enums.Direction3D direction)
+        public Vector3 GetDirection(Direction3D direction)
         {
             switch (direction)
             {
-                case Enums.Direction3D.Front:
+                case Direction3D.Front:
                     return Front;
-                case Enums.Direction3D.Back:
+                case Direction3D.Back:
                     return Back;
-                case Enums.Direction3D.Up:
+                case Direction3D.Up:
                     return Up;
-                case Enums.Direction3D.Down:
+                case Direction3D.Down:
                     return Down;
-                case Enums.Direction3D.Left:
+                case Direction3D.Left:
                     return Left;
-                case Enums.Direction3D.Right:
+                case Direction3D.Right:
                     return Right;
             }
 

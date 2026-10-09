@@ -131,19 +131,19 @@ namespace Commar.CubicLand.Player
             switch (_bufferedInput)
             {
                 case InputType.MoveFront:
-                    _motionController.Move(Enums.Direction.Front);
+                    _motionController.Move(Direction.Front);
                     break;
 
                 case InputType.MoveRight:
-                    _motionController.Move(Enums.Direction.Right);
+                    _motionController.Move(Direction.Right);
                     break;
 
                 case InputType.MoveLeft:
-                    _motionController.Move(Enums.Direction.Left);
+                    _motionController.Move(Direction.Left);
                     break;
 
                 case InputType.MoveBack:
-                    _motionController.Move(Enums.Direction.Back);
+                    _motionController.Move(Direction.Back);
                     break;
 
                 case InputType.RotateRight:

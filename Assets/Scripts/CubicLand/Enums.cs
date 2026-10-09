@@ -1,4 +1,4 @@
-﻿namespace Commar.CubicLand.Enums
+namespace Commar.CubicLand
 {
     public enum Direction
     {

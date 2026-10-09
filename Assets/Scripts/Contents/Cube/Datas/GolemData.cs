@@ -114,7 +114,7 @@ namespace Commar.CubicLand.Cube
             }
         }
 
-        public bool AddCube(Vector3Int parentPosition, Enums.Direction3D direction)
+        public bool AddCube(Vector3Int parentPosition, Direction3D direction)
         {
             if (!structureData.AddCube(parentPosition, direction, out Vector3Int position)
                 || !structureData.CubeDatas.TryGetValue(position, out GolemCubeData cubeData))

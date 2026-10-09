@@ -8,9 +8,10 @@ namespace Commar.CubicLand.Cube
         public int MoveSpeedPoint { get; }
         public int TotalCubeCount { get; }
         public int TotalStatusPoint { get; }
+        public int TotalPoint { get; }
 
         public void EnhanceStatusPoint(StatusPoint addStatusPoint, int addMoveSpeedPoint);
-        public bool AddCube(Vector3Int parentPosition, Enums.Direction3D direction);
+        public bool AddCube(Vector3Int parentPosition, Direction3D direction);
     }
 
     public interface IGolemStatusValue

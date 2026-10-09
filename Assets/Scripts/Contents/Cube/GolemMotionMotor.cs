@@ -14,22 +14,22 @@ namespace Commar.CubicLand.Cube
         private readonly Vector3[] _objectDirections = new Vector3[6];
 
         private readonly List<Vector3Int> _tempList = new List<Vector3Int>();
-        private readonly Dictionary<Enums.Direction3D, Vector3Int> _tempDictionary = new Dictionary<Enums.Direction3D, Vector3Int>();
+        private readonly Dictionary<Direction3D, Vector3Int> _tempDictionary = new Dictionary<Direction3D, Vector3Int>();
         private readonly List<GolemCubeData> _edgeCubes = new List<GolemCubeData>();
 
-        private static readonly Enums.Direction3D[] PRIORITY_CANDIDATES = new Enums.Direction3D[]
+        private static readonly Direction3D[] PRIORITY_CANDIDATES = new Direction3D[]
         {
-            Enums.Direction3D.Front,
-            Enums.Direction3D.Right,
-            Enums.Direction3D.Back,
-            Enums.Direction3D.Left
+            Direction3D.Front,
+            Direction3D.Right,
+            Direction3D.Back,
+            Direction3D.Left
         };
-        private static readonly Enums.Direction3D[] REVERSE_PRIORITY_CANDIDATES = new Enums.Direction3D[]
+        private static readonly Direction3D[] REVERSE_PRIORITY_CANDIDATES = new Direction3D[]
         {
-            Enums.Direction3D.Back,
-            Enums.Direction3D.Left,
-            Enums.Direction3D.Right,
-            Enums.Direction3D.Front
+            Direction3D.Back,
+            Direction3D.Left,
+            Direction3D.Right,
+            Direction3D.Front
         };
 
         public CubeObject RotateAxisCube { get; private set; }
@@ -58,12 +58,12 @@ namespace Commar.CubicLand.Cube
             UpdateGeometryData();
         }
 
-        public void FindEdgeCubeDatas(Enums.Direction3D direction, IList<GolemCubeData> cubeDatas)
+        public void FindEdgeCubeDatas(Direction3D direction, IList<GolemCubeData> cubeDatas)
         {
             _golemObject.StructureData.FindEdgeCubes(ConvertObjectDirection(direction), cubeDatas);
         }
 
-        public void FindVisibleCubeDatas(Enums.Direction3D direction, IList<GolemCubeData> cubes)
+        public void FindVisibleCubeDatas(Direction3D direction, IList<GolemCubeData> cubes)
         {
             _golemObject.StructureData.FindVisibleCubes(ConvertObjectDirection(direction), cubes);
         }
@@ -80,15 +80,15 @@ namespace Commar.CubicLand.Cube
             return false;
         }
 
-        public IEnumerator MoveWithRoll(Enums.Direction direction, float duration)
+        public IEnumerator MoveWithRoll(Direction direction, float duration)
         {
             Vector3 moveDirection = _moveDirection.GetDirection(direction).normalized;
             float halfLine = CubeConfig.CUBE_BASE_LENGHT / 2f;
 
-            int currentDownLength = GetGolemLength(Enums.Direction3D.Down);
+            int currentDownLength = GetGolemLength(Direction3D.Down);
             if (currentDownLength == 0)
                 currentDownLength = 1;
-            int nextDownLength = GetGolemLength(DirectionEnumUtils.ConvertDirection2DTo3D(direction));
+            int nextDownLength = GetGolemLength(DirectionUtils.ConvertDirection2DTo3D(direction));
 
             float currentHeight = (currentDownLength * 2f + 1f) * halfLine;
             float nextHeight = (nextDownLength * 2f + 1f) * halfLine;
@@ -126,7 +126,7 @@ namespace Commar.CubicLand.Cube
             _golemObject.Rigidbody.MoveRotation(CubeUtil.GetNormalizedRotation(Transform.rotation));
         }
 
-        public IEnumerator Tumble(Enums.Direction direction, float duration)
+        public IEnumerator Tumble(Direction direction, float duration)
         { 
             // TODO: 구현
             throw new System.NotImplementedException();
@@ -135,17 +135,17 @@ namespace Commar.CubicLand.Cube
         /// <summary>
         /// 바닥에 붙었을 때만 정상 동작함
         /// </summary>
-        public IEnumerator MoveWithJump(Enums.Direction direction, float duration)
+        public IEnumerator MoveWithJump(Direction direction, float duration)
         {
             yield return MoveWithJumpCoroutine(direction, duration, CubeConfig.CUBE_BASE_LENGHT * 0.5f);
         }
 
-        public IEnumerator Move(Enums.Direction direction, float duration)
+        public IEnumerator Move(Direction direction, float duration)
         {
             yield return MoveWithJumpCoroutine(direction, duration, 0f);
         }
 
-        public IEnumerator Rotate(Enums.Direction direction, float duration)
+        public IEnumerator Rotate(Direction direction, float duration)
         {
             RotateAxisCube = _golemObject.FindCube(FindRotateAxis(direction));
 
@@ -250,7 +250,7 @@ namespace Commar.CubicLand.Cube
             Transform.localScale = Vector3.one;
         }
 
-        private IEnumerator MoveWithJumpCoroutine(Enums.Direction direction, float duration, float moveHeight)
+        private IEnumerator MoveWithJumpCoroutine(Direction direction, float duration, float moveHeight)
         {
             Vector3 moveDirection = _moveDirection.GetDirection(direction).normalized;
             Vector3 startPosition = Transform.position;
@@ -276,14 +276,14 @@ namespace Commar.CubicLand.Cube
 
         private void UpdateGeometryData()
         {
-            RotateAxisCube = _golemObject.FindCube(FindRotateAxis(Enums.Direction.Right));
-            UpEdgeCube = _golemObject.FindCube(FindAxisCandidates(Enums.Direction3D.Up)[0]);
-            BackEdgeCube = _golemObject.FindCube(FindAxisCandidates(Enums.Direction3D.Back)[0]);
-            FrontEdgeCube = _golemObject.FindCube(FindAxisCandidates(Enums.Direction3D.Front)[0]);
+            RotateAxisCube = _golemObject.FindCube(FindRotateAxis(Direction.Right));
+            UpEdgeCube = _golemObject.FindCube(FindAxisCandidates(Direction3D.Up)[0]);
+            BackEdgeCube = _golemObject.FindCube(FindAxisCandidates(Direction3D.Back)[0]);
+            FrontEdgeCube = _golemObject.FindCube(FindAxisCandidates(Direction3D.Front)[0]);
 
-            GolemWidth = GetGolemLength(Enums.Direction3D.Left) + GetGolemLength(Enums.Direction3D.Right) + 1;
-            GolemHeight = GetGolemLength(Enums.Direction3D.Down) + GetGolemLength(Enums.Direction3D.Up) + 1;
-            GolemBack = GetGolemLength(Enums.Direction3D.Back) + 1;
+            GolemWidth = GetGolemLength(Direction3D.Left) + GetGolemLength(Direction3D.Right) + 1;
+            GolemHeight = GetGolemLength(Direction3D.Down) + GetGolemLength(Direction3D.Up) + 1;
+            GolemBack = GetGolemLength(Direction3D.Back) + 1;
 
             ViewRotation = _moveDirection.GetRotation();
         }
@@ -301,20 +301,20 @@ namespace Commar.CubicLand.Cube
             return _objectDirections;
         }
 
-        private Enums.Direction3D ConvertObjectDirection(Enums.Direction3D direction)
+        private Direction3D ConvertObjectDirection(Direction3D direction)
         {
             Vector3[] objectDirections = GetObjectDirections();
             Vector3 moveDirection = _moveDirection.GetDirection(direction);
 
-            return DirectionEnumUtils.ConvertDirection(objectDirections, moveDirection);
+            return DirectionUtils.ConvertDirection(objectDirections, moveDirection);
         }
 
-        private int GetGolemLength(Enums.Direction3D direction)
+        private int GetGolemLength(Direction3D direction)
         {
             return _golemObject.StructureData.GetDirectionLength(ConvertObjectDirection(direction));
         }
 
-        private List<Vector3Int> FindAxisCandidates(Enums.Direction3D moveDirection)
+        private List<Vector3Int> FindAxisCandidates(Direction3D moveDirection)
         {
             _tempList.Clear();
 
@@ -348,9 +348,9 @@ namespace Commar.CubicLand.Cube
             return _tempList;
         }
 
-        private Vector3Int FindRotateAxis(Enums.Direction direction)
+        private Vector3Int FindRotateAxis(Direction direction)
         {
-            List<Vector3Int> nearestCubes = FindAxisCandidates(Enums.Direction3D.Down);
+            List<Vector3Int> nearestCubes = FindAxisCandidates(Direction3D.Down);
 
             if (nearestCubes.Count == 1)
                 return nearestCubes[0];
@@ -361,12 +361,12 @@ namespace Commar.CubicLand.Cube
                 Vector3 dir = position - CubeConfig.CORE_POSITION;
                 dir.y = 0f;
 
-                Enums.Direction3D key = DirectionEnumUtils.ConvertDirection(_moveDirection.GetDirections(), dir);
+                Direction3D key = DirectionUtils.ConvertDirection(_moveDirection.GetDirections(), dir);
                 _tempDictionary[key] = position;
             }
 
-            Enums.Direction3D[] priorities = PRIORITY_CANDIDATES;
-            if (direction == Enums.Direction.Left)
+            Direction3D[] priorities = PRIORITY_CANDIDATES;
+            if (direction == Direction.Left)
                 priorities = REVERSE_PRIORITY_CANDIDATES;
 
             for (int i = 0; i < priorities.Length; i++)

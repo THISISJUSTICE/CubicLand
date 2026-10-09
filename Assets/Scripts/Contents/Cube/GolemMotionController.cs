@@ -42,7 +42,7 @@ namespace Commar.CubicLand.Cube
             IsStun = false;
         }
 
-        public void Move(Enums.Direction direction)
+        public void Move(Direction direction)
         {
             if (IsStun || _coroutine != null)
                 return;
@@ -55,9 +55,9 @@ namespace Commar.CubicLand.Cube
             if (IsStun || _coroutine != null)
                 return;
 
-            Enums.Direction direction = Enums.Direction.Right;
+            Direction direction = Direction.Right;
             if (!isRight)
-                direction = Enums.Direction.Left;
+                direction = Direction.Left;
 
             StartCoroutine(RotateCoroutine(direction));
         }
@@ -107,7 +107,7 @@ namespace Commar.CubicLand.Cube
             StartCoroutine(NormalizePoseCoroutine());
         }
 
-        private IEnumerator MoveCoroutine(Enums.Direction direction)
+        private IEnumerator MoveCoroutine(Direction direction)
         {
             MoveState = GolemMoveState.Moving;
 
@@ -126,7 +126,7 @@ namespace Commar.CubicLand.Cube
             {
                 _golemObject.Rigidbody.useGravity = false;
 
-                if (direction == Enums.Direction.Front)
+                if (direction == Direction.Front)
                 {
                     float velocity = CubeUtil.CalculateLiftForce(_golemObject.Rigidbody, CubeConfig.CUBE_BASE_LENGHT * 0.5f) / _golemObject.Rigidbody.mass;
                     float duration = velocity / Mathf.Abs(Physics.gravity.y) * 1.2f;
@@ -146,7 +146,7 @@ namespace Commar.CubicLand.Cube
             CompleteCurrentCoroutine();
         }
 
-        private IEnumerator RotateCoroutine(Enums.Direction direction)
+        private IEnumerator RotateCoroutine(Direction direction)
         {
             MoveState = GolemMoveState.Moving;
 
@@ -157,7 +157,7 @@ namespace Commar.CubicLand.Cube
             }
             else
             {
-                _motionMotor.FindEdgeCubeDatas(Enums.Direction3D.Down, _edgeCubes);
+                _motionMotor.FindEdgeCubeDatas(Direction3D.Down, _edgeCubes);
                 int bottomCount = _edgeCubes.Count;
                 float moveTime = Mathf.Clamp(CalculateMoveTime() * 0.9f, CubeConfig.GOLEM_MIN_MOVE_TIME, CubeConfig.GOLEM_MAX_MOVE_TIME);
                 float duration = Mathf.Max(moveTime, moveTime * (CubeConfig.GOLEM_ROTATE_FRICTION * (bottomCount - 1)));

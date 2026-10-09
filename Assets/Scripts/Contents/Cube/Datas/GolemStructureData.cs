@@ -64,7 +64,7 @@ namespace Commar.CubicLand.Cube
             return new GolemStructureData(cubeDatas, children);
         }
 
-        public int GetDirectionLength(Enums.Direction3D direction)
+        public int GetDirectionLength(Direction3D direction)
         {
             int vectorIndex = (int)direction / 2;
             bool isMax = (int)direction % 2 == 0;
@@ -87,7 +87,7 @@ namespace Commar.CubicLand.Cube
             return result;
         }
 
-        public void FindEdgeCubes(Enums.Direction3D direction, IList<GolemCubeData> list)
+        public void FindEdgeCubes(Direction3D direction, IList<GolemCubeData> list)
         {
             if (list == null)
                 return;
@@ -108,7 +108,7 @@ namespace Commar.CubicLand.Cube
             }
         }
 
-        public void FindVisibleCubes(Enums.Direction3D direction, IList<GolemCubeData> list)
+        public void FindVisibleCubes(Direction3D direction, IList<GolemCubeData> list)
         {
             if (list == null)
                 return;
@@ -152,11 +152,11 @@ namespace Commar.CubicLand.Cube
                 return;
 
             list.Clear();
-            int length = Enum.GetValues(typeof(Enums.Direction3D)).Length;
+            int length = Enum.GetValues(typeof(Direction3D)).Length;
 
             for (int i = 0; i < length; i++)
             {
-                Vector3Int position = parentPosition + DirectionEnumUtils.GetDirection3DValue((Enums.Direction3D)i);
+                Vector3Int position = parentPosition + DirectionUtils.GetDirection3DValue((Direction3D)i);
                 if (!_cubeDatas.ContainsKey(position))
                     list.Add(position);
             }
@@ -185,13 +185,13 @@ namespace Commar.CubicLand.Cube
             return current;
         }
 
-        internal bool AddCube(Vector3Int parentPosition, Enums.Direction3D direction, out Vector3Int position)
+        internal bool AddCube(Vector3Int parentPosition, Direction3D direction, out Vector3Int position)
         {
             position = parentPosition;
             if (!_cubeDatas.TryGetValue(parentPosition, out GolemCubeData parent))
                 return false;
 
-            position = parentPosition + DirectionEnumUtils.GetDirection3DValue(direction);
+            position = parentPosition + DirectionUtils.GetDirection3DValue(direction);
             if (_cubeDatas.ContainsKey(position))
                 return false;
 

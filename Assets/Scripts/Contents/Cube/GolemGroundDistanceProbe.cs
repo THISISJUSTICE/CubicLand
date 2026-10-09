@@ -43,7 +43,7 @@ namespace Commar.CubicLand.Cube
                 return false;
             }
 
-            _geometryProvider.FindVisibleCubeDatas(Enums.Direction3D.Down, _visibleCubes);
+            _geometryProvider.FindVisibleCubeDatas(Direction3D.Down, _visibleCubes);
 
             bool foundCollider = false;
             bool foundGround = false;

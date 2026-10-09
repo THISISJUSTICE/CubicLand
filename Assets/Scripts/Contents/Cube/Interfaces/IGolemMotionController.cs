@@ -12,7 +12,7 @@ namespace Commar.CubicLand.Cube
         public bool IsAirborne { get; }
         public IGolemGeometryProvider GeometryProvider { get; }
 
-        public void Move(Enums.Direction direction);
+        public void Move(Direction direction);
         public void Rotate(bool isRight);
         public void StartJumpCharge();
         public void ReleaseJump();
