@@ -19,7 +19,7 @@ namespace Commar.CubicLand.Cube
 
         private void OnEnable()
         {
-            _rigidbody.FreezePositionXZ(true);
+            SetMotionConstraints(true, true);
         }
 
         private void OnCollisionEnter(Collision collision)
@@ -42,15 +42,15 @@ namespace Commar.CubicLand.Cube
                 return;
 
             StopAllCoroutines();
-            _rigidbody.FreezePositionXZ(false);
+            SetMotionConstraints(false, true);
             _rigidbody.AddForce(impulse, ForceMode.Impulse);
             StartCoroutine(HandleKnockback());
         }
 
         public void NormalizePose()
         {
-            _rigidbody.FreezePositionXZ(true);
-            CubeUtil.StartNormalizePose(_rigidbody, this);
+            StopAllCoroutines();
+            StartCoroutine(NormalizePoseCoroutine());
         }
 
         private IEnumerator HandleKnockback()
@@ -62,7 +62,20 @@ namespace Commar.CubicLand.Cube
                 yield return GlobalRoot.Instance.YieldCache.GetWaitForSeconds(waitTime);
 
             _rigidbody.ClearVelocity();
-            NormalizePose();
+            yield return NormalizePoseCoroutine();
+        }
+
+        private IEnumerator NormalizePoseCoroutine()
+        {
+            SetMotionConstraints(false, false);
+            yield return CubeUtil.NormalizePoseCoroutine(_rigidbody);
+            SetMotionConstraints(true, true);
+        }
+
+        private void SetMotionConstraints(bool isFreezePosition, bool isFreezeRotation)
+        {
+            _rigidbody.FreezePositionXZ(isFreezePosition);
+            _rigidbody.FreezeRotation(isFreezeRotation);
         }
     }
 }

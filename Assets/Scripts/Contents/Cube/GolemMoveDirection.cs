@@ -22,10 +22,8 @@ namespace Commar.CubicLand.Cube
             _directions = new Vector3[6];
         }
 
-        public void Rotate(Vector3 eulerAngle)
+        public void Rotate(Quaternion rotation)
         {
-            Quaternion rotation = Quaternion.Euler(eulerAngle);
-
             Right = rotation * Right;
             Up = rotation * Up;
             Front = rotation * Front;

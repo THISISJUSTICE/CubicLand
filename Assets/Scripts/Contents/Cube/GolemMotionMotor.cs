@@ -86,8 +86,6 @@ namespace Commar.CubicLand.Cube
             float halfLine = CubeConfig.CUBE_BASE_LENGTH / 2f;
 
             int currentDownLength = GetGolemLength(Direction3D.Down);
-            if (currentDownLength == 0)
-                currentDownLength = 1;
             int nextDownLength = GetGolemLength(DirectionUtils.ConvertDirection2DTo3D(direction));
 
             float currentHeight = (currentDownLength * 2f + 1f) * halfLine;
@@ -96,7 +94,7 @@ namespace Commar.CubicLand.Cube
             float rollHypot = Utils.GetHypotenuseBH(nextHeight, currentHeight);
             float previousAngle = 0f;
 
-            Quaternion startRotation = Transform.rotation;
+            Quaternion startRotation = _golemObject.Rigidbody.rotation;
             Quaternion targetRotation = Quaternion.FromToRotation(moveDirection, _moveDirection.Down) * startRotation;
             FixedStepTimer timer = new FixedStepTimer(duration);
 
@@ -104,14 +102,20 @@ namespace Commar.CubicLand.Cube
 
             while (!timer.IsCompleted)
             {
-                _golemObject.Rigidbody.MoveRotation(Quaternion.Slerp(startRotation, targetRotation, time / duration));
                 float ratio = timer.Progress;
-                float angle = Quaternion.Angle(startRotation, Transform.rotation);
+                Quaternion rotation = Quaternion.Slerp(startRotation, targetRotation, ratio);
+                float angle = Quaternion.Angle(startRotation, rotation);
 
-                Transform.position += Vector3.up * (Utils.GetHeightLineHyA(rollHypot, angle + rollAxisAngle)
+                Vector3 position = _golemObject.Rigidbody.position;
+                position += Vector3.up * (Utils.GetHeightLineHyA(rollHypot, angle + rollAxisAngle)
                     - Utils.GetHeightLineHyA(rollHypot, previousAngle + rollAxisAngle));
-                Transform.position += -moveDirection * (Utils.GetBaseLineHyA(rollHypot, angle + rollAxisAngle)
+                position += -moveDirection * (Utils.GetBaseLineHyA(rollHypot, angle + rollAxisAngle)
                     - Utils.GetBaseLineHyA(rollHypot, previousAngle + rollAxisAngle));
+
+                _golemObject.Rigidbody.MovePosition(position);
+                _golemObject.Rigidbody.MoveRotation(rotation);
+
+                previousAngle = angle;
 
                 if (angle > 50f && once)
                 {
@@ -122,8 +126,9 @@ namespace Commar.CubicLand.Cube
                 yield return timer.Advance();
             }
 
-            _golemObject.Rigidbody.MovePosition(CubeUtil.GetNormalizedPosition(Transform.position));
-            _golemObject.Rigidbody.MoveRotation(CubeUtil.GetNormalizedRotation(Transform.rotation));
+            _golemObject.Rigidbody.position = CubeUtil.GetNormalizedPosition(_golemObject.Rigidbody.position);
+            _golemObject.Rigidbody.rotation = CubeUtil.GetNormalizedRotation(_golemObject.Rigidbody.rotation);
+            UpdateGeometryData();
         }
 
         public IEnumerator Tumble(Direction direction, float duration)
@@ -147,17 +152,20 @@ namespace Commar.CubicLand.Cube
 
         public IEnumerator Rotate(Direction direction, float duration)
         {
-            RotateAxisCube = _golemObject.FindCube(FindRotateAxis(direction));
+            Vector3Int rotateAxisPosition = FindRotateAxis(direction);
+            RotateAxisCube = _golemObject.FindCube(rotateAxisPosition);
 
-            Quaternion startRotation = Transform.rotation;
+            Rigidbody rigidbody = _golemObject.Rigidbody;
+            Quaternion startRotation = rigidbody.rotation;
             Vector3 moveDirection = _moveDirection.GetDirection(direction);
-            Vector3 axisPosition = RotateAxisCube.transform.position;
+            Vector3 axisLocalPosition = (Vector3)(rotateAxisPosition - CubeConfig.CORE_POSITION) * CubeConfig.CUBE_BASE_LENGTH;
+            Vector3 axisPosition = rigidbody.position + startRotation * axisLocalPosition;
             axisPosition.y = 0f;
             Quaternion moveRotation = Quaternion.FromToRotation(_moveDirection.Front, moveDirection);
-            Quaternion targetRotation = startRotation * moveRotation;
+            Quaternion targetRotation = moveRotation * startRotation;
 
             Quaternion startViewRotation = ViewRotation;
-            Quaternion targetViewRotation = startViewRotation * moveRotation;
+            Quaternion targetViewRotation = moveRotation * startViewRotation;
 
             FixedStepTimer timer = new FixedStepTimer(duration);
             bool once = true;
@@ -165,22 +173,34 @@ namespace Commar.CubicLand.Cube
             while (!timer.IsCompleted)
             {
                 float ratio = timer.Progress;
+                Quaternion rotation = Quaternion.Slerp(startRotation, targetRotation, ratio);
 
-                _golemObject.Rigidbody.MoveRotation(Quaternion.Slerp(startRotation, targetRotation, ratio));
+                rigidbody.MoveRotation(rotation);
                 ViewRotation = Quaternion.Slerp(startViewRotation, targetViewRotation, ratio);
 
                 if (ratio > 0.55f && once)
                 {
                     once = false;
-                    _moveDirection.Rotate(moveRotation.eulerAngles);
+                    _moveDirection.Rotate(moveRotation);
                 }
 
-                Vector3 positionOffset = axisPosition - RotateAxisCube.transform.position;
+                Vector3 rotatedAxisPosition = rigidbody.position + rotation * axisLocalPosition;
+                rotatedAxisPosition.y = 0f;
+                Vector3 positionOffset = axisPosition - rotatedAxisPosition;
                 positionOffset.y = 0f;
-                Transform.position += positionOffset;
+                rigidbody.position += positionOffset;
 
                 yield return timer.Advance();
             }
+
+            Quaternion normalizedRotation = CubeUtil.GetNormalizedRotation(targetRotation);
+            Vector3 rotatedFinalAxisPosition = rigidbody.position + normalizedRotation * axisLocalPosition;
+            rotatedFinalAxisPosition.y = 0f;
+            Vector3 finalPositionOffset = axisPosition - rotatedFinalAxisPosition;
+            finalPositionOffset.y = 0f;
+
+            rigidbody.rotation = normalizedRotation;
+            rigidbody.position = CubeUtil.GetNormalizedPosition(rigidbody.position + finalPositionOffset);
 
             ViewRotation = _moveDirection.GetRotation();
         }
@@ -242,7 +262,7 @@ namespace Commar.CubicLand.Cube
                 yield return timer.Advance();
             }
 
-            Transform.position += (1f - previousAxisScale) * golemHeight / 2f * Vector3.up;
+            _golemObject.Rigidbody.position += (1f - previousAxisScale) * golemHeight / 2f * Vector3.up;
             Transform.localScale = Vector3.one;
         }
 
@@ -266,7 +286,7 @@ namespace Commar.CubicLand.Cube
                 yield return timer.Advance();
             }
 
-            _golemObject.Rigidbody.MovePosition(CubeUtil.GetNormalizedPosition(targetPosition));
+            _golemObject.Rigidbody.position = CubeUtil.GetNormalizedPosition(targetPosition);
         }
 
         private void UpdateGeometryData()
@@ -353,7 +373,7 @@ namespace Commar.CubicLand.Cube
             _tempDictionary.Clear();
             foreach (Vector3Int position in nearestCubes)
             {
-                Vector3 dir = position - CubeConfig.CORE_POSITION;
+                Vector3 dir = _golemObject.Rigidbody.rotation * (Vector3)(position - CubeConfig.CORE_POSITION);
                 dir.y = 0f;
 
                 Direction3D key = DirectionUtils.ConvertDirection(_moveDirection.GetDirections(), dir);

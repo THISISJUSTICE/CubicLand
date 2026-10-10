@@ -31,14 +31,9 @@ namespace Commar.CubicLand.Cube
         public void OnEnable()
         {
             _coroutine = null;
-
             _motionMotor.OnEnable();
 
-            _golemObject.SetAttackMode(false);
-            _golemObject.Rigidbody.useGravity = true;
-            _golemObject.Rigidbody.FreezePositionXZ(true);
-
-            MoveState = GolemMoveState.Idle;
+            SetIdleState();
             IsStun = false;
         }
 
@@ -92,7 +87,7 @@ namespace Commar.CubicLand.Cube
             SetStunState();
 
             _golemObject.Rigidbody.ClearVelocity();
-            _golemObject.Rigidbody.FreezePositionXZ(false);
+            SetMotionConstraints(false, true);
             _golemObject.Rigidbody.AddForce(impulse, ForceMode.Impulse);
             if (impulse.y > 0f)
                 _groundSensor.NotifyAirborne();
@@ -118,6 +113,8 @@ namespace Commar.CubicLand.Cube
                 // 올라가는 도중은 Move (한 칸만 가능)
                 // 점프 가속에 따라 속도 조정
 
+                SetMotionConstraints(false, true);
+
                 float velocity = CubeUtil.CalculateLiftForce(_golemObject.Rigidbody, CubeConfig.CUBE_BASE_LENGTH * 0.5f) / _golemObject.Rigidbody.mass;
                 float duration = velocity / Mathf.Abs(Physics.gravity.y) * 1.2f;
                 yield return _motionMotor.Move(direction, duration);
@@ -128,12 +125,16 @@ namespace Commar.CubicLand.Cube
 
                 if (direction == Direction.Front)
                 {
+                    SetMotionConstraints(false, true);
+
                     float velocity = CubeUtil.CalculateLiftForce(_golemObject.Rigidbody, CubeConfig.CUBE_BASE_LENGTH * 0.5f) / _golemObject.Rigidbody.mass;
                     float duration = velocity / Mathf.Abs(Physics.gravity.y) * 1.2f;
                     yield return _motionMotor.MoveWithJump(direction, duration);
                 }
                 else
                 {
+                    SetMotionConstraints(false, false);
+
                     _golemObject.SetAttackMode(true);
                     yield return _motionMotor.MoveWithRoll(direction, CalculateMoveTime());
                     _golemObject.SetAttackMode(false);
@@ -157,6 +158,8 @@ namespace Commar.CubicLand.Cube
             }
             else
             {
+                SetMotionConstraints(false, false);
+
                 _motionMotor.FindEdgeCubeDatas(Direction3D.Down, _edgeCubes);
                 int bottomCount = _edgeCubes.Count;
                 float moveTime = Mathf.Clamp(CalculateMoveTime() * 0.9f, CubeConfig.GOLEM_MIN_MOVE_TIME, CubeConfig.GOLEM_MAX_MOVE_TIME);
@@ -175,12 +178,15 @@ namespace Commar.CubicLand.Cube
         private IEnumerator StartJumpChargeCoroutine()
         {
             MoveState = GolemMoveState.Charging;
+            SetMotionConstraints(true, true);
             yield return _motionMotor.ChargeJump();
             CompleteCurrentCoroutine();
         }
 
         private IEnumerator ReleaseJumpCoroutine()
         {
+            SetMotionConstraints(true, true);
+
             if (_motionMotor.ReleaseJumpForce())
                 _groundSensor.NotifyAirborne();
 
@@ -224,11 +230,12 @@ namespace Commar.CubicLand.Cube
         private IEnumerator NormalizePoseInternal()
         {
             SetStunState();
-            _golemObject.Rigidbody.FreezePositionXZ(true);
+            SetMotionConstraints(false, false);
 
             yield return CubeUtil.NormalizePoseCoroutine(_golemObject.Rigidbody);
 
             IsStun = false;
+            SetIdleState();
         }
 
         private float CalculateMoveTime()
@@ -259,12 +266,19 @@ namespace Commar.CubicLand.Cube
             MoveState = GolemMoveState.Idle;
             _golemObject.SetAttackMode(false);
             _golemObject.Rigidbody.useGravity = true;
+            SetMotionConstraints(true, true);
         }
 
         private void SetStunState()
         {
             IsStun = true;
             SetIdleState();
+        }
+
+        private void SetMotionConstraints(bool isFreezePosition, bool isFreezeRotation)
+        {
+            _golemObject.Rigidbody.FreezePositionXZ(isFreezePosition);
+            _golemObject.Rigidbody.FreezeRotation(isFreezeRotation);
         }
     }
 }
