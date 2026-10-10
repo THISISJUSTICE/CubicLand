@@ -64,7 +64,7 @@ namespace Commar.CubicLand.Cube
             return new GolemStructureData(cubeDatas, children);
         }
 
-        public int GetDirectionLength(Direction3D direction)
+        public int GetDirectionEdge(Direction3D direction)
         {
             int vectorIndex = (int)direction / 2;
             bool isMax = (int)direction % 2 == 0;
@@ -93,9 +93,8 @@ namespace Commar.CubicLand.Cube
                 return;
 
             int vectorIndex = (int)direction / 2;
-            int edge = GetDirectionLength(direction);
+            int edge = GetDirectionEdge(direction);
 
-            SetAvailables();
             list.Clear();
 
             foreach (Vector3Int position in _availables)

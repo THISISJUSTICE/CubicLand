@@ -306,7 +306,7 @@ namespace Commar.CubicLand.Cube
 
         private int GetGolemLength(Direction3D direction)
         {
-            return _golemObject.StructureData.GetDirectionLength(ConvertObjectDirection(direction));
+            return Mathf.Abs(_golemObject.StructureData.GetDirectionEdge(ConvertObjectDirection(direction)));
         }
 
         private List<Vector3Int> FindAxisCandidates(Direction3D moveDirection)
