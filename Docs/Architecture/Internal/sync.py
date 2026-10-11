@@ -93,6 +93,37 @@ def direct_declarations(source, masked, start, end):
             i += 1
 
 
+def declaration_before_initializer(header):
+    """Strip a top-level field initializer, not default parameter values.
+
+    Also strip expression-bodied implementations, while preserving the method
+    signature. Parentheses/brackets/generic arguments may span lines.
+    """
+    parens = brackets = angles = 0
+    for i, c in enumerate(header):
+        if c == '(':
+            parens += 1
+        elif c == ')':
+            parens = max(0, parens - 1)
+        elif c == '[':
+            brackets += 1
+        elif c == ']':
+            brackets = max(0, brackets - 1)
+        elif c == '<':
+            angles += 1
+        elif c == '>':
+            angles = max(0, angles - 1)
+        elif c == '=' and not (parens or brackets or angles):
+            if header[i:i + 2] == '=>':
+                return header[:i].strip()
+            if i and header[i - 1] in ('=', '!', '<', '>'):
+                continue
+            if i + 1 < len(header) and header[i + 1] == '=':
+                continue
+            return header[:i].strip()
+    return header.strip()
+
+
 def parse_members(source, masked, begin, end, kind, type_name):
     members, methods = [], []
     if kind == 'enum':
@@ -113,11 +144,10 @@ def parse_members(source, masked, begin, end, kind, type_name):
         h = re.sub(r'\s+', ' ', h).strip()
         # A field initializer may call a constructor: only inspect the declaration
         # before '=' when deciding whether it is a method.
-        declaration = h.split('=>', 1)[0]
-        declaration = re.split(r'(?<![=!<>])=(?!=|>)', declaration, maxsplit=1)[0].strip()
+        declaration = declaration_before_initializer(h)
         if '(' in declaration and ')' in declaration:
             if visibility not in ('public', 'internal') and kind != 'interface': continue
-            match = re.search(r'([\w.<>]+)\s*\((.*)\)', declaration)
+            match = re.search(r'([\w.<>]+)\s*\((.*)\)\s*(?::\s*(?:base|this)\s*\(.*\))?$', declaration)
             if not match: continue
             name, args = match.groups()
             before = declaration[:match.start(1)].strip()
@@ -137,8 +167,7 @@ def parse_members(source, masked, begin, end, kind, type_name):
         else:
             # Auto/full property: body has get/set/init; expression-bodied property also supported.
             is_property = has_body and bool(re.search(r'\b(get|set|init)\b', body))
-            if '=>' in h: h = h.split('=>')[0].strip()
-            if '=' in h: h = h.split('=')[0].strip()
+            h = declaration
             match = re.match(r'(.+?)\s+([A-Za-z_]\w*)$', h)
             if match:
                 typ, name = match.groups()
