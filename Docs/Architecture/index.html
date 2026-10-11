@@ -49,7 +49,7 @@
         // Compute from paths for compatibility with older diagrams.json manifests.
         const groups = new Map();
         for (const file of files) {
-          const relative = file.replace(/^Docs\//i, '');
+          const relative = file.replace(/^Docs\/Architecture\/Diagrams\//i, '');
           const slash = relative.lastIndexOf('/');
           const group = slash < 0 ? '' : relative.slice(0, slash);
           if (!groups.has(group)) groups.set(group, []);
@@ -105,7 +105,7 @@
               for (const target of linked) {
                 const link = document.createElement('a');
                 link.href = '#diagram-' + encodeURIComponent(target);
-                link.textContent = target.replace(/^Docs\//i, '').replace(/\.drawio$/i, '');
+                link.textContent = diagramLabel(target);
                 refs.append(link);
               }
               section.append(refs);
@@ -137,6 +137,12 @@
         container.textContent = `다이어그램을 불러오지 못했습니다: ${error.message}`;
       }
     })();
+
+    function diagramLabel(path) {
+    return path
+        .replace(/^Docs\/Architecture\/Diagrams\//i, '')
+        .replace(/\.drawio$/i, '');
+    }
   </script>
 </body>
 </html>
