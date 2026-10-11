@@ -11,14 +11,18 @@
       "sources": [
         {"path": "Assets/Scripts/Contents/Cube/Objects", "recursive": true},
         {"path": "Assets/Scripts/Contents/Cube/Singletons/Externals", "recursive": false},
-        {"path": "Assets/Scripts/Contents/Cube/Motions/Externals", "recursive": false}
+        {"path": "Assets/Scripts/Contents/Cube/Motions/Externals", "recursive": false},
+        {"path": "Assets/Scripts/CubicLand/UnityLifecycles/IFixedUpdatable.cs"},
+        {"path": "Assets/Scripts/CubicLand/UnityLifecycles/IOnEnablable.cs"}
       ]
     },
     {
       "output": "Cube/Motions",
       "sources": [
         {"path": "Assets/Scripts/Contents/Cube/Motions", "recursive": true},
-        {"path": "Assets/Scripts/Contents/Cube/Objects/IGolemObject.cs"}
+        {"path": "Assets/Scripts/Contents/Cube/Objects/IGolemObject.cs"},
+        {"path": "Assets/Scripts/CubicLand/UnityLifecycles/IFixedUpdatable.cs"},
+        {"path": "Assets/Scripts/CubicLand/UnityLifecycles/IOnEnablable.cs"}
       ]
     },
     {
@@ -31,7 +35,8 @@
       "output": "Cube/Singletons",
       "sources": [
         {"path": "Assets/Scripts/Contents/Cube/Singletons", "recursive": true},
-        {"path": "Assets/Scripts/Contents/Cube/SpawnEffects/ICubeSpawnEffect.cs"}
+        {"path": "Assets/Scripts/Contents/Cube/SpawnEffects/ICubeSpawnEffect.cs"},
+        {"path": "Assets/Scripts/CubicLand/UnityLifecycles/IFixedUpdatable.cs"}
       ]
     },
 

@@ -10,10 +10,10 @@
   ],
   "versions": {
     "Docs/Architecture/Diagrams/Cube/Datas.drawio": "057a139c8368d45c",
-    "Docs/Architecture/Diagrams/Cube/Objects.drawio": "1a32de2ebcbc8c0e",
-    "Docs/Architecture/Diagrams/Cube/Motions.drawio": "b299c8432420700a",
+    "Docs/Architecture/Diagrams/Cube/Objects.drawio": "3959a22fa3b0b6b9",
+    "Docs/Architecture/Diagrams/Cube/Motions.drawio": "b378629a6d418fcf",
     "Docs/Architecture/Diagrams/Cube/SpawnEffects.drawio": "1a26d2888d3d0b49",
-    "Docs/Architecture/Diagrams/Cube/Singletons.drawio": "2df0219aa96eba5d",
+    "Docs/Architecture/Diagrams/Cube/Singletons.drawio": "f5df0ea854a1e122",
     "Docs/Architecture/Diagrams/Common/Types.drawio": "fd0b105d54c7a9a5",
     "Docs/Architecture/Diagrams/Common/Singletons.drawio": "09bde925d2ebfd58"
   },
@@ -36,8 +36,7 @@
     ],
     "Docs/Architecture/Diagrams/Cube/Objects.drawio": [
       "Docs/Architecture/Diagrams/Common/Types.drawio",
-      "Docs/Architecture/Diagrams/Cube/Datas.drawio",
-      "Docs/Architecture/Diagrams/Cube/Motions.drawio"
+      "Docs/Architecture/Diagrams/Cube/Datas.drawio"
     ],
     "Docs/Architecture/Diagrams/Cube/Motions.drawio": [
       "Docs/Architecture/Diagrams/Common/Types.drawio",
