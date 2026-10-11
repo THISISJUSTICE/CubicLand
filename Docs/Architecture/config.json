@@ -1,0 +1,53 @@
+{
+  "diagrams": [
+    {
+      "output": "Cube/Datas",
+      "sources": [
+        {"path": "Assets/Scripts/Contents/Cube/Datas", "recursive": true}
+      ]
+    },
+    {
+      "output": "Cube/Objects",
+      "sources": [
+        {"path": "Assets/Scripts/Contents/Cube/Objects", "recursive": true},
+        {"path": "Assets/Scripts/Contents/Cube/Singletons/Externals", "recursive": false},
+        {"path": "Assets/Scripts/Contents/Cube/Motions/Externals", "recursive": false}
+      ]
+    },
+    {
+      "output": "Cube/Motions",
+      "sources": [
+        {"path": "Assets/Scripts/Contents/Cube/Motions", "recursive": true},
+        {"path": "Assets/Scripts/Contents/Cube/Objects/IGolemObject.cs"}
+      ]
+    },
+    {
+      "output": "Cube/SpawnEffects",
+      "sources": [
+        {"path": "Assets/Scripts/Contents/Cube/SpawnEffects", "recursive": true}
+      ]
+    },
+    {
+      "output": "Cube/Singletons",
+      "sources": [
+        {"path": "Assets/Scripts/Contents/Cube/Singletons", "recursive": true},
+        {"path": "Assets/Scripts/Contents/Cube/SpawnEffects/ICubeSpawnEffect.cs"}
+      ]
+    },
+
+
+    {
+      "output": "Common/Types",
+      "sources": [
+        {"path": "Assets/Scripts/Commar/Operations", "recursive": false},
+        {"path": "Assets/Scripts/CubicLand/Enums.cs"}
+      ]
+    },
+    {
+      "output": "Common/Singletons",
+      "sources": [
+        {"path": "Assets/Scripts/CubicLand/Singletons", "recursive": false}
+      ]
+    }
+  ]
+}

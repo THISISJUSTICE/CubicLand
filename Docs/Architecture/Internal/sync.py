@@ -1,0 +1,1414 @@
+"""Synchronize C# type declarations with monochrome three-compartment draw.io UML.
+Graphviz dot must be installed and on PATH for automatic layout.
+Python 3.9+, standard library only. Back up your .drawio before first use.
+Explicit source directories or individual .cs files; existing hand-made edges are preserved.
+This is a lightweight C# parser, not Roslyn: complex declarations may need manual review.
+"""
+import argparse
+import subprocess
+import shutil
+import hashlib
+import copy
+import html
+import heapq
+import math
+import json
+import re
+import sys
+import uuid
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[3]
+ARCHITECTURE = ROOT / "Docs" / "Architecture"
+DIAGRAMS_DIR = ARCHITECTURE / "Diagrams"
+CONFIG = ARCHITECTURE / "config.json"
+TYPE_RE = re.compile(r'\b(class|interface|struct|enum|record)\s+(?:class\s+|struct\s+)?([A-Za-z_]\w*)(?:\s*<[^>{}]+>)?\s*(?::\s*([^\{]+?))?\s*\{', re.S)
+TAG_RE = re.compile(r'<[^>]*>')
+VIS = {'public': '+', 'internal': '+', 'protected': '+', 'private': '+'}
+
+
+def clean_source(source):
+    # Preserve offsets and braces while masking comments and string/char literals.
+    pattern = re.compile(r'//[^\n]*|/\*[\s\S]*?\*/|@"(?:[^"]|"")*"|\$?"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'')
+    return pattern.sub(lambda m: ''.join('\n' if c == '\n' else ' ' for c in m.group()), source)
+
+
+def matching_brace(src, start):
+    depth = 0
+    for i in range(start, len(src)):
+        if src[i] == '{': depth += 1
+        elif src[i] == '}':
+            depth -= 1
+            if depth == 0: return i
+    return len(src)
+
+
+def split_top_level(text, delimiter=','):
+    result, last = [], 0
+    angles = parens = brackets = 0
+    for i, ch in enumerate(text):
+        if ch == '<': angles += 1
+        elif ch == '>': angles = max(0, angles - 1)
+        elif ch == '(': parens += 1
+        elif ch == ')': parens = max(0, parens - 1)
+        elif ch == '[': brackets += 1
+        elif ch == ']': brackets = max(0, brackets - 1)
+        elif ch == delimiter and not (angles or parens or brackets):
+            result.append(text[last:i].strip()); last = i + 1
+    result.append(text[last:].strip())
+    return [x for x in result if x]
+
+
+def direct_declarations(source, masked, start, end):
+    # Read declarations at class-body depth 0, skipping method/property bodies.
+    i = start
+    while i < end:
+        while i < end and masked[i].isspace(): i += 1
+        if i >= end: break
+        begin = i
+        parens = brackets = angles = 0
+        while i < end:
+            c = masked[i]
+            if c == '(': parens += 1
+            elif c == ')': parens = max(0, parens - 1)
+            elif c == '[': brackets += 1
+            elif c == ']': brackets = max(0, brackets - 1)
+            elif c == '<': angles += 1
+            elif c == '>': angles = max(0, angles - 1)
+            if not (parens or brackets or angles) and c in '{;': break
+            i += 1
+        header = source[begin:i].strip()
+        if i >= end: break
+        if masked[i] == '{':
+            close = matching_brace(masked, i)
+            body = source[i + 1:close]
+            yield header, body, True
+            i = close + 1
+            # property initializer / expression-bodied members after a block
+            while i < end and masked[i].isspace(): i += 1
+            if i < end and masked[i] == ';': i += 1
+        else:
+            yield header, '', False
+            i += 1
+
+
+def parse_members(source, masked, begin, end, kind, type_name):
+    members, methods = [], []
+    if kind == 'enum':
+        for val in split_top_level(source[begin:end]):
+            name = re.match(r'\s*(\w+)', val)
+            if name: members.append('+ ' + name.group(1))
+        return members, methods
+    for header, body, has_body in direct_declarations(source, masked, begin, end):
+        h = re.sub(r'\[[^\]]*\]', ' ', header).strip()
+        h = re.sub(r'\s+', ' ', h)
+        if not h or re.search(r'\b(class|interface|struct|enum|record)\b', h): continue
+        # Static/const declarations are intentionally excluded from the diagram.
+        if re.search(r'\b(static|const)\b', h): continue
+        tokens = re.findall(r'\b(public|private|protected|internal)\b', h)
+        visibility = tokens[0] if tokens else ('public' if kind == 'interface' else 'private')
+        mark = VIS[visibility]
+        h = re.sub(r'\b(public|private|protected|internal|static|virtual|override|abstract|sealed|readonly|const|partial|new|async|extern|required|unsafe|volatile)\b', '', h)
+        h = re.sub(r'\s+', ' ', h).strip()
+        # A field initializer may call a constructor: only inspect the declaration
+        # before '=' when deciding whether it is a method.
+        declaration = h.split('=>', 1)[0]
+        declaration = re.split(r'(?<![=!<>])=(?!=|>)', declaration, maxsplit=1)[0].strip()
+        if '(' in declaration and ')' in declaration:
+            if visibility not in ('public', 'internal') and kind != 'interface': continue
+            match = re.search(r'([\w.<>]+)\s*\((.*)\)', declaration)
+            if not match: continue
+            name, args = match.groups()
+            before = declaration[:match.start(1)].strip()
+            ret = before.split()[-1] if before else ''
+            params = []
+            for arg in split_top_level(args):
+                arg = arg.split('=')[0].strip()
+                arg = re.sub(r'\b(ref|out|in|params|this|scoped)\b', '', arg).strip()
+                pieces = arg.split()
+                if len(pieces) >= 2: params.append(' '.join(pieces[:-1]))
+                elif pieces: params.append(pieces[0])
+            if name == type_name:  # Constructors are not UML methods.
+                continue
+            signature = f'+ {name}({", ".join(params)})'
+            if ret and name != type_name: signature += f' : {ret}'
+            methods.append(signature)
+        else:
+            # Auto/full property: body has get/set/init; expression-bodied property also supported.
+            is_property = has_body and bool(re.search(r'\b(get|set|init)\b', body))
+            if '=>' in h: h = h.split('=>')[0].strip()
+            if '=' in h: h = h.split('=')[0].strip()
+            match = re.match(r'(.+?)\s+([A-Za-z_]\w*)$', h)
+            if match:
+                typ, name = match.groups()
+                members.append(f'+ {name} : {typ}')
+            elif is_property:
+                print(f'[WARN] Could not parse property: {header[:70]}', file=sys.stderr)
+    return list(dict.fromkeys(members)), list(dict.fromkeys(methods))
+
+
+def get_types(paths):
+    types = {}
+    for spec in paths:
+        base = Path(spec['path'])
+        if not base.is_absolute(): base = ROOT / base
+        if base.is_file():
+            if base.suffix.lower() != '.cs':
+                print(f'[WARN] Source file is not C#: {base}', file=sys.stderr)
+                continue
+            files = [base]  # recursive applies only to directories.
+        elif base.is_dir():
+            files = base.rglob('*.cs') if spec.get('recursive', False) else base.glob('*.cs')
+        else:
+            print(f'[WARN] Missing source path: {base}', file=sys.stderr)
+            continue
+        for file in sorted(files):
+            source = file.read_text(encoding='utf-8-sig')
+            masked = clean_source(source)
+            for match in TYPE_RE.finditer(masked):
+                kind, name, parents = match.groups()
+                # Inspect modifiers immediately preceding the declaration, not a prior member.
+                line_start = masked.rfind('\n', 0, match.start()) + 1
+                prefix = masked[line_start:match.start()]
+                if re.search(r'\bstatic\b', prefix): continue
+                # Avoid nested types in this prototype.
+                # Nested class definitions require namespace/type-aware parsing.
+                opening = match.end() - 1
+                closing = matching_brace(masked, opening)
+                parent_names = [re.split(r'[<\s]', p.strip())[0].split('.')[-1] for p in split_top_level(parents or '')]
+                members, methods = parse_members(source, masked, opening + 1, closing, kind, name)
+                if name in types:
+                    print(f'[WARN] Duplicate type {name} in {file}; first wins', file=sys.stderr); continue
+                types[name] = {'kind':kind, 'parents':parent_names, 'members':members, 'methods':methods,
+                               'mono': 'MonoBehaviour' in parent_names, 'file':str(file)}
+    suppress_inherited_members(types)
+    return types
+
+
+def suppress_inherited_members(types):
+    """Hide members already declared on any parsed ancestor, including overrides/new.
+
+    Fields/properties are matched by name, methods by name and parameter types.
+    An overload with a different parameter list remains visible. Only ancestors
+    included in this diagram's parsed sources can be inspected.
+    """
+    original_members = {name: tuple(info['members']) for name, info in types.items()}
+    original_methods = {name: tuple(info['methods']) for name, info in types.items()}
+
+    def member_key(member):
+        # '+ PropertyName : Type' -- type may differ for a hiding declaration.
+        return member.removeprefix('+ ').split(' : ', 1)[0].strip()
+
+    def method_key(method):
+        # '+ Method(Type, Type) : ReturnType' -- return type is not an overload key.
+        return method.removeprefix('+ ').split(' : ', 1)[0].strip()
+
+    def inherited_keys(name, visited):
+        members, methods = set(), set()
+        for parent in types[name]['parents']:
+            if parent not in types or parent in visited:
+                continue
+            members.update(member_key(m) for m in original_members[parent])
+            methods.update(method_key(m) for m in original_methods[parent])
+            ancestor_members, ancestor_methods = inherited_keys(parent, visited | {parent})
+            members.update(ancestor_members)
+            methods.update(ancestor_methods)
+        return members, methods
+
+    for name, info in types.items():
+        inherited_members, inherited_methods = inherited_keys(name, {name})
+        info['members'] = [m for m in info['members'] if member_key(m) not in inherited_members]
+        info['methods'] = [m for m in info['methods'] if method_key(m) not in inherited_methods]
+
+
+
+def referenced_types(info):
+    """Type identifiers exposed by bases, fields/properties, and method signatures."""
+    expressions = list(info['parents'])
+    expressions.extend(member.partition(' : ')[2] for member in info['members'])
+    for method in info['methods']:
+        # UML signature: + Method(ParamType, ...) : ReturnType
+        opening = method.find('(')
+        if opening < 0:
+            continue
+        closing = method.rfind(')')
+        if closing < opening:
+            continue
+        expressions.append(method[opening + 1:closing])
+        expressions.append(method[closing + 1:].partition(' : ')[2])
+    return {token for expression in expressions
+            for token in re.findall(r'\b[A-Za-z_]\w*\b', expression)}
+
+
+def get_name(cell):
+    val = html.unescape(cell.get('value', ''))
+    val = re.sub(r'</(?:div|p)>|<br\s*/?>', '\n', val, flags=re.I)
+    val = TAG_RE.sub('', val)
+    lines = [x.strip() for x in val.splitlines() if x.strip()]
+    for line in reversed(lines):
+        if re.fullmatch(r'[A-Za-z_]\w*', line): return line
+    return None
+
+
+def title(info, name):
+    stereotype = 'MonoBehaviour' if info['mono'] else (info['kind'] if info['kind'] != 'class' else None)
+    return (f'<div>&lt;&lt;{stereotype}&gt;&gt;</div>' if stereotype else '') + '<h4 style="margin:0">' + html.escape(name) + '</h4>'
+
+
+def lines_html(lines):
+    return ''.join('<div style="height:20px;line-height:20px;margin:0;padding:0;white-space:nowrap">' + html.escape(x) + '</div>' for x in lines) if lines else ''
+
+
+def geom(cell): return cell.find('mxGeometry')
+
+
+def create_cell(graph, cell_id, value, style, parent, x, y, w, h):
+    cell = ET.SubElement(graph, 'mxCell', {'id':cell_id, 'value':value, 'style':style,
+                                           'vertex':'1', 'parent':parent, 'uml-sync':'1'})
+    ET.SubElement(cell, 'mxGeometry', {'x':str(x),'y':str(y),'width':str(w),'height':str(h),'as':'geometry'})
+    return cell
+
+
+def set_section(graph, parent, existing, suffix, content, y, height, width):
+    if existing is None:
+        existing = create_cell(graph, parent.get('id') + '-' + suffix, content,
+            'text;fontSize=14;strokeColor=#000000;fillColor=none;align=left;verticalAlign=middle;spacingTop=4;spacingBottom=4;spacingLeft=6;spacingRight=6;whiteSpace=wrap;overflow=hidden;html=1;',
+            parent.get('id'), 0, y, width, height)
+    else:
+        existing.set('value', content)
+        existing.set('style', 'text;fontSize=14;strokeColor=#000000;fillColor=none;align=left;verticalAlign=middle;spacingTop=4;spacingBottom=4;spacingLeft=6;spacingRight=6;whiteSpace=wrap;overflow=hidden;html=1;')
+        g = geom(existing)
+        if g is not None:
+            g.set('x', '0'); g.set('y', str(y)); g.set('width', str(width)); g.set('height', str(height))
+    return existing
+
+
+def managed(cell):
+    return cell.get('uml-sync') == '1' or (cell.get('id') or '').startswith(('umlsync-', 'umlsync-edge-'))
+
+
+def remove_cell_and_children(graph, cell_id):
+    """Remove an owned node, its children and edges incident to it."""
+    ids = {cell_id}
+    changed = True
+    while changed:
+        changed = False
+        for c in graph.findall('mxCell'):
+            if c.get('parent') in ids and c.get('id') not in ids:
+                ids.add(c.get('id')); changed = True
+    for c in list(graph.findall('mxCell')):
+        if c.get('id') in ids or (c.get('edge') == '1' and (c.get('source') in ids or c.get('target') in ids)):
+            graph.remove(c)
+
+
+def clean_auto_edge(edge):
+    """Avoid retaining stale fixed connection points or waypoints."""
+    style = 'edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;endArrow=block;endFill=0;strokeColor=#000000;'
+    edge.set('style', style)
+    g = edge.find('mxGeometry')
+    if g is not None:
+        for child in list(g): g.remove(child)
+        for attr in ('x','y','width','height'): g.attrib.pop(attr, None)
+        g.set('relative','1')
+
+
+def normalize_managed_node(cell):
+    """Migrate old prototype rounded colored boxes to 3-section UML."""
+    if 'swimlane' not in cell.get('style',''):
+        cell.set('style', 'swimlane;fontSize=16;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=46;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;html=1;fillColor=none;swimlaneFillColor=none;strokeColor=#000000;')
+        g = geom(cell)
+        if g is not None and float(g.get('width','0')) < 300: g.set('width','320')
+
+
+def estimate_width(name, info):
+    """Estimate glyph advances at draw.io's default 12px font (not character count)."""
+    import unicodedata
+    texts = [name] + info['members'] + info['methods']
+    label = 'MonoBehaviour' if info['mono'] else (info['kind'] if info['kind'] != 'class' else '')
+    if label: texts.append('«' + label + '»')
+    def pixels(text):
+        width = 0.0
+        for c in text:
+            if unicodedata.east_asian_width(c) in ('F', 'W'): width += 12.0
+            elif c in 'il.,:;!|\'` ': width += 3.4
+            elif c in 'mwMW@%': width += 9.8
+            elif c in '()[]{}<>': width += 4.5
+            elif c.isupper(): width += 7.7
+            elif c.isdigit(): width += 6.7
+            else: width += 6.1
+        return width
+    # Preserve glyph-based sizing with a small 4% correction for body text.
+    body_width = max((pixels(t) * (14 / 12) * 1.04 for t in info['members'] + info['methods']), default=0)
+    # Heading 4 is bold and may render wider than the 12px baseline estimate.
+    # Give titles their own font scaling and additional horizontal insets.
+    title_width = max(pixels(name) * (16 / 12) * 1.18,
+                      pixels('«' + label + '»') * (16 / 12) if label else 0)
+    return max(72, int(math.ceil(max(body_width + 24, title_width + 36))))
+
+
+def segment_intersects_rect(x1,y1,x2,y2,rx,ry,rw,rh):
+    """Liang-Barsky segment/axis-aligned rectangle intersection."""
+    dx=x2-x1; dy=y2-y1; lo=0.0; hi=1.0
+    for p,q in ((-dx,x1-rx),(dx,rx+rw-x1),(-dy,y1-ry),(dy,ry+rh-y1)):
+        if abs(p)<1e-9:
+            if q<0: return False
+        else:
+            t=q/p
+            if p<0: lo=max(lo,t)
+            else: hi=min(hi,t)
+            if lo>hi: return False
+    return True
+
+
+def auto_layout(graph, existing, types, desired, gap=65):
+    """Deterministic relationship-centric layout; all synced nodes are movable."""
+    names = sorted(types)
+    adjacency = {n: set() for n in names}
+    for a, b in desired:
+        if a in adjacency and b in adjacency:
+            adjacency[a].add(b); adjacency[b].add(a)
+    # Local density reserves more routing corridors around high-degree vertices.
+    degree = {n: len(adjacency[n]) for n in names}
+    boxes = {}
+    for name in names:
+        g = geom(existing[name])
+        boxes[name] = (float(g.get('width', 180)), float(g.get('height', 60)))
+    # Cluster connected components. Within a cluster place high-degree hubs first,
+    # then put neighbors around their connected already-placed vertices.
+    remaining = set(names)
+    components = []
+    while remaining:
+        start = max(remaining, key=lambda n: (len(adjacency[n]), n))
+        stack, component = [start], set()
+        while stack:
+            n = stack.pop()
+            if n in component: continue
+            component.add(n)
+            stack.extend(adjacency[n] - component)
+        remaining -= component
+        components.append(component)
+    # Unconnected types are positioned as a compact header row above the graph,
+    # rather than as distant single-node components on its right.
+    isolated = sorted(n for n in names if not adjacency[n])
+    components = [c for c in components if len(c) > 1]
+    components.sort(key=lambda c: (-len(c), sorted(c)))
+    locations = {}
+    offset_x = 60.0
+    for comp in components:
+        placed = {}
+        pending = set(comp)
+        hub = max(pending, key=lambda n: (len(adjacency[n] & comp), n))
+        placed[hub] = (0.0, 0.0)
+        pending.remove(hub)
+        while pending:
+            name = max(pending, key=lambda n: (len(adjacency[n] & placed.keys()), len(adjacency[n]), n))
+            neighbors = [n for n in adjacency[name] if n in placed]
+            if neighbors:
+                cx = sum(placed[n][0] + boxes[n][0] / 2 for n in neighbors) / len(neighbors)
+                cy = sum(placed[n][1] + boxes[n][1] / 2 for n in neighbors) / len(neighbors)
+            else:
+                cx = cy = 0.0
+            w, h = boxes[name]
+            candidates = []
+            # Cardinal and diagonal rings around the connected classes, rather than rows.
+            for radius in range(1, 22):
+                for dx, dy in ((1,0),(-1,0),(0,1),(0,-1),(1,1),(-1,1),(1,-1),(-1,-1)):
+                    # Space is proportional to nearby edge density and the retry gap.
+                    local_gap = gap + 8 * min(8, degree[name])
+                    x = round((cx + dx * radius * (w / 2 + 75 + local_gap) - w / 2) / 10) * 10
+                    y = round((cy + dy * radius * (h / 2 + 45 + local_gap) - h / 2) / 10) * 10
+                    if any(x < px + pw + max(gap, local_gap, gap + 8 * min(8, degree[other])) and
+                           x + w + max(gap, local_gap, gap + 8 * min(8, degree[other])) > px and
+                           y < py + ph + max(gap, local_gap, gap + 8 * min(8, degree[other])) and
+                           y + h + max(gap, local_gap, gap + 8 * min(8, degree[other])) > py
+                           for other, (px, py) in placed.items()
+                           for pw, ph in [boxes[other]]):
+                        continue
+                    length = sum(abs(x+w/2-(placed[n][0]+boxes[n][0]/2)) +
+                                 abs(y+h/2-(placed[n][1]+boxes[n][1]/2)) for n in neighbors)
+                    # Leaf nodes should remain next to their sole neighbor. Avoid
+                    # placements that make a one-edge class unnecessarily remote.
+                    # Also discourage routes whose center-to-center line crosses
+                    # the footprint of an already placed, unrelated class.
+                    obstruction = 0.0
+                    for neighbor in neighbors:
+                        sx = x + w/2; sy = y + h/2
+                        ex = placed[neighbor][0] + boxes[neighbor][0]/2
+                        ey = placed[neighbor][1] + boxes[neighbor][1]/2
+                        for other, (px,py) in placed.items():
+                            if other == neighbor: continue
+                            pw,ph = boxes[other]
+                            # Bounding-box overlap is a cheap pre-filter, then
+                            # test the center segment against the rectangle.
+                            if max(sx,ex) < px-15 or min(sx,ex) > px+pw+15 or max(sy,ey) < py-15 or min(sy,ey) > py+ph+15:
+                                continue
+                            if segment_intersects_rect(sx,sy,ex,ey,px-15,py-15,pw+30,ph+30):
+                                obstruction += 300.0
+                    spread = abs(x-cx) + abs(y-cy)
+                    candidates.append((length + spread*.08 + obstruction, radius, y, x))
+                if len(candidates) >= 8: break
+            if not candidates:
+                raise RuntimeError('Cannot place UML node ' + name)
+            _, _, y, x = min(candidates)
+            placed[name] = (x, y)
+            pending.remove(name)
+        min_x = min(x for x,y in placed.values())
+        min_y = min(y for x,y in placed.values())
+        max_x = max(x+boxes[n][0] for n,(x,y) in placed.items())
+        for n, (x,y) in placed.items():
+            locations[n] = (x - min_x + offset_x, y - min_y + 60)
+        offset_x += max_x - min_x + 220
+    if isolated:
+        if locations:
+            left = min(x for x, y in locations.values())
+            right = max(x + boxes[n][0] for n, (x, y) in locations.items())
+            top = min(y for x, y in locations.values())
+        else:
+            left, right, top = 60.0, 60.0, 60.0
+        # Fill rows within the connected graph's width. No edge can enter the
+        # isolated header band, so it cannot overlap routed relationships.
+        row_limit = max(500.0, right - left)
+        rows = []
+        row, row_width, row_height = [], 0.0, 0.0
+        spacing = 35.0
+        for n in isolated:
+            w, h = boxes[n]
+            if row and row_width + spacing + w > row_limit:
+                rows.append((row, row_width, row_height))
+                row, row_width, row_height = [], 0.0, 0.0
+            row.append(n)
+            row_width += (spacing if len(row) > 1 else 0) + w
+            row_height = max(row_height, h)
+        if row: rows.append((row, row_width, row_height))
+        header_height = sum(r[2] for r in rows) + 35.0 * max(0, len(rows)-1)
+        # Shift connected graph down, preserving its existing edge-free geometry.
+        shift = header_height + 115.0 if locations else 0.0
+        locations = {n: (x, y + shift) for n, (x, y) in locations.items()}
+        y = top
+        for row, row_width, row_height in rows:
+            x = left + max(0.0, (row_limit - row_width) / 2)
+            for n in row:
+                locations[n] = (x, y)
+                x += boxes[n][0] + spacing
+            y += row_height + 35.0
+    for name, (x,y) in locations.items():
+        g = geom(existing[name])
+        g.set('x', str(round(x))); g.set('y', str(round(y)))
+    return locations
+
+
+def route_edges(graph, existing, desired, edges_by_pair, grid=10, clearance=35):
+    """Orthogonal obstacle-aware routing with distinct perimeter ports and reserved lanes.
+
+    Port stubs are always normal to the node border, preventing sideways arrowheads.
+    Parallel tracks must stay apart; perpendicular crossings are allowed.
+    """
+    from collections import defaultdict
+    rects = {n: tuple(float(geom(c).get(k, 0)) for k in ('x','y','width','height'))
+             for n,c in existing.items()}
+    if not rects or not edges_by_pair:
+        return 0, []
+    margin = 200
+    bounds = (math.floor((min(r[0] for r in rects.values())-margin)/grid),
+              math.floor((min(r[1] for r in rects.values())-margin)/grid),
+              math.ceil((max(r[0]+r[2] for r in rects.values())+margin)/grid),
+              math.ceil((max(r[1]+r[3] for r in rects.values())+margin)/grid))
+    blocked = set()
+    for x,y,w,h in rects.values():
+        for gx in range(math.ceil((x-clearance)/grid), math.floor((x+w+clearance)/grid)+1):
+            for gy in range(math.ceil((y-clearance)/grid), math.floor((y+h+clearance)/grid)+1):
+                blocked.add((gx,gy))
+
+    # Assign an independent perimeter slot to each incident edge. Slots are not
+    # shared, including when several edges point at the same class.
+    degree = defaultdict(int)
+    for a,b in edges_by_pair:
+        degree[a]+=1; degree[b]+=1
+    # Reserve short/leaf connections first. They have fewer reasonable routing
+    # alternatives; long multi-hub edges can use the remaining corridors.
+    pairs = sorted(edges_by_pair, key=lambda p: (
+        min(degree[p[0]], degree[p[1]]) != 1,
+        abs(rects[p[0]][0]+rects[p[0]][2]/2-rects[p[1]][0]-rects[p[1]][2]/2) +
+        abs(rects[p[0]][1]+rects[p[0]][3]/2-rects[p[1]][1]-rects[p[1]][3]/2), p))
+    incidents = defaultdict(list)
+    for a,b in pairs:
+        for node,other in ((a,b),(b,a)):
+            x,y,w,h=rects[node]; ox,oy,ow,oh=rects[other]
+            cx,cy=x+w/2,y+h/2
+            tx,ty=ox+ow/2,oy+oh/2
+            dx,dy=tx-cx,ty-cy
+            # Select the border facing the other class, not the least crowded
+            # border regardless of direction. The secondary facing side is
+            # available when the direct side has too many incident arrows.
+            if abs(dx)>=abs(dy):
+                primary='right' if dx>=0 else 'left'
+                secondary='bottom' if dy>=0 else 'top'
+            else:
+                primary='bottom' if dy>=0 else 'top'
+                secondary='right' if dx>=0 else 'left'
+            incidents[node].append(((a,b),primary,secondary,dx,dy))
+    assignments = {}
+    for node,entries in incidents.items():
+        x,y,w,h=rects[node]
+        groups=defaultdict(list)
+        # Prioritize edges with the clearest directional preference, leaving
+        # neighboring perpendicular faces as overflow when ports get crowded.
+        entries.sort(key=lambda e: (-max(abs(e[3]),abs(e[4]))/(min(abs(e[3]),abs(e[4]))+1),e[0]))
+        for pair,primary,secondary,dx,dy in entries:
+            def side_cost(side):
+                length = h if side in ('left','right') else w
+                count=len(groups[side])+1
+                # 24px is the desired port-to-port separation. A congested
+                # facing edge can spill to its adjacent edge, never to the
+                # opposite (backward-facing) side.
+                overcrowd=max(0.0, count*24.0-max(1.0,length-20.0))
+                facing_penalty=0.0 if side==primary else 32.0
+                return facing_penalty + overcrowd*3.0 + count*4.0
+            side=min((primary,secondary),key=side_cost)
+            groups[side].append((pair,dx,dy))
+        for side,group in groups.items():
+            length=h if side in ('left','right') else w
+            # Sort ports by their other endpoint's projected position. This
+            # prevents neighboring arrows from crossing near their origin.
+            group.sort(key=lambda entry: (
+                (rects[entry[0][1] if entry[0][0]==node else entry[0][0]][1] +
+                 rects[entry[0][1] if entry[0][0]==node else entry[0][0]][3]/2)
+                if side in ('left','right') else
+                (rects[entry[0][1] if entry[0][0]==node else entry[0][0]][0] +
+                 rects[entry[0][1] if entry[0][0]==node else entry[0][0]][2]/2),entry[0]))
+            for i,(pair,_,_) in enumerate(group):
+                frac=(i+1)/(len(group)+1)
+                offset=length*frac
+                if side in ('left','right'):
+                    tangent=round((y+offset)/grid)*grid
+                    tangent=min(y+h-10,max(y+10,tangent))
+                    frac=(tangent-y)/h
+                    if side=='left':attach=(x,tangent);direction=(-1,0);rel=(0,frac)
+                    else:attach=(x+w,tangent);direction=(1,0);rel=(1,frac)
+                else:
+                    tangent=round((x+offset)/grid)*grid
+                    tangent=min(x+w-10,max(x+10,tangent))
+                    frac=(tangent-x)/w
+                    if side=='top':attach=(tangent,y);direction=(0,-1);rel=(frac,0)
+                    else:attach=(tangent,y+h);direction=(0,1);rel=(frac,1)
+                assignments[(pair,node)]=(attach,direction,rel)
+
+    occupied_h=set(); occupied_v=set()
+    dirs=((1,0),(-1,0),(0,1),(0,-1))
+    def cells_of(a,b):
+        if a[1]==b[1]:
+            return ('h',[(a[1],i) for i in range(min(a[0],b[0]),max(a[0],b[0]))])
+        return ('v',[(a[0],i) for i in range(min(a[1],b[1]),max(a[1],b[1]))])
+    def conflict(a,b,radius):
+        axis,cells=cells_of(a,b)
+        # A perpendicular intersection at a point is legal; parallel proximity is not.
+        if axis=='h':
+            return any((yy,xx) in occupied_h for y,x in cells for yy in range(y-radius,y+radius+1) for xx in (x,))
+        return any((xx,y) in occupied_v for x,y in cells for xx in range(x-radius,x+radius+1))
+    def reserve(a,b):
+        axis,cells=cells_of(a,b)
+        (occupied_h if axis=='h' else occupied_v).update(cells)
+    def to_grid(p): return (round(p[0]/grid),round(p[1]/grid))
+    def stub(attach,direction):
+        # A stub guarantees the last segment approaches the border perpendicularly.
+        return to_grid((attach[0]+direction[0]*50,attach[1]+direction[1]*50))
+    def search(start,goal,start_dir,end_dir,radius):
+        # Constrain the first and final path segment to be perpendicular to the box.
+        first = (start[0]+start_dir[0],start[1]+start_dir[1])
+        before_goal=(goal[0]+end_dir[0],goal[1]+end_dir[1])
+        if first in blocked or before_goal in blocked or first==start:
+            return None
+        if conflict(start,first,radius) or conflict(before_goal,goal,radius):
+            return None
+        def heuristic(x,y): return (abs(x-before_goal[0])+abs(y-before_goal[1]))*10
+        def crossing_cost(a,b):
+            # Orthogonal crossings are legal, but avoid them where a comparable
+            # non-crossing route exists. Do not penalize merely touching an
+            # adjacent grid cell along the same line (handled by conflict).
+            if a[1] == b[1]:
+                yy=a[1]; xx=min(a[0],b[0])
+                return 55 if any((xx+k, yy) in occupied_v for k in (0,1)) else 0
+            xx=a[0]; yy=min(a[1],b[1])
+            return 55 if any((yy+k, xx) in occupied_h for k in (0,1)) else 0
+        start_state=(first[0],first[1],dirs.index(start_dir))
+        # Optimize route length first, with a strong penalty for each bend.
+        # Tie-break equal scores by fewer bends, then shorter actual distance.
+        BEND_PENALTY = 100  # grid-cost units: equivalent to 100 px at grid=10
+        queue=[(heuristic(*first),0,0,0,0,start_state)]
+        distances={start_state:(0,0,0)};prev={};count=1;expanded=0
+        while queue and expanded<35000:
+            _,cost,bends,steps,_,state=heapq.heappop(queue)
+            if (cost,bends,steps)!=distances.get(state):continue
+            expanded+=1
+            x,y,d=state
+            if (x,y)==before_goal:
+                path=[(x,y)]
+                while state in prev:
+                    state=prev[state];path.append((state[0],state[1]))
+                path.reverse()
+                return [start]+path+[goal]
+            for nd,(dx,dy) in enumerate(dirs):
+                nx,ny=x+dx,y+dy
+                if not(bounds[0]<=nx<=bounds[2] and bounds[1]<=ny<=bounds[3]):continue
+                if (nx,ny) in blocked or conflict((x,y),(nx,ny),radius):continue
+                # Avoid immediate reversal and favor straighter paths.
+                if nd == (d ^ 1 if d < 2 else 5 - d):
+                    continue
+                bent = int(nd != d)
+                new_bends = bends + bent
+                new_steps = steps + 1
+                new = cost + 10 + (BEND_PENALTY if bent else 0) + crossing_cost((x,y),(nx,ny))
+                nxt=(nx,ny,nd)
+                score=(new,new_bends,new_steps)
+                if score>=distances.get(nxt,(float('inf'),)*3):continue
+                distances[nxt]=score;prev[nxt]=state
+                heapq.heappush(queue,(new+heuristic(nx,ny),new,new_bends,new_steps,count,nxt));count+=1
+        return None
+
+    routed=0
+    excessive_detours = []
+    for pair in pairs:
+        a,b=pair
+        sa,sd,srel=assignments[(pair,a)]
+        ta,td,trel=assignments[(pair,b)]
+        start=stub(sa,sd);goal=stub(ta,td)
+        # The two stubs themselves must be kept clear of previously routed edges.
+        result=None; chosen_radius=None
+        for radius in (4,3,2):  # 40/30/20px minimum parallel clearance
+            if conflict(to_grid(sa),start,radius) or conflict(goal,to_grid(ta),radius):
+                continue
+            result=search(start,goal,sd,td,radius)
+            if result is not None:
+                chosen_radius=radius;break
+        if result is None:
+            raise RoutingFailure(f'No clear route for {a} -> {b}')
+        full=[to_grid(sa)]+result+[to_grid(ta)]
+        route_length = sum((abs(v[0]-u[0])+abs(v[1]-u[1]))*grid for u,v in zip(full,full[1:]))
+        direct_length = abs(sa[0]-ta[0]) + abs(sa[1]-ta[1])
+        if direct_length > 100 and route_length > max(direct_length * 3.5, direct_length + 450):
+            excessive_detours.append((a,b,round(route_length/direct_length,1)))
+        # Reserve complete routes, including approach segments, not only the middle.
+        for u,v in zip(full,full[1:]):
+            if u!=v:reserve(u,v)
+        turns=[result[0]]
+        for i in range(1,len(result)-1):
+            p,q,r=result[i-1],result[i],result[i+1]
+            if (q[0]-p[0],q[1]-p[1])!=(r[0]-q[0],r[1]-q[1]):
+                turns.append(q)
+        turns.append(result[-1])
+        # Explicit exact-coordinate stubs preserve the approach direction at the
+        # attachment. Rounded grid endpoints are NOT attachment coordinates.
+        start_stub=(sa[0]+sd[0]*50, sa[1]+sd[1]*50)
+        end_stub=(ta[0]+td[0]*50, ta[1]+td[1]*50)
+        waypoints=[start_stub]
+        waypoints += [(gx*grid,gy*grid) for gx,gy in turns]
+        waypoints.append(end_stub)
+        # Drop repeated points, keeping precise port-adjacent stubs.
+        waypoints=[v for i,v in enumerate(waypoints) if i==0 or v!=waypoints[i-1]]
+        # Remove collinear waypoints, but retain both precise outer stubs to
+        # guarantee a perpendicular entry/exit at the class boundary.
+        if len(waypoints)>4:
+            compact=[waypoints[0]]
+            for i in range(1,len(waypoints)-1):
+                prev_pt=compact[-1]; cur=waypoints[i]; nxt=waypoints[i+1]
+                collinear=((abs(prev_pt[0]-cur[0])<1e-6 and abs(cur[0]-nxt[0])<1e-6)
+                           or (abs(prev_pt[1]-cur[1])<1e-6 and abs(cur[1]-nxt[1])<1e-6))
+                if i not in (1,len(waypoints)-2) and collinear:
+                    continue
+                compact.append(cur)
+            compact.append(waypoints[-1])
+            waypoints=compact
+        edge=edges_by_pair[pair]
+        inheritance=desired[pair]=='inheritance'
+        style=('dashed=1;dashPattern=6 4;endArrow=block;endFill=0;' if inheritance
+               else 'dashed=0;endArrow=classic;endFill=1;')
+        edge.set('style', 'edgeStyle=none;rounded=0;html=1;strokeColor=#000000;'
+                 +style+f'exitX={srel[0]:.6f};exitY={srel[1]:.6f};exitDx=0;exitDy=0;exitPerimeter=0;'
+                 +f'entryX={trel[0]:.6f};entryY={trel[1]:.6f};entryDx=0;entryDy=0;entryPerimeter=0;')
+        geometry=edge.find('mxGeometry')
+        for child in list(geometry):geometry.remove(child)
+        points=ET.SubElement(geometry,'Array',{'as':'points'})
+        for px,py in waypoints:
+            ET.SubElement(points,'mxPoint',{'x':str(round(px,3)),'y':str(round(py,3))})
+        routed+=1
+    return routed, excessive_detours
+
+class RoutingFailure(RuntimeError):
+    pass
+
+def remove_legacy_demo_nodes(graph, types):
+    """Remove only the two known colored placeholder cards shipped with Test.
+    Never remove a real, user-authored UML node or a current source type.
+    """
+    removed = 0
+    for c in list(graph.findall('mxCell')):
+        if c.get('vertex') != '1' or c.get('parent') != '1': continue
+        if c.get('id') not in ('2', '3'): continue
+        if c.get('value') not in ('GolemCore', 'GolemData'): continue
+        if 'rounded=1' not in c.get('style', '') or 'fillColor=#' not in c.get('style',''): continue
+        if c.get('value') in types: continue
+        remove_cell_and_children(graph, c.get('id'))
+        removed += 1
+    return removed
+
+
+def graphviz_layout(graph, existing, desired, edges_by_pair):
+    """Layout managed UML nodes using Graphviz DOT JSON geometry.
+
+    Graphviz coordinates are in points, origin at lower left. draw.io uses
+    pixels with origin at upper left. We use a common scale of 96/72.
+    """
+    if not existing:
+        return 0
+    dot_bin = shutil.which('dot')
+    if not dot_bin:
+        raise RuntimeError('Graphviz dot executable not found. Add Graphviz\\bin to PATH and reopen terminal.')
+
+    # DOT names are generated IDs rather than raw C# identifiers.
+    import json as _json
+    names = {name: 'n' + str(i) for i, name in enumerate(sorted(existing))}
+    scale = 96.0 / 72.0
+    # Reserve a safety envelope around each visible class. Graphviz routes
+    # outside the enlarged box, while draw.io retains the original dimensions.
+    clearance = 35.0
+    port_gap = 24.0
+    # Graphviz is sized in inches. Matching actual UML box dimensions is
+    # essential; otherwise Graphviz routes through the drawn draw.io boxes.
+    lines = [
+        'digraph UML {',
+        'graph [rankdir=TB, splines=polyline, overlap=false, nodesep=0.9, ranksep=1.15, pad=0.3, outputorder=edgesfirst, remincross=true];',
+        'node [shape=box, fixedsize=true, margin=0];',
+        'edge [arrowsize=0.8];',
+    ]
+    for name in sorted(existing):
+        g = geom(existing[name])
+        w = float(g.get('width', '180'))
+        h = float(g.get('height', '70'))
+        lines.append(f'{names[name]} [width={(w+2*clearance)/96:.6f}, height={(h+2*clearance)/96:.6f}, label=""];')
+    for (source, target), kind in sorted(desired.items()):
+        # Layout manual edges too, so node positions account for their connections.
+        attrs = ' [arrowhead=empty]' if kind == 'inheritance' else ''
+        lines.append(f'{names[source]} -> {names[target]}{attrs};')
+    lines.append('}')
+    try:
+        result = subprocess.run([dot_bin, '-Tjson'], input='\n'.join(lines),
+                                text=True, encoding='utf-8', capture_output=True,
+                                check=True, timeout=90)
+    except subprocess.CalledProcessError as exc:
+        raise RuntimeError('Graphviz layout failed: ' + exc.stderr.strip()) from exc
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError('Graphviz layout timed out (90s)') from exc
+    data = _json.loads(result.stdout)
+    bb = [float(v) for v in data['bb'].split(',')]
+    x0, y0, x1, y1 = bb
+    # Move diagram to positive canvas coordinates with consistent padding.
+    pad = 40.0
+    def xy(point):
+        x, y = point
+        return ((x - x0) * scale + pad, (y1 - y) * scale + pad)
+
+    objects = {obj['name']: obj for obj in data.get('objects', [])}
+    for name, cell in existing.items():
+        obj = objects.get(names[name])
+        if obj is None:
+            raise RuntimeError('Graphviz omitted node: ' + name)
+        cx, cy = (float(v) for v in obj['pos'].split(','))
+        w = float(geom(cell).get('width'))
+        h = float(geom(cell).get('height'))
+        px, py = xy((cx, cy))
+        if managed(cell):
+            geom(cell).set('x', str(round(px - w/2, 2)))
+            geom(cell).set('y', str(round(py - h/2, 2)))
+
+    # JSON edges reference _gvid indices; parallel edges are distinguished by
+    # source/target (our desired dictionary contains one edge per pair).
+    reverse = {obj['_gvid']: obj['name'] for obj in data.get('objects', [])}
+    graph_name_to_type = {value: key for key, value in names.items()}
+    routes = {}
+    for edge in data.get('edges', []):
+        source = graph_name_to_type.get(reverse.get(edge['tail']))
+        target = graph_name_to_type.get(reverse.get(edge['head']))
+        if source is not None and target is not None:
+            routes[(source, target)] = edge.get('pos', '')
+
+    def parse_route(pos):
+        """Read Graphviz polyline vertices without smoothing them into a spline."""
+        points = []
+        startpoint = endpoint = None
+        for token in pos.split():
+            if token.startswith('e,'):
+                endpoint = tuple(map(float, token[2:].split(',')))
+            elif token.startswith('s,'):
+                startpoint = tuple(map(float, token[2:].split(',')))
+            else:
+                points.append(tuple(map(float, token.split(','))))
+        if startpoint:
+            points.insert(0, startpoint)
+        if endpoint:
+            points.append(endpoint)
+        return [xy(pt) for pt in points]
+
+    def compact_route(points, tolerance=1.5):
+        """Remove near-duplicate and nearly-collinear intermediate points."""
+        clean = []
+        for p in points:
+            if not clean or math.dist(clean[-1], p) > tolerance:
+                clean.append(p)
+        if len(clean) <= 2:
+            return clean
+        result = [clean[0]]
+        for i in range(1, len(clean)-1):
+            a, b, c = result[-1], clean[i], clean[i+1]
+            dx, dy = c[0]-a[0], c[1]-a[1]
+            length = math.hypot(dx, dy)
+            if length > 0 and abs(dx*(b[1]-a[1])-dy*(b[0]-a[0]))/length < tolerance:
+                # Only remove points that lie between their neighbors.
+                if (b[0]-a[0])*dx+(b[1]-a[1])*dy >= 0 and (b[0]-c[0])*dx+(b[1]-c[1])*dy <= 0:
+                    continue
+            result.append(b)
+        result.append(clean[-1])
+        return result
+
+    # Collect Graphviz's preferred approach side for each endpoint, then
+    # spread ports along that side rather than piling arrows onto one point.
+    from collections import defaultdict
+    endpoint_groups = defaultdict(list)
+    edge_routes = {}
+    for pair in edges_by_pair:
+        route = parse_route(routes.get(pair, ''))
+        if not route:
+            raise RuntimeError(f'Graphviz did not return edge path for {pair}')
+        edge_routes[pair] = route
+        for endpoint_index, name in ((0, pair[0]), (-1, pair[1])):
+            g = geom(existing[name])
+            x, y = route[endpoint_index]
+            left, top = float(g.get('x')), float(g.get('y'))
+            w, h = float(g.get('width')), float(g.get('height'))
+            cx, cy = left+w/2, top+h/2
+            dx, dy = x-cx, y-cy
+            # The enlarged Graphviz node is rectangular. Infer its exit side
+            # from the normalized displacement rather than absolute distance.
+            side = ('right' if dx >= 0 else 'left') if abs(dx)/(w/2+clearance) >= abs(dy)/(h/2+clearance) else ('bottom' if dy >= 0 else 'top')
+            coordinate = y if side in ('left','right') else x
+            endpoint_groups[(name, side)].append((coordinate, pair, endpoint_index))
+
+    ports = {}
+    for (name, side), entries in endpoint_groups.items():
+        g = geom(existing[name])
+        left, top = float(g.get('x')), float(g.get('y'))
+        w, h = float(g.get('width')), float(g.get('height'))
+        length = h if side in ('left','right') else w
+        count = len(entries)
+        entries.sort(key=lambda entry: (entry[0], entry[1]))
+        # At high degree the physical side limits achievable port spacing.
+        actual_gap = min(port_gap, max(0., (length-20)/max(1,count-1)))
+        for i, (_, pair, endpoint_index) in enumerate(entries):
+            offset = length/2 + (i-(count-1)/2)*actual_gap
+            offset = max(8., min(length-8., offset))
+            if side == 'left': pt = (left, top+offset)
+            elif side == 'right': pt = (left+w, top+offset)
+            elif side == 'top': pt = (left+offset, top)
+            else: pt = (left+offset, top+h)
+            ports[(pair, endpoint_index)] = pt
+
+    def perimeter_stub(point, side, length):
+        x, y = point
+        if side == 'left': return (x-length, y)
+        if side == 'right': return (x+length, y)
+        if side == 'top': return (x, y-length)
+        return (x, y+length)
+
+    def port_side(point, geo):
+        x, y = point
+        left, top = float(geo.get('x')), float(geo.get('y'))
+        w, h = float(geo.get('width')), float(geo.get('height'))
+        distances = [(abs(x-left), 'left'), (abs(x-(left+w)), 'right'),
+                     (abs(y-top), 'top'), (abs(y-(top+h)), 'bottom')]
+        return min(distances)[1]
+
+    def segment_hits_rect(a, b, rect, margin=2.0):
+        x, y, w, h = rect
+        # Liang-Barsky segment clipping for an expanded axis-aligned rectangle.
+        x -= margin; y -= margin; w += 2*margin; h += 2*margin
+        dx, dy = b[0]-a[0], b[1]-a[1]
+        t0, t1 = 0.0, 1.0
+        for p, q in ((-dx, a[0]-x), (dx, x+w-a[0]),
+                     (-dy, a[1]-y), (dy, y+h-a[1])):
+            if abs(p) < 1e-9:
+                if q < 0: return False
+            else:
+                t = q/p
+                if p < 0: t0 = max(t0, t)
+                else: t1 = min(t1, t)
+                if t0 > t1: return False
+        return True
+
+    def safe_stub(port, side, max_length, current_name):
+        # Keep the terminal segment perpendicular, without driving it into
+        # another visible class. The surrounding Graphviz envelope is 35px.
+        for length in (max_length, max_length*.75, max_length*.5, 8.0):
+            candidate = perimeter_stub(port, side, length)
+            blocked = False
+            for name, cell in existing.items():
+                if name == current_name: continue
+                g = geom(cell)
+                rect = tuple(float(g.get(k)) for k in ('x','y','width','height'))
+                if segment_hits_rect(port, candidate, rect, 5.0):
+                    blocked = True
+                    break
+            if not blocked:
+                return candidate
+        return perimeter_stub(port, side, 4.0)
+
+    # Preserve Graphviz's layout and terminal stubs, but give parallel middle
+    # stretches some breathing room. Perpendicular crossings are allowed.
+    min_edge_gap = 14.0
+    plans = {}
+    for pair, edge in edges_by_pair.items():
+        route = compact_route(edge_routes[pair])
+        if not route:
+            raise RuntimeError(f'Graphviz did not return edge path for {pair}')
+        source_geo, target_geo = geom(existing[pair[0]]), geom(existing[pair[1]])
+        start_port, end_port = ports[(pair, 0)], ports[(pair, -1)]
+        start_side = port_side(start_port, source_geo)
+        end_side = port_side(end_port, target_geo)
+        start_stub = safe_stub(start_port, start_side, 20.0, pair[0])
+        end_stub = safe_stub(end_port, end_side, 20.0, pair[1])
+        middle = compact_route(route)
+        points = compact_route([start_port, start_stub] + middle + [end_stub, end_port], tolerance=1.0)
+        plans[pair] = (edge, points, start_port, end_port, source_geo, target_geo)
+
+    def segment_distance(a, b, c, d):
+        # Exact shortest distance for two straight segments, including crossings.
+        def cross(u, v): return u[0]*v[1] - u[1]*v[0]
+        u = (b[0]-a[0], b[1]-a[1]); v = (d[0]-c[0], d[1]-c[1])
+        w = (c[0]-a[0], c[1]-a[1])
+        den = cross(u, v)
+        if abs(den) > 1e-8:
+            t = cross(w, v)/den; q = cross(w, u)/den
+            if 0 <= t <= 1 and 0 <= q <= 1:
+                return 0.0
+        def point_distance(p, x, y):
+            dx, dy = y[0]-x[0], y[1]-x[1]
+            t = max(0., min(1., ((p[0]-x[0])*dx+(p[1]-x[1])*dy)/(dx*dx+dy*dy))) if dx*dx+dy*dy > 1e-9 else 0.
+            return math.dist(p, (x[0]+t*dx, x[1]+t*dy))
+        return min(point_distance(a,c,d), point_distance(b,c,d),
+                   point_distance(c,a,b), point_distance(d,a,b))
+
+    def near_parallel(a, b, c, d):
+        u = (b[0]-a[0], b[1]-a[1]); v = (d[0]-c[0], d[1]-c[1])
+        lu, lv = math.hypot(*u), math.hypot(*v)
+        return lu > 18 and lv > 18 and abs(u[0]*v[1]-u[1]*v[0])/(lu*lv) < 0.22
+
+    def route_penalty(pair, points, other_routes):
+        # Only penalize parallel crowding, not perpendicular crossings.
+        penalty = 0.0
+        for i in range(len(points)-1):
+            a, b = points[i:i+2]
+            if math.dist(a,b) < 1: continue
+            for other, other_points in other_routes.items():
+                if other == pair: continue
+                for c, d in zip(other_points, other_points[1:]):
+                    if not near_parallel(a,b,c,d): continue
+                    distance = segment_distance(a,b,c,d)
+                    if distance < min_edge_gap:
+                        # Stronger penalty for long stretches sharing a corridor.
+                        penalty += (min_edge_gap-distance)**2 * min(3., math.dist(a,b)/45.)
+        return penalty
+
+    def valid_route(pair, points):
+        # Protect the existing node clearance when modifying Graphviz paths.
+        for a,b in zip(points, points[1:]):
+            for name, cell in existing.items():
+                if name in pair: continue
+                g = geom(cell)
+                rect = tuple(float(g.get(k)) for k in ('x','y','width','height'))
+                if segment_hits_rect(a,b,rect, 8.): return False
+        return True
+
+    # Only displace long interior segments. Keep both endpoint stubs intact;
+    # any shift creates short transition segments, not a new A* route.
+    # Optimize against the already accepted routes, deterministically.
+    accepted = {pair: list(plan[1]) for pair, plan in plans.items()}
+    for _ in range(2):
+        changed = False
+        for pair in sorted(accepted):
+            points = accepted[pair]
+            if len(points) < 5: continue
+            baseline = route_penalty(pair, points, accepted)
+            if baseline < 0.1: continue
+            best, best_score = points, baseline
+            for i in range(2, len(points)-2):
+                a, b = points[i], points[i+1]
+                dx,dy = b[0]-a[0],b[1]-a[1]
+                length = math.hypot(dx,dy)
+                if length < 28: continue
+                nx,ny = -dy/length, dx/length
+                for amount in (-18., -14., 14., 18.):
+                    shifted_a = (a[0]+nx*amount, a[1]+ny*amount)
+                    shifted_b = (b[0]+nx*amount, b[1]+ny*amount)
+                    candidate = points[:i] + [shifted_a,shifted_b] + points[i+2:]
+                    if not valid_route(pair,candidate): continue
+                    # Prefer smaller displacements and fewer new sharp turns.
+                    score = route_penalty(pair,candidate,accepted) + abs(amount)*1.8
+                    if score + 0.1 < best_score:
+                        best, best_score = candidate, score
+            if best is not points:
+                accepted[pair] = best
+                changed = True
+        if not changed: break
+
+    # Final route cleanup: remove needless interior detours without touching
+    # the perpendicular entry/exit stubs. A shortcut is accepted only when it
+    # clears every unrelated UML box and does not increase parallel-edge
+    # crowding. This runs after spacing, so it cannot silently undo it.
+    def route_length(points):
+        return sum(math.dist(a, b) for a, b in zip(points, points[1:]))
+
+    def simplify_detours(pair, points, other_routes):
+        points = list(points)
+        # Index 0/1 = source port/stub; -2/-1 = target stub/port.
+        # Keep those fixed to preserve perpendicular terminal directions.
+        for _ in range(max(0, len(points) - 4)):
+            if len(points) < 5:
+                break
+            base_penalty = route_penalty(pair, points, other_routes)
+            base_length = route_length(points)
+            best = None
+            best_gain = 0.0
+            for i in range(2, len(points) - 2):
+                for j in range(i + 1, len(points) - 1):
+                    # Replace the subpath from i-1 through j with one segment.
+                    # i and j must not remove either terminal stub.
+                    candidate = points[:i] + points[j:]
+                    if not valid_route(pair, candidate):
+                        continue
+                    candidate_penalty = route_penalty(pair, candidate, other_routes)
+                    # Do not sacrifice the spacing achieved by the previous pass.
+                    if candidate_penalty > base_penalty + 0.01:
+                        continue
+                    candidate_length = route_length(candidate)
+                    if candidate_length > base_length + 0.5:
+                        continue
+                    # Reward removing turns, shortening the path and reducing
+                    # crowding. A shortcut may still cross another edge; only
+                    # parallel close-running sections are penalized by design.
+                    removed = j - i
+                    gain = removed * 12.0 + (base_length - candidate_length) * 0.15 + (base_penalty - candidate_penalty)
+                    if gain > best_gain + 0.01:
+                        best, best_gain = candidate, gain
+            if best is None:
+                break
+            points = best
+        return points
+
+    # Deterministic iterative pass: routes simplified earlier become the
+    # reference for later routes. No global re-routing or A* retry is needed.
+    for _ in range(2):
+        changed = False
+        for pair in sorted(accepted):
+            before = accepted[pair]
+            after = simplify_detours(pair, before, accepted)
+            if len(after) < len(before):
+                accepted[pair] = after
+                changed = True
+        if not changed:
+            break
+
+    for pair, (edge, _, start_port, end_port, source_geo, target_geo) in plans.items():
+        def anchor(point, g):
+            x, y = point
+            left = float(g.get('x')); top = float(g.get('y'))
+            width = float(g.get('width')); height = float(g.get('height'))
+            return (max(0., min(1., (x-left)/width)), max(0., min(1., (y-top)/height)))
+        sx, sy = anchor(start_port, source_geo)
+        tx, ty = anchor(end_port, target_geo)
+        kind = desired[pair]
+        arrow = ('endArrow=block;endFill=0;' if kind == 'inheritance'
+                 else 'endArrow=classic;endFill=1;')
+        edge.set('style', 'edgeStyle=none;curved=0;rounded=0;html=1;strokeColor=#000000;'
+                          'exitPerimeter=0;entryPerimeter=0;'
+                          f'exitX={sx:.5f};exitY={sy:.5f};entryX={tx:.5f};entryY={ty:.5f};'
+                          + ('dashed=1;' if kind == 'inheritance' else '') + arrow)
+        geometry = edge.find('mxGeometry')
+        if geometry is None:
+            geometry = ET.SubElement(edge, 'mxGeometry', {'relative':'1', 'as':'geometry'})
+        for child in list(geometry): geometry.remove(child)
+        geometry.set('relative', '1'); geometry.set('as', 'geometry')
+        waypoints = accepted[pair][1:-1]
+        if waypoints:
+            arr = ET.SubElement(geometry, 'Array', {'as':'points'})
+            for x, y in waypoints:
+                ET.SubElement(arr, 'mxPoint', {'x':str(round(x, 2)), 'y':str(round(y, 2))})
+    return len(edges_by_pair)
+
+
+def sync_one(item, dry_run=False):
+    target = ROOT / item['output']
+    if target.exists():
+        tree = ET.parse(target)
+    else:
+        # A separate draw.io document is created for each configured output.
+        mxfile = ET.Element('mxfile', {'host': 'app.diagrams.net', 'type': 'device'})
+        diagram = ET.SubElement(mxfile, 'diagram', {'id': 'umlsync-page', 'name': 'Page-1'})
+        model = ET.SubElement(diagram, 'mxGraphModel', {
+            'dx': '1200', 'dy': '800', 'grid': '1', 'gridSize': '10',
+            'guides': '1', 'tooltips': '1', 'connect': '1', 'arrows': '1',
+            'fold': '1', 'page': '1', 'pageScale': '1', 'pageWidth': '1600',
+            'pageHeight': '1200', 'math': '0', 'shadow': '0'})
+        root = ET.SubElement(model, 'root')
+        ET.SubElement(root, 'mxCell', {'id': '0'})
+        ET.SubElement(root, 'mxCell', {'id': '1', 'parent': '0'})
+        tree = ET.ElementTree(mxfile)
+        print(f'[INFO] Creating missing diagram: {item["output"]}', flush=True)
+    graph = tree.find('.//mxGraphModel/root')
+    if graph is None: raise ValueError(f'Unsupported draw.io format: {target}')
+    types = get_types(item['sources'])
+    print(f'[INFO] Parsed {len(types)} C# types; building diagram...', flush=True)
+    by_id = {c.get('id'): c for c in graph.findall('mxCell')}
+    existing = {}
+    removed = remove_legacy_demo_nodes(graph, types)
+    # Only purge elements that this tool owns. Manually authored UML remains intact.
+    for c in list(graph.findall('mxCell')):
+        if c.get('vertex') != '1' or not managed(c): continue
+        if c.get('parent') != '1': continue
+        name = get_name(c)
+        if name not in types:
+            remove_cell_and_children(graph, c.get('id')); removed += 1
+    for c in graph.findall('mxCell'):
+        if c.get('vertex') != '1' or c.get('parent') != '1': continue
+        if 'swimlane' not in c.get('style', '') and not managed(c): continue
+        name = get_name(c)
+        if name:
+            # Prefer existing hand-authored nodes if duplicates are present.
+            if name not in existing or (managed(existing[name]) and not managed(c)):
+                existing[name] = c
+    # Remove duplicate automatically generated nodes if a manually authored one exists.
+    for c in list(graph.findall('mxCell')):
+        if c.get('vertex') != '1' or c.get('parent') != '1' or not managed(c): continue
+        name = get_name(c)
+        if name in existing and existing[name] is not c:
+            remove_cell_and_children(graph, c.get('id')); removed += 1
+    for c in existing.values():
+        if managed(c): normalize_managed_node(c)
+    # Existing manually drawn UML nodes are not relocated.
+    additions = updates = 0
+    for name, info in sorted(types.items()):
+        cell = existing.get(name)
+        is_new = cell is None
+        if is_new:
+            id_ = 'umlsync-' + uuid.uuid5(uuid.NAMESPACE_URL, item['output'] + ':' + name).hex[:16]
+            cell = create_cell(graph, id_, title(info,name),
+                'swimlane;fontSize=16;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=46;horizontalStack=0;resizeParent=0;resizeLast=0;collapsible=0;html=1;fillColor=none;swimlaneFillColor=none;strokeColor=#000000;',
+                '1', 0, 0, 180, 40)
+            existing[name] = cell
+            additions += 1
+        else:
+            if cell.get('value') != title(info,name):
+                cell.set('value', title(info,name)); updates += 1
+        if not managed(cell):
+            # Do not destructively overwrite a manually authored multi-cell diagram.
+            continue
+        normalize_managed_node(cell)
+        cell.set('style', 'swimlane;fontSize=16;fontStyle=1;align=center;verticalAlign=middle;childLayout=stackLayout;horizontal=1;startSize=46;horizontalStack=0;resizeParent=0;resizeLast=0;collapsible=0;html=1;fillColor=none;swimlaneFillColor=none;strokeColor=#000000;')
+        children = [c for c in graph.findall('mxCell') if c.get('parent') == cell.get('id') and c.get('vertex') == '1']
+        children.sort(key=lambda c: float(geom(c).get('y','0')) if geom(c) is not None else 0)
+        old_sections = [(c.get('id'), c.get('value'), c.get('style'), dict(geom(c).attrib) if geom(c) is not None else {}) for c in children]
+        width = estimate_width(name, info)
+        member_h = 20 * len(info['members']) + 16 if info['members'] else 0
+        method_h = 20 * len(info['methods']) + 16 if info['methods'] else 0
+        sections = []
+        if info['members']: sections.append(('members', lines_html(info['members']), member_h))
+        if info['methods']: sections.append(('methods', lines_html(info['methods']), method_h))
+        if not sections: sections.append(('empty', '', 22))
+        # Remove stale/empty child cells, so empty member sections consume zero height.
+        for child in children:
+            graph.remove(child)
+        y = 46
+        for suffix, content, height in sections:
+            set_section(graph, cell, None, suffix, content, y, height, width)
+            y += height
+        g = geom(cell)
+        if g is not None:
+            before = (g.get('width'), g.get('height'))
+            g.set('width', str(width)); g.set('height', str(y))
+            if not is_new and before != (str(width),str(y)): updates += 1
+        new_sections = [(c.get('id'), c.get('value'), c.get('style'), dict(geom(c).attrib) if geom(c) is not None else {}) for c in graph.findall('mxCell') if c.get('parent') == cell.get('id') and c.get('vertex') == '1']
+        if not is_new and old_sections != new_sections: updates += 1
+    # Repack all generated nodes based on final (variable) widths and heights.
+    # Existing handmade nodes remain at their original positions.
+    # Relationship edges: inheritance and visible member/method type references.
+    # Edges attach to the top-level swimlane vertex, never to its text sections.
+    desired = {}
+    for name, info in sorted(types.items()):
+        for parent in info['parents']:
+            if parent in types and parent != name:
+                desired[(name, parent)] = 'inheritance'
+        for referenced in referenced_types(info):
+            if referenced in types and referenced != name and (name, referenced) not in desired:
+                desired[(name, referenced)] = 'reference'
+    by_node_id = {cell.get('id'): name for name, cell in existing.items()}
+    # Preserve manually created edges; reconcile only tool-managed ones.
+    manual_pairs = {(by_node_id.get(e.get('source')), by_node_id.get(e.get('target')))
+                    for e in graph.findall('mxCell') if e.get('edge') == '1' and not managed(e)}
+    managed_edges = {}
+    removed_edges = 0
+    for edge in list(graph.findall('mxCell')):
+        if edge.get('edge') != '1' or not managed(edge): continue
+        pair = (by_node_id.get(edge.get('source')), by_node_id.get(edge.get('target')))
+        if pair not in desired or pair in manual_pairs or pair in managed_edges:
+            graph.remove(edge); removed += 1; removed_edges += 1
+        else:
+            managed_edges[pair] = edge
+    # Recompute ALL positions from relationships, including existing managed nodes.
+    edges = 0
+    edge_style = ('edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;'
+                  'jettySize=auto;html=1;endArrow=classic;endFill=1;strokeColor=#000000;'
+                  'exitPerimeter=1;entryPerimeter=1;')
+    edges_by_pair = {}
+    for (source_name, target_name), relationship in sorted(desired.items()):
+        if (source_name, target_name) in manual_pairs: continue
+        edge = managed_edges.get((source_name, target_name))
+        if edge is None:
+            edge_id = 'umlsync-edge-' + uuid.uuid5(uuid.NAMESPACE_URL,
+                item['output'] + ':' + source_name + '->' + target_name).hex[:16]
+            edge = ET.SubElement(graph, 'mxCell', {'id':edge_id, 'edge':'1',
+                'parent':'1', 'uml-sync':'1'})
+            ET.SubElement(edge, 'mxGeometry', {'relative':'1', 'as':'geometry'})
+            edges += 1
+        edge.set('source', existing[source_name].get('id'))
+        edge.set('target', existing[target_name].get('id'))
+        edge.set('style', edge_style)
+        geometry = edge.find('mxGeometry')
+        if geometry is None: geometry = ET.SubElement(edge, 'mxGeometry')
+        for child in list(geometry): geometry.remove(child)
+        for attr in ('x','y','width','height'): geometry.attrib.pop(attr, None)
+        geometry.set('relative','1'); geometry.set('as','geometry')
+        edges_by_pair[(source_name,target_name)] = edge
+    # Graphviz owns both node placement and edge routing. No SVG is produced.
+    routed = graphviz_layout(graph, existing, desired, edges_by_pair)
+    print(f'{item["output"]}: {len(types)} types, +{additions} nodes, ~{updates} updates, +{edges} edges, {routed} routed, -{removed} obsolete elements')
+    if not dry_run:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        tree.write(target,encoding='utf-8',xml_declaration=True)
+
+def diagram_references(items):
+    """Find direct cross-diagram type dependencies, without transitive traversal.
+
+    A relationship is resolved locally when both endpoints are in this diagram.
+    Shared types do not, by their mere presence, link all containing diagrams.
+    The same relationship rules as the draw.io renderer are used: base types,
+    visible fields/properties, and visible method parameter/return types.
+    """
+    diagram_types = {item['output']: get_types(item['sources']) for item in items}
+    owners = {}
+    for path, types in diagram_types.items():
+        for name in types:
+            owners.setdefault(name, set()).add(path)
+
+    references = {}
+    for path, types in diagram_types.items():
+        linked = set()
+        for name, info in types.items():
+            dependencies = referenced_types(info)
+            for dependency in dependencies:
+                if dependency == name or dependency in types:
+                    continue  # Already represented locally; do not follow into other diagrams.
+                linked.update(set(owners.get(dependency, ())) - {path})
+        references[path] = sorted(linked, key=str.casefold)
+    return references
+
+
+def sync_all(config, dry_run=False):
+    """Synchronize every configured output, then prune unlisted .drawio files.
+
+    Cleanup recursively removes unconfigured .drawio files under Docs only.
+    Other file types and directories outside Docs are never deleted.
+    """
+    items = config.get('diagrams', [])
+
+    items = []
+    for entry in config.get("diagrams", []):
+        item = entry.copy()
+
+        relative = Path(item["output"])
+        if relative.is_absolute() or ".." in relative.parts:
+            raise ValueError(f"Invalid diagram output: {relative}")
+
+        item["output"] = (
+            DIAGRAMS_DIR / relative.with_suffix(".drawio")
+        ).relative_to(ROOT).as_posix()
+
+        items.append(item)
+        
+    targets = set()
+    for item in items:
+        if not isinstance(item, dict) or not item.get('output') or not isinstance(item.get('sources'), list):
+            raise ValueError('Each diagram needs output and sources')
+        target = (ROOT / item['output']).resolve()
+        if not target.is_relative_to(ROOT.resolve()):
+            raise ValueError(f'Output must be inside project root: {target}')
+        if target.suffix.lower() != '.drawio':
+            raise ValueError(f'Output must end with .drawio: {target}')
+        if target in targets:
+            raise ValueError(f'Duplicate diagram output: {target}')
+        targets.add(target)
+
+    # Resolve cross-diagram links from direct relationships, not shared-type transitivity.
+    references = diagram_references(items)
+
+    # Generate everything first; do not delete old diagrams on a failed sync.
+    for item in items:
+        sync_one(item, dry_run)
+
+    # Prune every unconfigured .drawio under Docs, including nested folders.
+    # Restrict deletion to Docs; other project directories are not touched.
+    docs_dir = ARCHITECTURE
+    manifest_path = ARCHITECTURE / "Internal" / "diagrams.json"
+    if docs_dir.exists():
+        for candidate in sorted(docs_dir.rglob('*')):
+            if (candidate.is_file() and candidate.suffix.lower() == '.drawio'
+                    and candidate.resolve() not in targets):
+                print(f'[CLEAN] {"Would remove" if dry_run else "Removing"} unconfigured diagram: {candidate.relative_to(ROOT)}', flush=True)
+                if not dry_run:
+                    candidate.unlink()
+
+    # Build the gallery manifest from configured outputs, not from stale files.
+    # During dry-run, targets may not exist yet; still show the intended list.
+    diagram_paths = sorted(
+        (target.relative_to(ROOT).as_posix() for target in targets
+         if target.is_relative_to(docs_dir.resolve())),
+        key=str.casefold
+    )
+    if not dry_run:
+        missing = [path for path in diagram_paths if not (ROOT / path).is_file()]
+        if missing:
+            raise FileNotFoundError(f'Configured diagrams missing after sync: {missing}')
+    # Content hashes change only when each diagram's bytes change.
+    # The browser can cache unchanged diagrams while refreshing edited ones.
+    versions = {
+        path: hashlib.sha256((ROOT / path).read_bytes()).hexdigest()[:16]
+        for path in diagram_paths
+    } if not dry_run else {}
+    # Group diagrams by directory below Docs; files directly under Docs are ungrouped.
+    groups = {}
+    for path in diagram_paths:
+        relative_parent = (Path(path).parent.relative_to('Docs/Architecture')).as_posix()
+        group = '' if relative_parent == '.' else relative_parent
+        groups.setdefault(group, []).append(path)
+    manifest_content = json.dumps({'diagrams': diagram_paths, 'versions': versions, 'groups': groups, 'references': references}, ensure_ascii=False, indent=2) + '\n'
+    if dry_run:
+        print(f'[DRY-RUN] Would update {manifest_path.relative_to(ROOT)} with {len(diagram_paths)} diagrams', flush=True)
+    else:
+        docs_dir.mkdir(parents=True, exist_ok=True)
+        if not manifest_path.exists() or manifest_path.read_text(encoding='utf-8') != manifest_content:
+            manifest_path.write_text(manifest_content, encoding='utf-8')
+        print(f'[INFO] Updated {manifest_path.relative_to(ROOT)}: {len(diagram_paths)} diagrams', flush=True)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dry-run', action='store_true')
+    args = parser.parse_args()
+    sync_all(json.loads(CONFIG.read_text(encoding='utf-8')), args.dry_run)
