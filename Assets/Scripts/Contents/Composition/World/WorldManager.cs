@@ -4,7 +4,7 @@ using Commar.CubicLand.Player;
 using UnityEngine;
 using VContainer;
 
-namespace Commar.CubicLand.Compositions
+namespace Commar.CubicLand.Composition
 {
     public class WorldManager : MonoBehaviour
     {

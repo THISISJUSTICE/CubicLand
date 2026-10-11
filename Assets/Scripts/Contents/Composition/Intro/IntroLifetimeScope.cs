@@ -2,7 +2,7 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-namespace Commar.CubicLand.Compositions
+namespace Commar.CubicLand.Composition
 {
     public class IntroLifetimeScope : LifetimeScope
     {

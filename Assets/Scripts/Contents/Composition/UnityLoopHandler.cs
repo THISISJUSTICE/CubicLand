@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using VContainer;
 
-namespace Commar.CubicLand.Compositions
+namespace Commar.CubicLand.Composition
 {
     public class UnityLoopHandler : MonoBehaviour
     {
