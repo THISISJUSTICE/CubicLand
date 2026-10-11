@@ -2,9 +2,7 @@ namespace Commar.CubicLand.Cube
 {
     public enum CubeFactoryKey
     {
-        Object,
-        Core,
-        Obstacle
+        Object, Core, Obstacle
     }
 
     public interface ICubeFactory
