@@ -1364,7 +1364,7 @@ def sync_all(config, dry_run=False):
 
     # Prune every unconfigured .drawio under Docs, including nested folders.
     # Restrict deletion to Docs; other project directories are not touched.
-    docs_dir = ARCHITECTURE
+    docs_dir = DIAGRAMS_DIR
     manifest_path = ARCHITECTURE / "Internal" / "diagrams.json"
     if docs_dir.exists():
         for candidate in sorted(docs_dir.rglob('*')):
@@ -1376,11 +1376,11 @@ def sync_all(config, dry_run=False):
 
     # Build the gallery manifest from configured outputs, not from stale files.
     # During dry-run, targets may not exist yet; still show the intended list.
-    diagram_paths = sorted(
-        (target.relative_to(ROOT).as_posix() for target in targets
-         if target.is_relative_to(docs_dir.resolve())),
-        key=str.casefold
-    )
+    # Preserve the order of diagrams in config.json (not filename order).
+    diagram_paths = [
+        item['output'] for item in items
+        if (ROOT / item['output']).resolve().is_relative_to(docs_dir.resolve())
+    ]
     if not dry_run:
         missing = [path for path in diagram_paths if not (ROOT / path).is_file()]
         if missing:
@@ -1394,7 +1394,7 @@ def sync_all(config, dry_run=False):
     # Group diagrams by directory below Docs; files directly under Docs are ungrouped.
     groups = {}
     for path in diagram_paths:
-        relative_parent = (Path(path).parent.relative_to('Docs/Architecture')).as_posix()
+        relative_parent = (Path(path).parent.relative_to('Docs/Architecture/Diagrams')).as_posix()
         group = '' if relative_parent == '.' else relative_parent
         groups.setdefault(group, []).append(path)
     manifest_content = json.dumps({'diagrams': diagram_paths, 'versions': versions, 'groups': groups, 'references': references}, ensure_ascii=False, indent=2) + '\n'

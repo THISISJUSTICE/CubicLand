@@ -38,8 +38,7 @@
         const references = manifest.references || {};
         const sectionByFile = new Map();
         const files = [...new Set(manifest.diagrams || [])]
-          .filter(path => typeof path === 'string' && /\.drawio$/i.test(path))
-          .sort((a, b) => a.localeCompare(b, 'ko'));
+          .filter(path => typeof path === 'string' && /\.drawio$/i.test(path));
         container.replaceChildren();
         if (!files.length) {
           container.innerHTML = '<p class="message">표시할 다이어그램이 없습니다.</p>';
@@ -55,11 +54,8 @@
           if (!groups.has(group)) groups.set(group, []);
           groups.get(group).push(file);
         }
-        const orderedGroups = [...groups.keys()].sort((a, b) => {
-          if (!a) return 1;
-          if (!b) return -1;
-          return a.localeCompare(b, 'ko');
-        });
+        // Map preserves the first appearance order from config.json.
+        const orderedGroups = [...groups.keys()];
         for (const groupName of orderedGroups) {
           const groupFiles = groups.get(groupName);
           const details = document.createElement('details');
