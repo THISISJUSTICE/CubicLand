@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - issue-4/migration
     paths:
       - 'Docs/Architecture/**'
       - '.github/workflows/pages.yml'
