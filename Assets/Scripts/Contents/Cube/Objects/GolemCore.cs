@@ -105,12 +105,12 @@ namespace Commar.CubicLand.Cube
             UpdateGolemMass();
         }
 
-        internal void Initialize(ICubeCollisionResolver cubeCollisionResolver, IOrphanedCubeHandler orphanedCubeHandler, ICubeFactory cubeFactory, GolemMotionController motionController)
+        internal void Initialize(ICubeCollisionResolver cubeCollisionResolver, IOrphanedCubeHandler orphanedCubeHandler, ICubeFactory cubeFactory, ICubeMotionAdjuster motionAdjuster, IGolemMotionController motionController)
         {
             _cubeCollisionResolver = cubeCollisionResolver;
             _orphanedCubeHandler = orphanedCubeHandler;
             _cubeFactory = cubeFactory;
-            _motionAdjuster = motionController;
+            _motionAdjuster = motionAdjuster;
             MotionController = motionController;
         }
 

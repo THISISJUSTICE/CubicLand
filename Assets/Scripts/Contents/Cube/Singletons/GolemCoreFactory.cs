@@ -30,7 +30,7 @@ namespace Commar.CubicLand.Cube
             GolemMotionController motionController = new GolemMotionController(core, groundSensor);
 
             groundSensor.Initialize(motionController.GeometryProvider);
-            core.Initialize(_cubeCollisionResolver, _orphanedCubeHandler, _cubeFactory, motionController);
+            core.Initialize(_cubeCollisionResolver, _orphanedCubeHandler, _cubeFactory, motionController, motionController);
             core.onReleased += DestoryCube;
         }
     }
