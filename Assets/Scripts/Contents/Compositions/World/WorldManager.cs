@@ -35,7 +35,7 @@ namespace Commar.CubicLand.Compositions
                 return;
             }
 
-            player.transform.position = Vector3.up * (player.MotionController.GeometryProvider.GolemHeight + 1) * CubeConfig.CUBE_BASE_LENGTH;
+            player.transform.position = Vector3.up * (player.MotionController.GeometryProvider.GolemHeight + 6) * CubeConfig.CUBE_BASE_LENGTH * 2f;
 
             PlayerKeyboardController keyboardController = player.gameObject.GetOrAddComponenet<PlayerKeyboardController>();
             keyboardController.Initialize(player.MotionController);
