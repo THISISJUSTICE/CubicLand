@@ -52,7 +52,9 @@
     {
       "output": "Composition/Root",
       "sources": [
-        {"path": "Assets/Scripts/Contents/Composition/0_Root", "recursive": true}
+        {"path": "Assets/Scripts/Contents/Composition/0_Root", "recursive": true},
+        {"path": "Assets/Scripts/CubicLand/UnityLifecycles/IFixedUpdatable.cs"},
+        {"path": "Assets/Scripts/CubicLand/UnityLifecycles/IUpdatable.cs"}
       ]
     },
     {
