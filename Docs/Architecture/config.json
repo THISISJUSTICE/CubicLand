@@ -42,6 +42,36 @@
 
 
     {
+      "output": "Game/Status",
+      "sources": [
+        {"path": "Assets/Scripts/Contents/Game", "recursive": true}
+      ]
+    },
+
+
+    {
+      "output": "Composition/Root",
+      "sources": [
+        {"path": "Assets/Scripts/Contents/Composition/0_Root", "recursive": true}
+      ]
+    },
+    {
+      "output": "Composition/Intro",
+      "sources": [
+        {"path": "Assets/Scripts/Contents/Composition/1_Intro", "recursive": true},
+        {"path": "Assets/Scripts/Commar/Operations", "recursive": false},
+        {"path": "Assets/Scripts/CubicLand/SceneList.cs"}
+      ]
+    },
+    {
+      "output": "Composition/World",
+      "sources": [
+        {"path": "Assets/Scripts/Contents/Composition/2_World", "recursive": true}
+      ]
+    },
+
+
+    {
       "output": "Common/Types",
       "sources": [
         {"path": "Assets/Scripts/Commar/Operations", "recursive": false},
