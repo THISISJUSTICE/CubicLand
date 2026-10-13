@@ -36,6 +36,7 @@
       "sources": [
         {"path": "Assets/Scripts/Contents/Cube/Singletons", "recursive": true},
         {"path": "Assets/Scripts/Contents/Cube/SpawnEffects/ICubeSpawnEffect.cs"},
+        {"path": "Assets/Scripts/Commar/Operations", "recursive": false},
         {"path": "Assets/Scripts/CubicLand/UnityLifecycles/IFixedUpdatable.cs"}
       ]
     },
