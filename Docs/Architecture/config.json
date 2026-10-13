@@ -36,7 +36,6 @@
       "sources": [
         {"path": "Assets/Scripts/Contents/Cube/Singletons", "recursive": true},
         {"path": "Assets/Scripts/Contents/Cube/SpawnEffects/ICubeSpawnEffect.cs"},
-        {"path": "Assets/Scripts/Commar/Operations", "recursive": false},
         {"path": "Assets/Scripts/CubicLand/UnityLifecycles/IFixedUpdatable.cs"}
       ]
     },
@@ -62,7 +61,6 @@
       "output": "Composition/Intro",
       "sources": [
         {"path": "Assets/Scripts/Contents/Composition/1_Intro", "recursive": true},
-        {"path": "Assets/Scripts/Commar/Operations", "recursive": false},
         {"path": "Assets/Scripts/CubicLand/SceneList.cs"}
       ]
     },
