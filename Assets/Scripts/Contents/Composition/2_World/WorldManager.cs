@@ -8,6 +8,8 @@ namespace Commar.CubicLand.Composition
 {
     public class WorldManager : MonoBehaviour
     {
+        [SerializeField] private GolemFollower _golemFollower;
+
         private IGolemFactory _golemFactory;
         private RandomStatusEnhancer _statusEnhancer;
 
@@ -39,6 +41,8 @@ namespace Commar.CubicLand.Composition
 
             PlayerKeyboardController keyboardController = player.gameObject.GetOrAddComponenet<PlayerKeyboardController>();
             keyboardController.Initialize(player.MotionController);
+
+            _golemFollower.Initialize(player.gameObject, player.MotionController.GeometryProvider);
         }
     }
 }

@@ -474,6 +474,46 @@ Transform:
   - {fileID: 2091575374}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1001 &820779611
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 381749240930392243, guid: efdc9832b543ee14fba4b4502bf8102b, type: 3}
+      propertyPath: m_Name
+      value: Cinemachine
+      objectReference: {fileID: 0}
+    - target: {fileID: 1136093909661590622, guid: efdc9832b543ee14fba4b4502bf8102b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1136093909661590622, guid: efdc9832b543ee14fba4b4502bf8102b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1136093909661590622, guid: efdc9832b543ee14fba4b4502bf8102b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: efdc9832b543ee14fba4b4502bf8102b, type: 3}
+--- !u!114 &820779612 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6183928343279090788, guid: efdc9832b543ee14fba4b4502bf8102b, type: 3}
+  m_PrefabInstance: {fileID: 820779611}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee89325249213a846bc3e335820bdd7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Commar.CubicLand.Game::Commar.CubicLand.Game.GolemFollower
 --- !u!1 &1605863128
 GameObject:
   m_ObjectHideFlags: 0
@@ -890,7 +930,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Commar.CubicLand.Compositions::Commar.CubicLand.Compositions.WorldLifetimeScope
   parentReference:
-    TypeName: Commar.CubicLand.Compositions.RootLifetimeScope
+    TypeName: 
   autoRun: 1
   autoInjectGameObjects: []
   _worldManager: {fileID: 1994760958}
@@ -921,6 +961,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdec476fd10b5014e8d78c348534e9c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Commar.CubicLand.Compositions::Commar.CubicLand.Compositions.WorldManager
+  _golemFollower: {fileID: 820779612}
 --- !u!1 &2091575373
 GameObject:
   m_ObjectHideFlags: 0
@@ -1041,3 +1082,4 @@ SceneRoots:
   - {fileID: 1923177380}
   - {fileID: 1994760957}
   - {fileID: 451500192}
+  - {fileID: 820779611}
