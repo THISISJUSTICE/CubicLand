@@ -1,26 +1,54 @@
+using Commar.CubicLand.DataStorage;
+using System;
 using UnityEngine;
 
 namespace Commar.CubicLand.Player
 {
     public sealed class PlayerKeyboardInputSource : IPlayerInputSource
     {
-        private KeyCode _moveFrontKey = KeyCode.W;
-        private KeyCode _moveRightKey = KeyCode.D;
-        private KeyCode _moveLeftKey = KeyCode.A;
-        private KeyCode _moveBackKey = KeyCode.S;
-        
-        private KeyCode _rotateRightKey = KeyCode.E;
-        private KeyCode _rotateLeftKey = KeyCode.Q;
-        private KeyCode _jumpKey = KeyCode.Space;
+        [Serializable]
+        public struct PlayerKeyboardBindings
+        {
+            public KeyCode moveFront;
+            public KeyCode moveRight;
+            public KeyCode moveLeft;
+            public KeyCode moveBack;
 
-        public PlayerKeyboardInputSource()
-        { 
-            // TODO: 로컬에 저장된 KeyCode 적용
+            public KeyCode rotateRight;
+            public KeyCode rotateLeft;
+            public KeyCode jump;
+
+            public static PlayerKeyboardBindings Default => new()
+            {
+                moveFront = KeyCode.W,
+                moveRight = KeyCode.D,
+                moveLeft = KeyCode.A,
+                moveBack = KeyCode.S,
+                rotateRight = KeyCode.E,
+                rotateLeft = KeyCode.Q,
+                jump = KeyCode.Space
+            };
         }
 
-        public void ApplyKeyCode()
+        private const string STORAGE_KEY = "PlayerKeyboardBindings";
+
+        private readonly IDataStorage _dataStorage;
+        private PlayerKeyboardBindings _bindings;
+
+        public PlayerKeyboardBindings Bindings => _bindings;
+
+        public PlayerKeyboardInputSource(IDataStorage dataStorage)
         {
-            // TODO: 외부에서 정한 KeyCode 적용 및 로컬에 저장
+            _dataStorage = dataStorage;
+
+            if (!_dataStorage.TryLoad(STORAGE_KEY, out _bindings))
+                _bindings = PlayerKeyboardBindings.Default;
+        }
+
+        public void ApplyKeyCode(PlayerKeyboardBindings bindings)
+        {
+            _bindings = bindings;
+            _dataStorage.Save(STORAGE_KEY, _bindings);
         }
 
         public bool GetInput(PlayerInputType input)
@@ -43,19 +71,19 @@ namespace Commar.CubicLand.Player
             switch (input)
             {
                 case PlayerInputType.MoveFront:
-                    return _moveFrontKey;
+                    return _bindings.moveFront;
                 case PlayerInputType.MoveRight:
-                    return _moveRightKey;
+                    return _bindings.moveRight;
                 case PlayerInputType.MoveLeft:
-                    return _moveLeftKey;
+                    return _bindings.moveLeft;
                 case PlayerInputType.MoveBack:
-                    return _moveBackKey;
+                    return _bindings.moveBack;
                 case PlayerInputType.RotateRight:
-                    return _rotateRightKey;
+                    return _bindings.rotateRight;
                 case PlayerInputType.RotateLeft:
-                    return _rotateLeftKey;
+                    return _bindings.rotateLeft;
                 case PlayerInputType.Jump:
-                    return _jumpKey;
+                    return _bindings.jump;
             }
 
             return KeyCode.None;
