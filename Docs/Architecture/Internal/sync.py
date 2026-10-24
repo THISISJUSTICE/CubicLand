@@ -177,7 +177,28 @@ def parse_members(source, masked, begin, end, kind, type_name):
     return list(dict.fromkeys(members)), list(dict.fromkeys(methods))
 
 
-def get_types(paths):
+def method_body_references(source, masked, begin, end):
+    """Collect candidate type identifiers from method/constructor bodies.
+
+    Candidates are resolved against parsed diagram types later. This is a
+    lexical approximation, not compiler-level C# symbol resolution.
+    """
+    references = set()
+    for header, body, has_body in direct_declarations(source, masked, begin, end):
+        declaration = declaration_before_initializer(header)
+        # Includes constructors, private methods, and lifecycle callbacks.
+        if '(' not in declaration or ')' not in declaration:
+            continue
+        if has_body:
+            # Mask comments and string literals so they do not create false edges.
+            references.update(re.findall(r'\b[A-Za-z_]\w*\b', clean_source(body)))
+        elif '=>' in header:
+            expression = header.split('=>', 1)[1]
+            references.update(re.findall(r'\b[A-Za-z_]\w*\b', clean_source(expression)))
+    return references
+
+
+def get_types(paths, deep=False):
     types = {}
     for spec in paths:
         base = Path(spec['path'])
@@ -210,7 +231,8 @@ def get_types(paths):
                 if name in types:
                     print(f'[WARN] Duplicate type {name} in {file}; first wins', file=sys.stderr); continue
                 types[name] = {'kind':kind, 'parents':parent_names, 'members':members, 'methods':methods,
-                               'mono': 'MonoBehaviour' in parent_names, 'file':str(file)}
+                               'mono': 'MonoBehaviour' in parent_names, 'file':str(file),
+                                'body_refs': method_body_references(source, masked, opening + 1, closing) if deep else set()}
     suppress_inherited_members(types)
     return types
 
@@ -266,7 +288,7 @@ def referenced_types(info):
             continue
         expressions.append(method[opening + 1:closing])
         expressions.append(method[closing + 1:].partition(' : ')[2])
-    return {token for expression in expressions
+    return info.get('body_refs', set()) | {token for expression in expressions
             for token in re.findall(r'\b[A-Za-z_]\w*\b', expression)}
 
 
@@ -1193,7 +1215,7 @@ def sync_one(item, dry_run=False):
         print(f'[INFO] Creating missing diagram: {item["output"]}', flush=True)
     graph = tree.find('.//mxGraphModel/root')
     if graph is None: raise ValueError(f'Unsupported draw.io format: {target}')
-    types = get_types(item['sources'])
+    types = get_types(item['sources'], deep=item.get('deep', False))
     print(f'[INFO] Parsed {len(types)} C# types; building diagram...', flush=True)
     by_id = {c.get('id'): c for c in graph.findall('mxCell')}
     existing = {}
@@ -1330,7 +1352,7 @@ def diagram_references(items):
     The same relationship rules as the draw.io renderer are used: base types,
     visible fields/properties, and visible method parameter/return types.
     """
-    diagram_types = {item['output']: get_types(item['sources']) for item in items}
+    diagram_types = {item['output']: get_types(item['sources'], deep=item.get('deep', False)) for item in items}
     owners = {}
     for path, types in diagram_types.items():
         for name in types:
