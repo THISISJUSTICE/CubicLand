@@ -1,38 +1,25 @@
 using Commar.CubicLand.Cube;
 using UnityEngine;
+using VContainer;
 
 namespace Commar.CubicLand.Player
 {
     [DisallowMultipleComponent]
-    public sealed class PlayerKeyboardController : MonoBehaviour
+    public sealed class PlayerInputController : MonoBehaviour
     {
-        private enum InputType
-        {
-            None,
-            MoveFront,
-            MoveRight,
-            MoveLeft,
-            MoveBack,
-            RotateRight,
-            RotateLeft
-        }
-
-        [SerializeField] private KeyCode _moveFrontKey = KeyCode.W;
-        [SerializeField] private KeyCode _moveRightKey = KeyCode.D;
-        [SerializeField] private KeyCode _moveLeftKey = KeyCode.A;
-        [SerializeField] private KeyCode _moveBackKey = KeyCode.S;
-        [Space]
-        [SerializeField] private KeyCode _rotateRightKey = KeyCode.E;
-        [SerializeField] private KeyCode _rotateLeftKey = KeyCode.Q;
-        [SerializeField] private KeyCode _jumpKey = KeyCode.Space;
-        [Space]
         [SerializeField, Range(0f, 1f)] private float _inputBufferDuration = 0.15f;
 
+        private IPlayerInputSource _inputSource;
         private IGolemMotionController _motionController;
 
-        private InputType _bufferedInput;
-        private KeyCode _bufferedKey;
+        private PlayerInputType _bufferedInput;
         private float _bufferedInputTime;
+
+        [Inject]
+        public void Construct(IPlayerInputSource inputSource)
+        {
+            _inputSource = inputSource;
+        }
 
         public void Initialize(IGolemMotionController motionController)
         {
@@ -43,12 +30,12 @@ namespace Commar.CubicLand.Player
 
         private void Update()
         {
-            if (_motionController == null)
+            if (_inputSource == null || _motionController == null)
                 return;
 
             HandleJumpInput();
 
-            if (Input.GetKey(_jumpKey) || _motionController.IsStun)
+            if (_inputSource.GetInput(PlayerInputType.Jump) || _motionController.IsStun)
                 return;
 
             BufferMoveInput();
@@ -64,41 +51,40 @@ namespace Commar.CubicLand.Player
             if (_motionController.IsStun)
                 return;
 
-            if (Input.GetKey(_jumpKey) && _motionController.MoveState == GolemMoveState.Idle)
+            if (_inputSource.GetInput(PlayerInputType.Jump) && _motionController.MoveState == GolemMoveState.Idle)
             {
                 _motionController.StartJumpCharge();
                 ResetBufferedInput();
             }
-            else if (!Input.GetKey(_jumpKey) && _motionController.MoveState == GolemMoveState.Charging)
+            else if (!_inputSource.GetInput(PlayerInputType.Jump) && _motionController.MoveState == GolemMoveState.Charging)
                 _motionController.ReleaseJump();
         }
 
         private void BufferMoveInput()
         {
-            if (SetInput(_moveFrontKey, InputType.MoveFront))
+            if (SetInput(PlayerInputType.MoveFront))
                 return;
 
-            if (SetInput(_moveRightKey, InputType.MoveRight))
+            if (SetInput(PlayerInputType.MoveRight))
                 return;
 
-            if (SetInput(_moveLeftKey, InputType.MoveLeft))
+            if (SetInput(PlayerInputType.MoveLeft))
                 return;
 
-            if (SetInput(_moveBackKey, InputType.MoveBack))
+            if (SetInput(PlayerInputType.MoveBack))
                 return;
 
-            if (SetInput(_rotateRightKey, InputType.RotateRight))
+            if (SetInput(PlayerInputType.RotateRight))
                 return;
 
-            if (SetInput(_rotateLeftKey, InputType.RotateLeft))
+            if (SetInput(PlayerInputType.RotateLeft))
                 return;
 
-            bool SetInput(KeyCode keyCode, InputType inputType)
+            bool SetInput(PlayerInputType inputType)
             {
-                if (Input.GetKeyDown(keyCode))
+                if (_inputSource.GetInputDown(inputType))
                 {
                     _bufferedInput = inputType;
-                    _bufferedKey = keyCode;
                     _bufferedInputTime = Time.time;
                     return true;
                 }
@@ -106,20 +92,19 @@ namespace Commar.CubicLand.Player
                 return false;
             }
 
-            if (_bufferedInput != InputType.None && Input.GetKey(_bufferedKey))
+            if (_bufferedInput != PlayerInputType.None && _inputSource.GetInput(_bufferedInput))
                 _bufferedInputTime = Time.time;
         }
 
         private void ResetBufferedInput()
         {
-            _bufferedInput = InputType.None;
-            _bufferedKey = KeyCode.None;
+            _bufferedInput = PlayerInputType.None;
             _bufferedInputTime = 0f;
         }
 
         private void ExecuteBufferedInput()
         {
-            if (_bufferedInput == InputType.None)
+            if (_bufferedInput == PlayerInputType.None)
                 return;
 
             if (Time.time - _bufferedInputTime > _inputBufferDuration)
@@ -130,32 +115,32 @@ namespace Commar.CubicLand.Player
 
             switch (_bufferedInput)
             {
-                case InputType.MoveFront:
+                case PlayerInputType.MoveFront:
                     _motionController.Move(Direction.Front);
                     break;
 
-                case InputType.MoveRight:
+                case PlayerInputType.MoveRight:
                     _motionController.Move(Direction.Right);
                     break;
 
-                case InputType.MoveLeft:
+                case PlayerInputType.MoveLeft:
                     _motionController.Move(Direction.Left);
                     break;
 
-                case InputType.MoveBack:
+                case PlayerInputType.MoveBack:
                     _motionController.Move(Direction.Back);
                     break;
 
-                case InputType.RotateRight:
+                case PlayerInputType.RotateRight:
                     _motionController.Rotate(true);
                     break;
 
-                case InputType.RotateLeft:
+                case PlayerInputType.RotateLeft:
                     _motionController.Rotate(false);
                     break;
             }
 
-            if (!Input.GetKey(_bufferedKey))
+            if (!_inputSource.GetInput(_bufferedInput))
                 ResetBufferedInput();
         }
     }

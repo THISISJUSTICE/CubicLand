@@ -9,6 +9,7 @@ namespace Commar.CubicLand.Composition
     public class WorldManager : MonoBehaviour
     {
         [SerializeField] private GolemFollower _golemFollower;
+        [SerializeField] private PlayerInputController _inputController;
 
         private IGolemFactory _golemFactory;
         private RandomStatusEnhancer _statusEnhancer;
@@ -39,9 +40,7 @@ namespace Commar.CubicLand.Composition
 
             player.transform.position = Vector3.up * (player.MotionController.GeometryProvider.GolemHeight + 6) * CubeConfig.CUBE_BASE_LENGTH * 2f;
 
-            PlayerKeyboardController keyboardController = player.gameObject.GetOrAddComponenet<PlayerKeyboardController>();
-            keyboardController.Initialize(player.MotionController);
-
+            _inputController.Initialize(player.MotionController);
             _golemFollower.Initialize(player.gameObject, player.MotionController.GeometryProvider);
         }
     }

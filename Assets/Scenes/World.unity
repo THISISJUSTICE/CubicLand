@@ -358,6 +358,52 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 256514058}
   m_Mesh: {fileID: 10209, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!1 &300640746
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 300640748}
+  - component: {fileID: 300640747}
+  m_Layer: 0
+  m_Name: GameController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &300640747
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300640746}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3ac688f78fe1944e9e81c4cfbc5e1ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Commar.CubicLand.Player::Commar.CubicLand.Player.PlayerInputController
+  _inputBufferDuration: 0.15
+--- !u!4 &300640748
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 300640746}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 820779613}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &451500188
 GameObject:
   m_ObjectHideFlags: 0
@@ -480,7 +526,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 0}
+    m_TransformParent: {fileID: 300640748}
     m_Modifications:
     - target: {fileID: 381749240930392243, guid: efdc9832b543ee14fba4b4502bf8102b, type: 3}
       propertyPath: m_Name
@@ -514,6 +560,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee89325249213a846bc3e335820bdd7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Commar.CubicLand.Game::Commar.CubicLand.Game.GolemFollower
+--- !u!4 &820779613 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 1136093909661590622, guid: efdc9832b543ee14fba4b4502bf8102b, type: 3}
+  m_PrefabInstance: {fileID: 820779611}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1605863128
 GameObject:
   m_ObjectHideFlags: 0
@@ -773,6 +824,7 @@ MonoBehaviour:
   autoRun: 1
   autoInjectGameObjects: []
   _worldManager: {fileID: 1994760958}
+  _inputController: {fileID: 300640747}
 --- !u!4 &1994760957
 Transform:
   m_ObjectHideFlags: 0
@@ -801,6 +853,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Commar.CubicLand.Compositions::Commar.CubicLand.Compositions.WorldManager
   _golemFollower: {fileID: 820779612}
+  _inputController: {fileID: 300640747}
 --- !u!1 &2091575373
 GameObject:
   m_ObjectHideFlags: 0
@@ -919,5 +972,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 215253696}
   - {fileID: 1994760957}
+  - {fileID: 300640748}
   - {fileID: 451500192}
-  - {fileID: 820779611}
