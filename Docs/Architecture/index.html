@@ -50,7 +50,7 @@
         for (const file of files) {
           const relative = file.replace(/^Docs\/Architecture\/Diagrams\//i, '');
           const slash = relative.lastIndexOf('/');
-          const group = slash < 0 ? '' : relative.slice(0, slash);
+          const group = slash < 0 ? relative.replace(/\.drawio$/i, '') : relative.slice(0, slash);
           if (!groups.has(group)) groups.set(group, []);
           groups.get(group).push(file);
         }
@@ -62,7 +62,7 @@
           details.className = 'group';
           details.open = true;
           const summary = document.createElement('summary');
-          summary.append(document.createTextNode(groupName || 'Other'));
+          summary.append(document.createTextNode(groupName));
           const count = document.createElement('span');
           count.className = 'count';
           count.textContent = `${groupFiles.length} diagrams`;
