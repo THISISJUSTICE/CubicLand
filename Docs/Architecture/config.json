@@ -42,7 +42,7 @@
 
 
     {
-      "output": "Game/Status",
+      "output": "Game",
       "sources": [
         {"path": "Assets/Scripts/Contents/Game", "recursive": true}
       ]
