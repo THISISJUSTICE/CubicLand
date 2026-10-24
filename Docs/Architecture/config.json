@@ -55,20 +55,23 @@
         {"path": "Assets/Scripts/Contents/Composition/0_Root", "recursive": true},
         {"path": "Assets/Scripts/CubicLand/UnityLifecycles/IFixedUpdatable.cs"},
         {"path": "Assets/Scripts/CubicLand/UnityLifecycles/IUpdatable.cs"}
-      ]
+      ],
+      "deep": true
     },
     {
       "output": "Composition/Intro",
       "sources": [
         {"path": "Assets/Scripts/Contents/Composition/1_Intro", "recursive": true},
         {"path": "Assets/Scripts/CubicLand/SceneList.cs"}
-      ]
+      ],
+      "deep": true
     },
     {
       "output": "Composition/World",
       "sources": [
         {"path": "Assets/Scripts/Contents/Composition/2_World", "recursive": true}
-      ]
+      ],
+      "deep": true
     },
 
 
