@@ -6,6 +6,8 @@
     "Docs/Architecture/Diagrams/Cube/SpawnEffects.drawio",
     "Docs/Architecture/Diagrams/Cube/Singletons.drawio",
     "Docs/Architecture/Diagrams/Game/Status.drawio",
+    "Docs/Architecture/Diagrams/Player.drawio",
+    "Docs/Architecture/Diagrams/DataStorage.drawio",
     "Docs/Architecture/Diagrams/Composition/Root.drawio",
     "Docs/Architecture/Diagrams/Composition/Intro.drawio",
     "Docs/Architecture/Diagrams/Composition/World.drawio",
@@ -19,6 +21,8 @@
     "Docs/Architecture/Diagrams/Cube/SpawnEffects.drawio": "1a26d2888d3d0b49",
     "Docs/Architecture/Diagrams/Cube/Singletons.drawio": "9eac79038d751f17",
     "Docs/Architecture/Diagrams/Game/Status.drawio": "e4581c1f18e74150",
+    "Docs/Architecture/Diagrams/Player.drawio": "2c7aeb39e4020ff0",
+    "Docs/Architecture/Diagrams/DataStorage.drawio": "b9404967a84a36b8",
     "Docs/Architecture/Diagrams/Composition/Root.drawio": "221b41d64a0c6f02",
     "Docs/Architecture/Diagrams/Composition/Intro.drawio": "cd7e8f1bd33e13f3",
     "Docs/Architecture/Diagrams/Composition/World.drawio": "bea047e662de3baa",
@@ -35,6 +39,10 @@
     ],
     "Game": [
       "Docs/Architecture/Diagrams/Game/Status.drawio"
+    ],
+    "": [
+      "Docs/Architecture/Diagrams/Player.drawio",
+      "Docs/Architecture/Diagrams/DataStorage.drawio"
     ],
     "Composition": [
       "Docs/Architecture/Diagrams/Composition/Root.drawio",
@@ -74,11 +82,18 @@
       "Docs/Architecture/Diagrams/Cube/Motions.drawio",
       "Docs/Architecture/Diagrams/Cube/Objects.drawio"
     ],
+    "Docs/Architecture/Diagrams/Player.drawio": [
+      "Docs/Architecture/Diagrams/Cube/Motions.drawio",
+      "Docs/Architecture/Diagrams/Cube/Objects.drawio",
+      "Docs/Architecture/Diagrams/DataStorage.drawio"
+    ],
+    "Docs/Architecture/Diagrams/DataStorage.drawio": [],
     "Docs/Architecture/Diagrams/Composition/Root.drawio": [
       "Docs/Architecture/Diagrams/Common/Singletons.drawio",
       "Docs/Architecture/Diagrams/Cube/Objects.drawio",
       "Docs/Architecture/Diagrams/Cube/Singletons.drawio",
-      "Docs/Architecture/Diagrams/Cube/SpawnEffects.drawio"
+      "Docs/Architecture/Diagrams/Cube/SpawnEffects.drawio",
+      "Docs/Architecture/Diagrams/DataStorage.drawio"
     ],
     "Docs/Architecture/Diagrams/Composition/Intro.drawio": [
       "Docs/Architecture/Diagrams/Common/Types.drawio"
@@ -87,7 +102,8 @@
       "Docs/Architecture/Diagrams/Cube/Datas.drawio",
       "Docs/Architecture/Diagrams/Cube/Objects.drawio",
       "Docs/Architecture/Diagrams/Cube/Singletons.drawio",
-      "Docs/Architecture/Diagrams/Game/Status.drawio"
+      "Docs/Architecture/Diagrams/Game/Status.drawio",
+      "Docs/Architecture/Diagrams/Player.drawio"
     ],
     "Docs/Architecture/Diagrams/Common/Types.drawio": [],
     "Docs/Architecture/Diagrams/Common/Singletons.drawio": [

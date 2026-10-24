@@ -50,6 +50,22 @@
 
 
     {
+      "output": "Player",
+      "sources": [
+        {"path": "Assets/Scripts/Contents/Player", "recursive": true}
+      ]
+    },
+
+
+    {
+      "output": "DataStorage",
+      "sources": [
+        {"path": "Assets/Scripts/Contents/DataStorage", "recursive": true}
+      ]
+    },
+
+
+    {
       "output": "Composition/Root",
       "sources": [
         {"path": "Assets/Scripts/Contents/Composition/0_Root", "recursive": true},
