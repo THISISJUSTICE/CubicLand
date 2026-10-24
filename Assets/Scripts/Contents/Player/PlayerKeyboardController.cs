@@ -155,7 +155,8 @@ namespace Commar.CubicLand.Player
                     break;
             }
 
-            ResetBufferedInput();
+            if (!Input.GetKey(_bufferedKey))
+                ResetBufferedInput();
         }
     }
 }
