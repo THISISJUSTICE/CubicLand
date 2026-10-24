@@ -1,4 +1,5 @@
 using Commar.CubicLand.Cube;
+using Commar.CubicLand.DataStorage;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -34,9 +35,11 @@ namespace Commar.CubicLand.Composition
         {
             builder.Register<ObjectPool>(Lifetime.Singleton)
                 .WithParameter(MaxPoolSize)
-                .As<IObjectPool>();
+                .AsImplementedInterfaces();
             builder.Register<LocalAddressableAssetLoader>(Lifetime.Singleton)
-                .As<IAsyncAssetLoader>();
+                .AsImplementedInterfaces();
+            builder.Register<LocalDataStorage>(Lifetime.Singleton)
+                .AsImplementedInterfaces();
         }
 
         private void RegisterCube(IContainerBuilder builder)
@@ -44,7 +47,7 @@ namespace Commar.CubicLand.Composition
             builder.Register<CubeCollisionResolver>(Lifetime.Singleton)
                 .AsImplementedInterfaces();
             builder.Register<EmptyCubeSpawnEffect>(Lifetime.Singleton)
-                .As<ICubeSpawnEffect>();
+                .AsImplementedInterfaces();
 
             builder.Register<GolemCubeFactory>(Lifetime.Singleton)
                 .AsImplementedInterfaces()
@@ -57,9 +60,9 @@ namespace Commar.CubicLand.Composition
                 .Keyed(CubeFactoryKey.Obstacle);
 
             builder.Register<OrphanedObjectCubeHandler>(Lifetime.Singleton)
-                .As<IOrphanedCubeHandler>();
+                .AsImplementedInterfaces();
             builder.Register<GolemFactory>(Lifetime.Singleton)
-                .As<IGolemFactory>();
+                .AsImplementedInterfaces();
         }
 
         private void RegisterHandlers(IContainerBuilder builder)
