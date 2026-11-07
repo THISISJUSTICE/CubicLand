@@ -20,7 +20,7 @@ namespace Commar.CubicLand.Cube
 
         public float CalculateMass(StatusValue statusValue)
         {
-            return CubeConfig.ONE_CUBE_MASS;
+            return CubeConfig.OneCubeMass;
         }
     }
 }

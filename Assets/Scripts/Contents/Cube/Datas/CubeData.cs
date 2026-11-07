@@ -33,10 +33,10 @@ namespace Commar.CubicLand.Cube
 
         public static Color CalculateColor(StatusPoint statusPoint, GolemColorPoint colorPoint)
         {
-            float rate = Mathf.Pow(CubeConfig.STATUS_COLOR_RATE, statusPoint.TotalPoint);
-            float r = rate * Mathf.Pow(CubeConfig.GOLEM_COLOR_RATE, colorPoint.r);
-            float g = rate * Mathf.Pow(CubeConfig.GOLEM_COLOR_RATE, colorPoint.g);
-            float b = rate * Mathf.Pow(CubeConfig.GOLEM_COLOR_RATE, colorPoint.b);
+            float rate = Mathf.Pow(CubeConfig.StatusColorRate, statusPoint.TotalPoint);
+            float r = rate * Mathf.Pow(CubeConfig.GolemColorRate, colorPoint.r);
+            float g = rate * Mathf.Pow(CubeConfig.GolemColorRate, colorPoint.g);
+            float b = rate * Mathf.Pow(CubeConfig.GolemColorRate, colorPoint.b);
             return new Color(r, g, b);
         }
 
@@ -87,15 +87,15 @@ namespace Commar.CubicLand.Cube
         {
             // 충격량에 따라 데미지 비율 변경
             float damage = Mathf.Round(rawDamage *
-                Mathf.Clamp01(impulse.magnitude / CubeConfig.DAMAGE_SCALING_FACTOR));
+                Mathf.Clamp01(impulse.magnitude / CubeConfig.DamageScalingFactor));
 
             // 물리 충격량에 따른 추가 데미지 반영
             // 기본 데미지의 2배를 넘지 못하도록 제한
             damage += Mathf.Min(rawDamage * 2f,
-                impulse.magnitude / selfMass * CubeConfig.ADDITIONAL_DAMAGE_IMPULSE_DIVISOR);
+                impulse.magnitude / selfMass * CubeConfig.AdditionalDamageImpulseDivisor);
 
             // 방어 스텟에 따른 데미지 감소
-            damage *= Mathf.Exp(-StatusValue.Armor / CubeConfig.ARMOR_EXPONENTIAL_SCALE);
+            damage *= Mathf.Exp(-StatusValue.Armor / CubeConfig.ArmorExponentialScale);
 
             // 최소 데미지 제한
             // TODO: 최소 데미지 제한을 0으로 해도 문제 없는지 확인 필요

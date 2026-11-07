@@ -218,7 +218,7 @@ namespace Commar.CubicLand.Cube
             float maxHeight = CubeConfig.CUBE_BASE_LENGTH / 2f + (GolemHeight - 1) * CubeConfig.CUBE_BASE_LENGTH;
             Vector3 previousScale = Transform.localScale;
 
-            float duration = GolemHeight * CubeConfig.GOLEM_JUMP_CHARGE_TIME;
+            float duration = GolemHeight * CubeConfig.GolemJumpChargeTime;
             FixedStepTimer timer = new FixedStepTimer(duration);
 
             while (!timer.IsCompleted)
@@ -246,7 +246,7 @@ namespace Commar.CubicLand.Cube
             float golemHeight = GolemHeight * CubeConfig.CUBE_BASE_LENGTH;
 
             float scaleRate = (1f - startScale[index]) / 0.5f;
-            float duration = CubeConfig.GOLEM_SIZE_UP_TIME * scaleRate;
+            float duration = CubeConfig.GolemSizeUpTime * scaleRate;
             FixedStepTimer timer = new FixedStepTimer(duration);
             float previousAxisScale = startScale[index];
 

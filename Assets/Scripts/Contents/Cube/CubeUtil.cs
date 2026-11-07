@@ -12,14 +12,14 @@ namespace Commar.CubicLand.Cube
 
         public static float CalcualteCubeObjectMass(StatusValue statusValue)
         {
-            return CubeConfig.ONE_CUBE_MASS *
-                ((float)statusValue.HP / statusValue.MaxHP * statusValue.Armor * CubeConfig.MASS_RATE + 1f);
+            return CubeConfig.OneCubeMass *
+                ((float)statusValue.HP / statusValue.MaxHP * statusValue.Armor * CubeConfig.MassRate + 1f);
         }
 
         public static Vector3 GetValidKnockbackImpulse(Vector3 impulse, float mass)
         {
-            float minForce = Utils.CalculateForceForDistance(mass, CubeConfig.MIN_KNOCKBACK_DISTANCE);
-            float maxForce = Utils.CalculateForceForDistance(mass, CubeConfig.MAX_KNOCKBACK_DISTANCE);
+            float minForce = Utils.CalculateForceForDistance(mass, CubeConfig.MinKnockbackDistance);
+            float maxForce = Utils.CalculateForceForDistance(mass, CubeConfig.MaxKnockbackDistance);
             Vector2 impulseXZ = Utils.ConvertXZVector2(impulse);
             float xzForce = impulseXZ.magnitude;
 
@@ -31,16 +31,16 @@ namespace Commar.CubicLand.Cube
                 impulse = new Vector3(impulseXZ.x, impulse.y, impulseXZ.y);
             }
 
-            impulse.y = Mathf.Min(impulse.y, CubeConfig.MAX_KNOCKBACK_DISTANCE);
+            impulse.y = Mathf.Min(impulse.y, CubeConfig.MaxKnockbackDistance);
 
             return impulse;
         }
 
         public static float CalculateKnockbackTime(Vector3 impulse, float mass)
         {
-            float time = Utils.ConvertXZVector2(impulse).magnitude / mass / CubeConfig.KNOCKBACK_DECELERATION;
+            float time = Utils.ConvertXZVector2(impulse).magnitude / mass / CubeConfig.KnockbackDeceleration;
 
-            return Mathf.Min(CubeConfig.MAX_KNOCKBACK_TIME, time);
+            return Mathf.Min(CubeConfig.MaxKnockbackTime, time);
         }
 
         public static float GetMaxAxisAngleDifference(Quaternion a, Quaternion b)
@@ -90,12 +90,12 @@ namespace Commar.CubicLand.Cube
         {
             Vector3 startPosition = rigidbody.position;
             Vector3 endPosition = GetNormalizedPosition(startPosition);
-            float moveDuration = Vector3.Distance(startPosition, endPosition) / CubeConfig.MAX_CUBE_NOMALIZE_DISTANCE * CubeConfig.MAX_CUBE_NOMALIZE_TIME;
+            float moveDuration = Vector3.Distance(startPosition, endPosition) / CubeConfig.MaxCubeNomalizeDistance * CubeConfig.MaxCubeNomalizeTime;
 
             const float maxCubeNormalizeAngle = 45f;
             Quaternion startRotation = rigidbody.rotation;
             Quaternion endRotation = GetNormalizedRotation(startRotation);
-            float rotateDuration = GetMaxAxisAngleDifference(startRotation, endRotation) / maxCubeNormalizeAngle * CubeConfig.MAX_CUBE_NOMALIZE_TIME;
+            float rotateDuration = GetMaxAxisAngleDifference(startRotation, endRotation) / maxCubeNormalizeAngle * CubeConfig.MaxCubeNomalizeTime;
 
             float duration = Mathf.Max(moveDuration, rotateDuration);
             float time = 0f;

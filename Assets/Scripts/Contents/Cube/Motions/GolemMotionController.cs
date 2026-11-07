@@ -162,9 +162,9 @@ namespace Commar.CubicLand.Cube
 
                 _motionMotor.FindEdgeCubeDatas(Direction3D.Down, _edgeCubes);
                 int bottomCount = _edgeCubes.Count;
-                float moveTime = Mathf.Clamp(CalculateMoveTime() * 0.9f, CubeConfig.GOLEM_MIN_MOVE_TIME, CubeConfig.GOLEM_MAX_MOVE_TIME);
-                float duration = Mathf.Max(moveTime, moveTime * (CubeConfig.GOLEM_ROTATE_FRICTION * (bottomCount - 1)));
-                duration = Mathf.Clamp(duration, CubeConfig.GOLEM_MIN_MOVE_TIME, CubeConfig.GOLEM_MAX_MOVE_TIME);
+                float moveTime = Mathf.Clamp(CalculateMoveTime() * 0.9f, CubeConfig.GolemMinMoveTime, CubeConfig.GolemMaxMoveTime);
+                float duration = Mathf.Max(moveTime, moveTime * (CubeConfig.GolemRotateFriction * (bottomCount - 1)));
+                duration = Mathf.Clamp(duration, CubeConfig.GolemMinMoveTime, CubeConfig.GolemMaxMoveTime);
 
                 _golemObject.SetAttackMode(true);
                 yield return _motionMotor.Rotate(direction, duration);
@@ -240,7 +240,7 @@ namespace Commar.CubicLand.Cube
 
         private float CalculateMoveTime()
         {
-            return _golemObject.CalculateMoveTime(CubeConfig.GOLEM_INIT_MOVE_TIME, CubeConfig.GOLEM_MIN_MOVE_TIME, CubeConfig.GOLEM_MAX_MOVE_TIME);
+            return _golemObject.CalculateMoveTime(CubeConfig.GolemInitMoveTime, CubeConfig.GolemMinMoveTime, CubeConfig.GolemMaxMoveTime);
         }
 
         private void StopCurrentCoroutine()

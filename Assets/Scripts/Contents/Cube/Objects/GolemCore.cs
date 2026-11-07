@@ -170,8 +170,8 @@ namespace Commar.CubicLand.Cube
 
         public float CalculateMoveTime(float initTime, float minTime, float maxTime)
         {
-            float weightFactor = Mathf.Pow(_rigidbody.mass, CubeConfig.WEIGHT_EXPONENT) / Mathf.Pow(CubeUtil.CalculateBasicCubeObjectMass(), CubeConfig.WEIGHT_EXPONENT);
-            float speedFactor = Mathf.Pow((float)CubeConfig.Status.INIT_MOVE_SPEED / _golemData.MoveSpeed, CubeConfig.SPEED_EXPONENT);
+            float weightFactor = Mathf.Pow(_rigidbody.mass, CubeConfig.WeightExponent) / Mathf.Pow(CubeUtil.CalculateBasicCubeObjectMass(), CubeConfig.WeightExponent);
+            float speedFactor = Mathf.Pow((float)CubeConfig.Status.INIT_MOVE_SPEED / _golemData.MoveSpeed, CubeConfig.SpeedExponent);
             float moveTime = initTime * weightFactor * speedFactor;
 
             return Mathf.Clamp(moveTime, minTime, maxTime);

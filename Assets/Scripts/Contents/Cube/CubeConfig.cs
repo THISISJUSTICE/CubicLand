@@ -5,38 +5,38 @@ namespace Commar.CubicLand.Cube
     public static class CubeConfig
     {
         public static readonly Vector3Int CORE_POSITION = Vector3Int.zero;
-
         public const float CUBE_BASE_LENGTH = 1f;
-        public const float ONE_CUBE_MASS = 10f;
-        public const float MASS_RATE = 0.2f;
 
-        public const float DAMAGE_SCALING_FACTOR = 6f;
-        public const float ADDITIONAL_DAMAGE_IMPULSE_DIVISOR = 0.3f;
-        public const float ARMOR_EXPONENTIAL_SCALE = 50f;
+        public static float OneCubeMass { get; private set; } = 10f;
+        public static float MassRate { get; private set; } = 0.2f;
 
-        public const float MAX_CUBE_NOMALIZE_TIME = 0.2f;
-        public static readonly float MAX_CUBE_NOMALIZE_DISTANCE = Mathf.Sqrt(CUBE_BASE_LENGTH * 2f);
+        public static float DamageScalingFactor { get; private set; } = 6f;
+        public static float AdditionalDamageImpulseDivisor { get; private set; } = 0.3f;
+        public static float ArmorExponentialScale { get; private set; } = 50f;
 
-        public const float STATUS_COLOR_RATE = 0.999f;
-        public const float GOLEM_COLOR_RATE = 1f - (1f - STATUS_COLOR_RATE) / 3f;
+        public static float MaxCubeNomalizeTime { get; private set; } = 0.2f;
+        public static float MaxCubeNomalizeDistance { get; private set; } = Mathf.Sqrt(CUBE_BASE_LENGTH * 2f);
 
-        public const float RESTITUTION = 0.5f;
+        public static float StatusColorRate { get; private set; } = 0.999f;
+        public static float GolemColorRate { get; private set; } = 1f - (1f - StatusColorRate) / 3f;
 
-        public const float WEIGHT_EXPONENT = 0.2f;
-        public const float SPEED_EXPONENT = 0.3f;
+        public static float Restitution { get; private set; } = 0.5f;
 
-        public const float KNOCKBACK_DECELERATION = 2f;
-        public const float MAX_KNOCKBACK_TIME = 0.5f;
-        public const float MAX_KNOCKBACK_DISTANCE = 5f;
-        public const float MIN_KNOCKBACK_DISTANCE = 0.7f;
+        public static float WeightExponent { get; private set; } = 0.2f;
+        public static float SpeedExponent { get; private set; } = 0.3f;
 
-        public const float GOLEM_INIT_MOVE_TIME = 0.4f;
-        public const float GOLEM_MAX_MOVE_TIME = 0.8f;
-        public const float GOLEM_MIN_MOVE_TIME = 0.03f;
+        public static float KnockbackDeceleration { get; private set; } = 2f;
+        public static float MaxKnockbackTime { get; private set; } = 0.5f;
+        public static float MaxKnockbackDistance { get; private set; } = 5f;
+        public static float MinKnockbackDistance { get; private set; } = 0.7f;
 
-        public const float GOLEM_ROTATE_FRICTION = 1.03f;
-        public const float GOLEM_JUMP_CHARGE_TIME = 0.01f;
-        public const float GOLEM_SIZE_UP_TIME = 0.1f;
+        public static float GolemInitMoveTime { get; private set; } = 0.4f;
+        public static float GolemMaxMoveTime { get; private set; } = 0.8f;
+        public static float GolemMinMoveTime { get; private set; } = 0.03f;
+
+        public static float GolemRotateFriction { get; private set; } = 1.03f;
+        public static float GolemJumpChargeTime { get; private set; } = 0.01f;
+        public static float GolemSizeUpTime { get; private set; } = 0.1f;
 
         public static class Status
         {
