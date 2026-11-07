@@ -23,6 +23,7 @@ MonoBehaviour:
   m_HasScriptingDefines: 1
   m_ScriptingDefines:
   - TEST_DEBUG
+  - TEST_DEVELOP
   m_PlayerSettingsYaml:
     m_Settings: []
   references:
